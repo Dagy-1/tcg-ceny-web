@@ -78,7 +78,7 @@ export default function Home() {
           <a className="nav-partner" href="/pro-eshopy">Pro e-shopy</a>
         </div>
         <a className="button button-small" href={DISCORD_URL} target="_blank" rel="noreferrer">
-          Otevřít Discord
+          Discord <span aria-hidden="true">→</span>
         </a>
       </nav>
 
@@ -86,23 +86,23 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow"><span className="live-dot" /> Český Pokémon TCG market monitor</p>
           <h1>
-            Najdi nejlepší cenu.
+            Chyť nejlepší cenu.
             <span>Nezmeškej naskladnění.</span>
           </h1>
           <p className="hero-lead">
-            TCG Ceny porovnává nabídky sealed Pokémon TCG produktů v českých
-            e-shopech. Hlídá ceny, dostupnost a změny, které stojí za pozornost.
+           Automatické hlídání cen a skladovosti Pokémon TCG v ČR. Nezmeškej žádnou slevu ani naskladnění.
+
           </p>
           <div className="hero-actions">
             <a className="button" href={DISCORD_URL} target="_blank" rel="noreferrer">
-              Přidat se zdarma <span aria-hidden="true">→</span>
+              Otevřít Discord <span aria-hidden="true">→</span>
             </a>
-            <a className="text-link" href="#jak-to-funguje">Jak služba funguje</a>
+            <a className="text-link" href="#jak-to-funguje">Jak služba funguje ↓</a>
           </div>
           <div className="hero-proof" aria-label="Hlavní přednosti">
-            <span><b>České</b> e-shopy na jednom místě</span>
-            <span><b>Historie</b> cen a skladovosti</span>
-            <span><b>24/7</b> automatické alerty</span>
+            <span><b>🛒České</b> e-shopy na jednom místě</span>
+            <span><b>📈Historie</b> cen a skladovosti</span>
+            <span><b>⚡24/7</b> automatické alerty</span>
           </div>
         </div>
 

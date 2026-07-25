@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function render(path = "/") {
+async function render(path = "/", origin = "http://localhost") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request(`http://localhost${path}`, {
+    new Request(`${origin}${path}`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -27,11 +27,22 @@ test("server renders the Czech TCG Ceny landing page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("x-frame-options"), "DENY");
+  assert.equal(response.headers.get("permissions-policy"), "camera=(), geolocation=(), microphone=(), payment=(), usb=()");
+
+  const secureResponse = await render("/", "https://tcgceny.cz");
+  assert.equal(
+    secureResponse.headers.get("strict-transport-security"),
+    "max-age=31536000; includeSubDomains",
+  );
+  await secureResponse.body?.cancel();
 
   const html = await response.text();
   assert.match(html, /<html lang="cs">/i);
   assert.match(html, /<title>TCG Ceny \| Ceny, skladovost a alerty Pokémon TCG<\/title>/i);
-  assert.match(html, /Najdi nejlepší cenu/);
+  assert.match(html, /Chyť nejlepší cenu/);
   assert.match(html, /Nezmeškej naskladnění/);
   assert.match(html, /Historie cen/);
   assert.match(html, /Portfolio sbírky/);

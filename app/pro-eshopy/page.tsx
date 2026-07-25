@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 const CONTACT_URL =
   "mailto:podpora@tcgceny.cz?subject=Spolupráce%20s%20TCG%20Ceny&body=Dobrý%20den%2C%0A%0Ajmenuji%20se%20...%20a%20zastupuji%20e-shop%20...%0A%0ARádi%20bychom%20s%20vámi%20probrali%20...%0A";
@@ -89,18 +90,18 @@ export default function ForShops() {
   return (
     <main className="shop-page">
       <nav className="nav" aria-label="Navigace stránky pro e-shopy">
-        <a className="brand" href="/" aria-label="TCG Ceny – domů">
+        <Link className="brand" href="/" aria-label="TCG Ceny – domů">
           <span className="brand-mark" aria-hidden="true">
             <span />
             <span />
           </span>
           <span>TCG <strong>Ceny</strong></span>
-        </a>
+        </Link>
         <div className="nav-links">
           <a href="#prinos">Přínos</a>
           <a href="#principy">Principy</a>
           <a href="#spoluprace">Spolupráce</a>
-          <a href="/">Pro sběratele</a>
+          <Link href="/">Pro sběratele</Link>
         </div>
         <a className="button button-small" href={CONTACT_URL}>
           Kontakt
@@ -308,14 +309,14 @@ export default function ForShops() {
       <footer className="footer">
         <div className="shell footer-grid">
           <div>
-            <a className="brand" href="/">
+            <Link className="brand" href="/">
               <span className="brand-mark small" aria-hidden="true"><span /><span /></span>
               <span>TCG <strong>Ceny</strong></span>
-            </a>
+            </Link>
             <p>České porovnání cen, skladovosti a historie sealed Pokémon TCG produktů.</p>
           </div>
           <div className="footer-links">
-            <a href="/">Hlavní stránka</a>
+            <Link href="/">Hlavní stránka</Link>
             <a href={CONTACT_URL}>Kontakt</a>
           </div>
         </div>
