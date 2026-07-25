@@ -43,8 +43,9 @@ export default function PrivacyPage() {
           <section>
             <h2>1. Kdo údaje zpracovává</h2>
             <p>
-              Správcem údajů souvisejících s webem tcgceny.cz a komunitním
-              projektem TCG Ceny je provozovatel projektu TCG Ceny. Pro dotazy
+              TCG Ceny je nezávislá česká technologická platforma zaměřená na
+              porovnávání cen, sledování skladovosti a cenovou historii Pokémon
+              TCG produktů. Projekt založil a provozuje Petr Mládek. Pro dotazy
               nebo uplatnění práv použijte e-mail{" "}
               <a href="mailto:podpora@tcgceny.cz">podpora@tcgceny.cz</a>.
             </p>
