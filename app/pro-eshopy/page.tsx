@@ -318,6 +318,8 @@ export default function ForShops() {
           <div className="footer-links">
             <Link href="/">Hlavní stránka</Link>
             <a href={CONTACT_URL}>Kontakt</a>
+            <Link href="/podminky-pouziti">Podmínky používání</Link>
+            <Link href="/soukromi-a-cookies">Soukromí a cookies</Link>
           </div>
         </div>
         <div className="shell legal">

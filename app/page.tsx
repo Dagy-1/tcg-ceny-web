@@ -343,6 +343,8 @@ export default function Home() {
             <a href="mailto:podpora@tcgceny.cz">podpora@tcgceny.cz</a>
             <a href="#funkce">Funkce</a>
             <a href="/pro-eshopy">Pro e-shopy</a>
+            <a href="/podminky-pouziti">Podmínky používání</a>
+            <a href="/soukromi-a-cookies">Soukromí a cookies</a>
           </div>
         </div>
         <div className="shell legal">
