@@ -28,14 +28,17 @@ export default function PrivacyPage() {
         <h1>Soukromí a cookies</h1>
         <p>
           Přehledně vysvětlujeme, jaké údaje může web zpracovat a proč.
-          Platnost od 25. 7. 2026.
+          Platnost od 29. 7. 2026.
         </p>
       </header>
 
       <div className="legal-content shell">
         <aside className="legal-summary privacy">
           <strong>Současný stav</strong>
-          <p>Web nepoužívá reklamní ani analytické cookies a neobsahuje registraci uživatelů.</p>
+          <p>
+            Web nepoužívá reklamní ani analytické cookies. Portfolio využívá
+            přihlášení přes Discord nebo Google a pouze technicky nezbytnou relační cookie.
+          </p>
           <a href="mailto:podpora@tcgceny.cz">podpora@tcgceny.cz</a>
         </aside>
 
@@ -64,9 +67,18 @@ export default function PrivacyPage() {
                 záznamy, pokud je zaznamenává poskytovatel hostingu nebo server.
               </li>
               <li>
-                <strong>Discord:</strong> údaje zpracovávané při používání našeho
-                Discord serveru či bota se řídí také nastavením a podmínkami
-                platformy Discord.
+                <strong>Přihlášení přes Discord:</strong> Discord ID, uživatelské
+                jméno a případně avatar, které Discord předá po vašem potvrzení.
+                Discord heslo ani přístup k vašim zprávám nezískáváme.
+              </li>
+              <li>
+                <strong>Přihlášení přes Google:</strong> identifikátor Google účtu,
+                zobrazované jméno, e-mailová adresa a případně profilový obrázek,
+                které Google předá po vašem potvrzení. Google heslo nezískáváme.
+              </li>
+              <li>
+                <strong>Portfolio:</strong> vybrané produkty, počet kusů,
+                nákupní cena, datum nákupu a dobrovolná poznámka.
               </li>
             </ul>
           </section>
@@ -76,8 +88,9 @@ export default function PrivacyPage() {
             <p>
               Údaje používáme pouze pro odpověď na dotaz, vyřízení požadavku,
               zabezpečení a technický provoz služby, prevenci zneužití a řešení
-              chyb. Zpracování je založeno na vyřízení vaší žádosti a na našem
-              oprávněném zájmu na bezpečném a spolehlivém provozu služby.
+              chyb a poskytování osobního portfolia. Zpracování je založeno na
+              poskytování vyžádané služby a na našem oprávněném zájmu na
+              bezpečném a spolehlivém provozu.
             </p>
           </section>
 
@@ -85,9 +98,10 @@ export default function PrivacyPage() {
             <h2>4. Příjemci a poskytovatelé</h2>
             <p>
               Technické údaje mohou v nezbytném rozsahu zpracovávat poskytovatelé
-              hostingu, domény, e-mailu a bezpečnostní infrastruktury. Údaje
-              neprodáváme. K předání dalším osobám dochází jen tehdy, je-li to
-              nutné pro provoz služby nebo vyžadováno právním předpisem.
+              hostingu, databáze, domény, e-mailu a bezpečnostní infrastruktury.
+              Pro přihlášení používáme služby Discord a Google. Údaje neprodáváme.
+              K předání dalším osobám dochází jen tehdy, je-li to nutné pro
+              provoz služby nebo vyžadováno právním předpisem.
             </p>
           </section>
 
@@ -97,7 +111,9 @@ export default function PrivacyPage() {
               E-mailovou komunikaci uchováváme po dobu potřebnou k vyřízení a
               následné ochraně oprávněných zájmů. Technické logy uchovává
               provozovatel infrastruktury po omezenou dobu potřebnou pro
-              zabezpečení a diagnostiku. Nepotřebné údaje průběžně mažeme nebo
+              zabezpečení a diagnostiku. Účetní identifikaci a portfolio
+              uchováváme po dobu používání služby; o jejich výmaz lze požádat
+              na kontaktním e-mailu. Nepotřebné údaje průběžně mažeme nebo
               anonymizujeme.
             </p>
           </section>
@@ -105,11 +121,13 @@ export default function PrivacyPage() {
           <section>
             <h2>6. Cookies</h2>
             <p>
-              V současné verzi webu nepoužíváme reklamní, personalizační ani
-              analytické cookies. Mohou být použity pouze technicky nezbytné
-              mechanismy zajišťující bezpečné doručení webu. Pokud v budoucnu
-              přidáme nepovinnou analytiku nebo marketingové nástroje, nejprve
-              upravíme tyto informace a tam, kde je to nutné, vyžádáme souhlas.
+              Nepoužíváme reklamní, personalizační ani analytické cookies.
+              Po přihlášení ukládáme technicky nezbytnou zabezpečenou cookie,
+              která udržuje relaci a neumožňuje přístup k heslu Discord ani Google účtu. Relační
+              cookie má omezenou platnost a lze ji odstranit odhlášením.
+              Pokud v budoucnu přidáme nepovinnou analytiku nebo marketingové
+              nástroje, nejprve upravíme tyto informace a tam, kde je to nutné,
+              vyžádáme souhlas.
             </p>
           </section>
 

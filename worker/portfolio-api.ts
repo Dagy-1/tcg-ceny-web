@@ -1,0 +1,578 @@
+import portfolioData from "../app/portfolio/portfolio-data.json";
+
+type Env = {
+  DB: D1Database;
+  DISCORD_CLIENT_ID: string;
+  DISCORD_CLIENT_SECRET: string;
+  DISCORD_REDIRECT_URI: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_REDIRECT_URI: string;
+  SESSION_SECRET: string;
+};
+
+type AuthProvider = "discord" | "google";
+
+type SessionUser = {
+  sub: string;
+  username: string;
+  avatar: string | null;
+  provider: AuthProvider;
+  exp: number;
+};
+
+type OAuthState = {
+  provider: AuthProvider;
+  state: string;
+  verifier: string;
+  returnTo: string;
+  exp: number;
+};
+
+type CatalogProduct = {
+  id: string;
+  name: string;
+  type: string;
+  era: string;
+  set: string;
+  image: string;
+  marketPrice: number | null;
+  priceUpdatedAt: string;
+};
+
+const SESSION_COOKIE = "tcg_session";
+const OAUTH_COOKIE = "tcg_oauth";
+const SESSION_SECONDS = 60 * 60 * 24 * 30;
+const encoder = new TextEncoder();
+const products = new Map(
+  (portfolioData.products as CatalogProduct[]).map((product) => [product.id, product]),
+);
+
+function json(data: unknown, status = 200, headers?: HeadersInit) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Cache-Control": "no-store",
+      "Content-Type": "application/json; charset=utf-8",
+      ...headers,
+    },
+  });
+}
+
+function base64Url(bytes: Uint8Array) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlText(value: string) {
+  return base64Url(encoder.encode(value));
+}
+
+function decodeBase64Url(value: string) {
+  return new TextDecoder().decode(decodeBase64UrlBytes(value));
+}
+
+function decodeBase64UrlBytes(value: string) {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+  return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+}
+
+async function hmacKey(secret: string, usage: KeyUsage[]) {
+  return crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    usage,
+  );
+}
+
+async function hmac(value: string, secret: string) {
+  const key = await hmacKey(secret, ["sign"]);
+  return base64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
+}
+
+async function signedToken(payload: object, secret: string) {
+  const encoded = base64UrlText(JSON.stringify(payload));
+  return `${encoded}.${await hmac(encoded, secret)}`;
+}
+
+async function readSignedToken<T>(token: string | undefined, secret: string): Promise<T | null> {
+  if (!token) return null;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return null;
+  try {
+    const key = await hmacKey(secret, ["verify"]);
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      decodeBase64UrlBytes(signature),
+      encoder.encode(payload),
+    );
+    if (!valid) return null;
+    return JSON.parse(decodeBase64Url(payload)) as T;
+  } catch {
+    return null;
+  }
+}
+
+function cookie(request: Request, name: string) {
+  const values = request.headers.get("Cookie")?.split(";") ?? [];
+  for (const value of values) {
+    const [key, ...rest] = value.trim().split("=");
+    if (key === name) return rest.join("=");
+  }
+  return undefined;
+}
+
+function setCookie(request: Request, name: string, value: string, maxAge: number) {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return `${name}=${value}; Path=/; HttpOnly${secure}; SameSite=Lax; Max-Age=${maxAge}`;
+}
+
+function randomToken(size = 32) {
+  return base64Url(crypto.getRandomValues(new Uint8Array(size)));
+}
+
+function safeReturnTo(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/portfolio/";
+  return value.slice(0, 500);
+}
+
+function hasDiscordOAuthConfig(env: Env) {
+  return [
+    env.DISCORD_CLIENT_ID,
+    env.DISCORD_CLIENT_SECRET,
+    env.DISCORD_REDIRECT_URI,
+    env.SESSION_SECRET,
+  ].every((value) => (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    !value.startsWith("your_") &&
+    !value.startsWith("generate_")
+  ));
+}
+
+function hasGoogleOAuthConfig(env: Env) {
+  return [
+    env.GOOGLE_CLIENT_ID,
+    env.GOOGLE_CLIENT_SECRET,
+    env.GOOGLE_REDIRECT_URI,
+    env.SESSION_SECRET,
+  ].every((value) => (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    !value.startsWith("your_") &&
+    !value.startsWith("generate_")
+  ));
+}
+
+function authErrorRedirect(request: Request, returnTo: string, code: string) {
+  const target = new URL(safeReturnTo(returnTo), request.url);
+  target.searchParams.set("auth_error", code);
+  return Response.redirect(target, 302);
+}
+
+async function session(request: Request, env: Env) {
+  const user = await readSignedToken<SessionUser>(cookie(request, SESSION_COOKIE), env.SESSION_SECRET);
+  if (!user || user.exp <= Math.floor(Date.now() / 1000)) return null;
+  return user;
+}
+
+function validMutationOrigin(request: Request) {
+  const origin = request.headers.get("Origin");
+  return Boolean(origin && origin === new URL(request.url).origin);
+}
+
+async function beginDiscordLogin(request: Request, env: Env) {
+  const returnTo = safeReturnTo(new URL(request.url).searchParams.get("return_to"));
+  if (!hasDiscordOAuthConfig(env)) {
+    return authErrorRedirect(request, returnTo, "discord_not_configured");
+  }
+
+  const state = randomToken();
+  const verifier = randomToken(48);
+  const challenge = base64Url(
+    new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(verifier))),
+  );
+  const payload = await signedToken(
+    { provider: "discord", state, verifier, returnTo, exp: Math.floor(Date.now() / 1000) + 600 },
+    env.SESSION_SECRET,
+  );
+  const authorize = new URL("https://discord.com/oauth2/authorize");
+  authorize.search = new URLSearchParams({
+    client_id: env.DISCORD_CLIENT_ID,
+    redirect_uri: env.DISCORD_REDIRECT_URI,
+    response_type: "code",
+    scope: "identify",
+    state,
+    code_challenge: challenge,
+    code_challenge_method: "S256",
+  }).toString();
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: authorize.toString(),
+      "Set-Cookie": setCookie(request, OAUTH_COOKIE, payload, 600),
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+async function finishDiscordLogin(request: Request, env: Env) {
+  const url = new URL(request.url);
+  const oauth = await readSignedToken<OAuthState>(cookie(request, OAUTH_COOKIE), env.SESSION_SECRET);
+  const state = url.searchParams.get("state");
+  const code = url.searchParams.get("code");
+  if (
+    !oauth ||
+    oauth.provider !== "discord" ||
+    oauth.exp < Date.now() / 1000 ||
+    !state ||
+    oauth.state !== state ||
+    !code
+  ) {
+    return authErrorRedirect(request, oauth?.returnTo ?? "/portfolio/", "oauth_failed");
+  }
+
+  const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.DISCORD_CLIENT_ID,
+      client_secret: env.DISCORD_CLIENT_SECRET,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: env.DISCORD_REDIRECT_URI,
+      code_verifier: oauth.verifier,
+    }),
+  });
+  if (!tokenResponse.ok) return authErrorRedirect(request, oauth.returnTo, "oauth_failed");
+  const token = await tokenResponse.json<{ access_token: string }>();
+  const profileResponse = await fetch("https://discord.com/api/users/@me", {
+    headers: { Authorization: `Bearer ${token.access_token}` },
+  });
+  if (!profileResponse.ok) return authErrorRedirect(request, oauth.returnTo, "oauth_failed");
+  const profile = await profileResponse.json<{ id: string; username: string; avatar: string | null }>();
+  const profileAvatar = profile.avatar
+    ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png?size=64`
+    : null;
+  const now = Math.floor(Date.now() / 1000);
+
+  await env.DB.prepare(
+    `INSERT INTO users (discord_user_id, username, avatar_hash, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(discord_user_id) DO UPDATE SET
+       username = excluded.username,
+       avatar_hash = excluded.avatar_hash,
+       updated_at = excluded.updated_at`,
+  ).bind(profile.id, profile.username, profileAvatar, now, now).run();
+
+  const tokenValue = await signedToken(
+    {
+      sub: profile.id,
+      username: profile.username,
+      avatar: profileAvatar,
+      provider: "discord",
+      exp: now + SESSION_SECONDS,
+    },
+    env.SESSION_SECRET,
+  );
+  const headers = new Headers({
+    Location: safeReturnTo(oauth.returnTo),
+    "Cache-Control": "no-store",
+  });
+  headers.append("Set-Cookie", setCookie(request, SESSION_COOKIE, tokenValue, SESSION_SECONDS));
+  return new Response(null, { status: 302, headers });
+}
+
+async function beginGoogleLogin(request: Request, env: Env) {
+  const returnTo = safeReturnTo(new URL(request.url).searchParams.get("return_to"));
+  if (!hasGoogleOAuthConfig(env)) {
+    return authErrorRedirect(request, returnTo, "google_not_configured");
+  }
+
+  const state = randomToken();
+  const verifier = randomToken(48);
+  const challenge = base64Url(
+    new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(verifier))),
+  );
+  const payload = await signedToken(
+    { provider: "google", state, verifier, returnTo, exp: Math.floor(Date.now() / 1000) + 600 },
+    env.SESSION_SECRET,
+  );
+  const authorize = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  authorize.search = new URLSearchParams({
+    client_id: env.GOOGLE_CLIENT_ID,
+    redirect_uri: env.GOOGLE_REDIRECT_URI,
+    response_type: "code",
+    scope: "openid profile email",
+    state,
+    code_challenge: challenge,
+    code_challenge_method: "S256",
+    prompt: "select_account",
+  }).toString();
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: authorize.toString(),
+      "Set-Cookie": setCookie(request, OAUTH_COOKIE, payload, 600),
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+async function finishGoogleLogin(request: Request, env: Env) {
+  const url = new URL(request.url);
+  const oauth = await readSignedToken<OAuthState>(cookie(request, OAUTH_COOKIE), env.SESSION_SECRET);
+  const state = url.searchParams.get("state");
+  const code = url.searchParams.get("code");
+  if (
+    !oauth ||
+    oauth.provider !== "google" ||
+    oauth.exp < Date.now() / 1000 ||
+    !state ||
+    oauth.state !== state ||
+    !code
+  ) {
+    return authErrorRedirect(request, oauth?.returnTo ?? "/portfolio/", "oauth_failed");
+  }
+
+  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.GOOGLE_CLIENT_ID,
+      client_secret: env.GOOGLE_CLIENT_SECRET,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: env.GOOGLE_REDIRECT_URI,
+      code_verifier: oauth.verifier,
+    }),
+  });
+  if (!tokenResponse.ok) return authErrorRedirect(request, oauth.returnTo, "oauth_failed");
+  const token = await tokenResponse.json<{ access_token: string }>();
+  const profileResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+    headers: { Authorization: `Bearer ${token.access_token}` },
+  });
+  if (!profileResponse.ok) return authErrorRedirect(request, oauth.returnTo, "oauth_failed");
+  const profile = await profileResponse.json<{
+    sub: string;
+    name?: string;
+    email?: string;
+    picture?: string;
+  }>();
+  if (!profile.sub) return authErrorRedirect(request, oauth.returnTo, "oauth_failed");
+
+  const accountId = `google:${profile.sub}`;
+  const username = profile.name?.trim() || profile.email?.split("@")[0] || "Google účet";
+  const avatar = profile.picture ?? null;
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    `INSERT INTO users (discord_user_id, username, avatar_hash, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(discord_user_id) DO UPDATE SET
+       username = excluded.username,
+       avatar_hash = excluded.avatar_hash,
+       updated_at = excluded.updated_at`,
+  ).bind(accountId, username, avatar, now, now).run();
+
+  const tokenValue = await signedToken(
+    {
+      sub: accountId,
+      username,
+      avatar,
+      provider: "google",
+      exp: now + SESSION_SECONDS,
+    },
+    env.SESSION_SECRET,
+  );
+  const headers = new Headers({
+    Location: safeReturnTo(oauth.returnTo),
+    "Cache-Control": "no-store",
+  });
+  headers.append("Set-Cookie", setCookie(request, SESSION_COOKIE, tokenValue, SESSION_SECONDS));
+  return new Response(null, { status: 302, headers });
+}
+
+async function listPortfolio(user: SessionUser, env: Env) {
+  const result = await env.DB.prepare(
+    `SELECT id, product_id AS productId, quantity, buy_price_czk AS buyPrice,
+            buy_date AS buyDate, note, created_at AS createdAt
+     FROM portfolio_items
+     WHERE discord_user_id = ?
+     ORDER BY buy_date DESC, id DESC`,
+  ).bind(user.sub).all<{
+    id: number;
+    productId: string;
+    quantity: number;
+    buyPrice: number;
+    buyDate: string;
+    note: string;
+    createdAt: number;
+  }>();
+  const items = result.results.map((item) => {
+    const product = products.get(item.productId);
+    return {
+      ...item,
+      product: product ?? {
+        id: item.productId,
+        name: "Produkt již není v katalogu",
+        type: "",
+        era: "",
+        set: "",
+        image: "",
+        marketPrice: null,
+        priceUpdatedAt: "",
+      },
+    };
+  });
+  return json({ items });
+}
+
+async function addPortfolioItem(request: Request, user: SessionUser, env: Env) {
+  if (!validMutationOrigin(request)) return json({ error: "Neplatný původ požadavku." }, 403);
+  let input: {
+    productId?: string;
+    quantity?: number;
+    buyPrice?: number;
+    buyDate?: string;
+    note?: string;
+  };
+  try {
+    input = await request.json();
+  } catch {
+    return json({ error: "Neplatná data." }, 400);
+  }
+  const product = products.get(String(input.productId ?? ""));
+  const quantity = Number(input.quantity);
+  const buyPrice = Number(input.buyPrice);
+  const buyDate = String(input.buyDate ?? "");
+  const note = String(input.note ?? "").trim().slice(0, 250);
+  if (!product) return json({ error: "Produkt není v aktuálním katalogu." }, 400);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) {
+    return json({ error: "Množství musí být od 1 do 999." }, 400);
+  }
+  if (!Number.isInteger(buyPrice) || buyPrice < 0 || buyPrice > 10_000_000) {
+    return json({ error: "Nákupní cena není platná." }, 400);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(buyDate) || Number.isNaN(Date.parse(`${buyDate}T00:00:00Z`))) {
+    return json({ error: "Datum nákupu není platné." }, 400);
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const inserted = await env.DB.prepare(
+    `INSERT INTO portfolio_items (
+       discord_user_id, product_id, quantity, buy_price_czk, buy_date, note, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(user.sub, product.id, quantity, buyPrice, buyDate, note, now, now).run();
+  return json({ id: inserted.meta.last_row_id }, 201);
+}
+
+async function updatePortfolioItem(request: Request, user: SessionUser, env: Env, itemId: string) {
+  if (!validMutationOrigin(request)) return json({ error: "Neplatný původ požadavku." }, 403);
+  if (!/^\d+$/.test(itemId)) return json({ error: "Položka neexistuje." }, 404);
+  let input: {
+    quantity?: number;
+    buyPrice?: number;
+    buyDate?: string;
+    note?: string;
+  };
+  try {
+    input = await request.json();
+  } catch {
+    return json({ error: "Neplatná data." }, 400);
+  }
+  const quantity = Number(input.quantity);
+  const buyPrice = Number(input.buyPrice);
+  const buyDate = String(input.buyDate ?? "");
+  const note = String(input.note ?? "").trim().slice(0, 250);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) {
+    return json({ error: "Množství musí být od 1 do 999." }, 400);
+  }
+  if (!Number.isInteger(buyPrice) || buyPrice < 0 || buyPrice > 10_000_000) {
+    return json({ error: "Nákupní cena není platná." }, 400);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(buyDate) || Number.isNaN(Date.parse(`${buyDate}T00:00:00Z`))) {
+    return json({ error: "Datum nákupu není platné." }, 400);
+  }
+  const updated = await env.DB.prepare(
+    `UPDATE portfolio_items
+     SET quantity = ?, buy_price_czk = ?, buy_date = ?, note = ?, updated_at = ?
+     WHERE id = ? AND discord_user_id = ?`,
+  ).bind(
+    quantity,
+    buyPrice,
+    buyDate,
+    note,
+    Math.floor(Date.now() / 1000),
+    Number(itemId),
+    user.sub,
+  ).run();
+  return updated.meta.changes
+    ? json({ quantity, buyPrice, buyDate, note })
+    : json({ error: "Položka neexistuje." }, 404);
+}
+
+async function deletePortfolioItem(request: Request, user: SessionUser, env: Env, itemId: string) {
+  if (!validMutationOrigin(request)) return json({ error: "Neplatný původ požadavku." }, 403);
+  if (!/^\d+$/.test(itemId)) return json({ error: "Položka neexistuje." }, 404);
+  const deleted = await env.DB.prepare(
+    "DELETE FROM portfolio_items WHERE id = ? AND discord_user_id = ?",
+  ).bind(Number(itemId), user.sub).run();
+  return deleted.meta.changes ? json({ ok: true }) : json({ error: "Položka neexistuje." }, 404);
+}
+
+export async function handlePortfolioApi(request: Request, env: Env): Promise<Response | null> {
+  const url = new URL(request.url);
+  if (!url.pathname.startsWith("/api/")) return null;
+
+  if (request.method === "GET" && url.pathname === "/api/auth/discord") {
+    return beginDiscordLogin(request, env);
+  }
+  if (request.method === "GET" && url.pathname === "/api/auth/discord/callback") {
+    return finishDiscordLogin(request, env);
+  }
+  if (request.method === "GET" && url.pathname === "/api/auth/google") {
+    return beginGoogleLogin(request, env);
+  }
+  if (request.method === "GET" && url.pathname === "/api/auth/google/callback") {
+    return finishGoogleLogin(request, env);
+  }
+  if (request.method === "POST" && url.pathname === "/api/logout") {
+    if (!validMutationOrigin(request)) return json({ error: "Neplatný původ požadavku." }, 403);
+    return json({ ok: true }, 200, {
+      "Set-Cookie": setCookie(request, SESSION_COOKIE, "", 0),
+    });
+  }
+
+  const user = await session(request, env);
+  if (request.method === "GET" && url.pathname === "/api/session") {
+    return json({
+      user: user
+        ? {
+            id: user.sub,
+            username: user.username,
+            avatar: user.avatar,
+            provider: user.provider ?? "discord",
+          }
+        : null,
+    });
+  }
+  if (!user) return json({ error: "Pro tuto akci se nejdříve přihlas." }, 401);
+  if (request.method === "GET" && url.pathname === "/api/portfolio") {
+    return listPortfolio(user, env);
+  }
+  if (request.method === "POST" && url.pathname === "/api/portfolio") {
+    return addPortfolioItem(request, user, env);
+  }
+  const updateMatch = request.method === "PATCH" && url.pathname.match(/^\/api\/portfolio\/(\d+)$/);
+  if (updateMatch) return updatePortfolioItem(request, user, env, updateMatch[1]);
+  const deleteMatch = request.method === "DELETE" && url.pathname.match(/^\/api\/portfolio\/(\d+)$/);
+  if (deleteMatch) return deletePortfolioItem(request, user, env, deleteMatch[1]);
+
+  return json({ error: "API cesta neexistuje." }, 404);
+}

@@ -1,0 +1,156 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+
+type SessionUser = {
+  id: string;
+  username: string;
+  avatar: string | null;
+  provider?: "discord" | "google";
+};
+
+function authErrorMessage(code: string | null) {
+  if (code === "discord_not_configured") {
+    return "Přihlášení přes Discord ještě není nakonfigurované.";
+  }
+  if (code === "google_not_configured") {
+    return "Přihlášení přes Google ještě není nakonfigurované.";
+  }
+  if (code === "oauth_failed") {
+    return "Přihlášení se nepodařilo dokončit. Zkus to prosím znovu.";
+  }
+  return "";
+}
+
+export default function AuthMenu() {
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [returnTo, setReturnTo] = useState("/");
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = authErrorMessage(params.get("auth_error"));
+    if (message) {
+      queueMicrotask(() => {
+        setError(message);
+        setOpen(true);
+      });
+      params.delete("auth_error");
+      const query = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    }
+    const query = params.toString();
+    const current = `${window.location.pathname}${query ? `?${query}` : ""}`;
+    queueMicrotask(() => setReturnTo(current.startsWith("//") ? "/" : current));
+
+    fetch("/api/session", {
+      cache: "no-store",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => response.ok ? response.json() : { user: null })
+      .then((data: { user: SessionUser | null }) => setUser(data.user))
+      .catch(() => setUser(null));
+  }, []);
+
+  useEffect(() => {
+    const close = (event: MouseEvent) => {
+      if (root.current && !root.current.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  const loginHref = (provider: "discord" | "google") =>
+    `/api/auth/${provider}?return_to=${encodeURIComponent(returnTo)}`;
+
+  const logout = async () => {
+    const response = await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    if (response.ok) window.location.reload();
+  };
+
+  return (
+    <div className="auth-menu" ref={root}>
+      <button
+        className={`button button-small auth-trigger${user ? " is-signed-in" : ""}`}
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((value) => !value)}
+      >
+        {user ? (
+          <>
+            <span className="auth-avatar" aria-hidden="true">
+              {user.avatar?.startsWith("https://")
+                ? <Image src={user.avatar} alt="" width={32} height={32} unoptimized />
+                : user.username.slice(0, 1).toUpperCase()}
+            </span>
+            <span className="auth-username">{user.username}</span>
+          </>
+        ) : (
+          <>Přihlásit se <span aria-hidden="true">⌄</span></>
+        )}
+      </button>
+
+      {open && (
+        <div className="auth-popover" role="menu">
+          {user ? (
+            <>
+              <div className="auth-summary">
+                <span className="auth-avatar large" aria-hidden="true">
+                  {user.avatar?.startsWith("https://")
+                    ? <Image src={user.avatar} alt="" width={40} height={40} unoptimized />
+                    : user.username.slice(0, 1).toUpperCase()}
+                </span>
+                <span>
+                  <small>Přihlášený účet</small>
+                  <strong>{user.username}</strong>
+                  <em>{user.provider === "google" ? "Google" : "Discord"}</em>
+                </span>
+              </div>
+              <Link className="auth-menu-link" href="/portfolio/" role="menuitem">
+                Moje portfolio <span aria-hidden="true">→</span>
+              </Link>
+              <button className="auth-logout" type="button" role="menuitem" onClick={logout}>
+                Odhlásit se
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="auth-popover-heading">
+                <strong>Přihlásit se</strong>
+                <span>Vyber účet, který chceš používat.</span>
+              </div>
+              <a className="auth-provider discord" href={loginHref("discord")} role="menuitem">
+                <span className="auth-provider-mark" aria-hidden="true">D</span>
+                <span><strong>Pokračovat přes Discord</strong><small>Pro členy TCG Ceny serveru</small></span>
+                <b aria-hidden="true">→</b>
+              </a>
+              <a className="auth-provider google" href={loginHref("google")} role="menuitem">
+                <span className="auth-provider-mark" aria-hidden="true">G</span>
+                <span><strong>Pokračovat přes Google</strong><small>Gmail nebo jiný Google účet</small></span>
+                <b aria-hidden="true">→</b>
+              </a>
+              {error && <p className="auth-error" role="alert">{error}</p>}
+              <p className="auth-privacy">Heslo od Discordu ani Googlu nikdy nevidíme.</p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

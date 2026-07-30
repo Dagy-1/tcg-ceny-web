@@ -16,21 +16,31 @@ Nejjednodušší možnost:
 
 1. Dvakrát klikni na `SPUSTIT-WEB.cmd`.
 2. Terminál nech otevřený.
-3. Otevři `http://localhost:3000`.
+3. Otevři `http://localhost:3100`.
 
 Ruční spuštění v PowerShellu:
 
 ```powershell
-$env:Path="C:\Users\mlade\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;$env:Path"
-C:\Users\mlade\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd run dev
+npm run dev
 ```
 
-Web se otevře na `http://localhost:3000`.
+Web se otevře na `http://localhost:3100`. Příkaz spustí také lokální Worker,
+Discord OAuth API a portfolio databázi.
 
 ## Kontrola před publikováním
 
 ```powershell
-C:\Users\mlade\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd run build
+npm test
 ```
 
-Složky `build/` a `worker/` jsou součástí nasazení a nemažou se.
+Příkaz vytvoří statickou produkční verzi ve složce `out/` a následně
+zkontroluje všechny veřejné stránky, sitemapu, robots.txt a bezpečnostní
+hlavičky.
+
+## Publikování na Netlify
+
+1. Spusť `npm test`.
+2. Nahraj obsah výsledné složky `out/` do stejného projektu na Netlify.
+3. Po nasazení ověř `https://tcgceny.cz/` a `https://tcgceny.cz/sitemap.xml`.
+
+Doména, HTTPS a e-mailové DNS záznamy se při běžné aktualizaci webu nemění.

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AuthMenu from "../AuthMenu";
 
 const CONTACT_URL =
   "mailto:podpora@tcgceny.cz?subject=Spolupráce%20s%20TCG%20Ceny&body=Dobrý%20den%2C%0A%0Ajmenuji%20se%20...%20a%20zastupuji%20e-shop%20...%0A%0ARádi%20bychom%20s%20vámi%20probrali%20...%0A";
@@ -13,40 +14,22 @@ export const metadata: Metadata = {
   },
 };
 
-const benefits = [
-  {
-    number: "01",
-    title: "Přímý přechod do e-shopu",
-    text: "U nabídky je jasně uvedený zdroj. Zákazník pokračuje přímo na konkrétní produkt ve vašem obchodě.",
-  },
-  {
-    number: "02",
-    title: "Správná varianta produktu",
-    text: "Rozlišujeme edice, typy balení i varianty. Nepřesné přiřazení s vámi rychle prověříme a opravíme.",
-  },
-  {
-    number: "03",
-    title: "Férové pořadí nabídek",
-    text: "Pořadí vychází z dostupnosti a ceny. Obchodní spolupráce nemění pozici produktu ve srovnání.",
-  },
-];
-
 const principles = [
   {
-    title: "Transparentní zdroj",
-    text: "Uživatel vždy vidí název obchodu, cenu, stav dostupnosti a odkaz na zdrojovou stránku.",
+    title: "Návštěvník přímo u produktu",
+    text: "Zákazník u nabídky vidí váš obchod a jedním kliknutím přejde na konkrétní produkt. Objednávku dokončí přímo u vás.",
   },
   {
-    title: "Šetrná kontrola",
-    text: "Každý obchod má vlastní bezpečné tempo kontrol. Při omezení webu systém automaticky zpomalí.",
+    title: "Jasné a férové srovnání",
+    text: "Zobrazíme cenu, dostupnost a správnou variantu vedle ostatních nabídek. Bez provize a bez placeného zvýhodnění.",
   },
   {
-    title: "Ověřené změny",
-    text: "Podezřelé naskladnění nebo výraznou změnu ceny před veřejným upozorněním ověřujeme opakovaně.",
+    title: "Aktuální cena a skladovost",
+    text: "Údaje pravidelně kontrolujeme, aby zákazník věděl, zda může produkt právě teď koupit ve vašem e-shopu.",
   },
   {
-    title: "Rychlá oprava",
-    text: "Chybnou cenu, skladovost, variantu nebo odkaz řešíme podle konkrétní produktové stránky.",
+    title: "Opravy v našem katalogu",
+    text: "Pokud u nabídky nesedí cena, dostupnost, varianta nebo odkaz, konkrétní údaj v TCG Ceny prověříme a opravíme.",
   },
 ];
 
@@ -98,14 +81,12 @@ export default function ForShops() {
           <span>TCG <strong>Ceny</strong></span>
         </Link>
         <div className="nav-links">
-          <a href="#prinos">Přínos</a>
-          <a href="#principy">Principy</a>
-          <a href="#spoluprace">Spolupráce</a>
-          <Link href="/">Pro sběratele</Link>
+          <Link href="/">Domů</Link>
+          <Link href="/katalog/">Katalog</Link>
+          <Link href="/portfolio/">Portfolio</Link>
+          <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
-        <a className="button button-small" href={CONTACT_URL}>
-          Kontakt
-        </a>
+        <AuthMenu />
       </nav>
 
       <section className="shop-page-hero shell">
@@ -122,7 +103,7 @@ export default function ForShops() {
           </p>
           <div className="hero-actions">
             <a className="button" href={CONTACT_URL}>
-              Probrat spolupráci <span aria-hidden="true">→</span>
+              Zařadit e-shop <span aria-hidden="true">→</span>
             </a>
             <a className="text-link" href="#jak-fungujeme">Jak pracujeme s nabídkami</a>
           </div>
@@ -158,51 +139,12 @@ export default function ForShops() {
         </div>
       </section>
 
-      <section id="prinos" className="partner-proof">
-        <div className="shell partner-proof-grid">
-          <div>
-            <span className="proof-label">Zdroj návštěvy</span>
-            <strong>Konkrétní produkt</strong>
-          </div>
-          <div>
-            <span className="proof-label">Řazení</span>
-            <strong>Cena a dostupnost</strong>
-          </div>
-          <div>
-            <span className="proof-label">Kontakt</span>
-            <strong>Česká ruční podpora</strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="section shell">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Co spolupráce přináší</p>
-            <h2>Srozumitelná prezentace bez prostředníka.</h2>
-          </div>
-          <p>
-            Neprodáváme za vás. Pomáháme zákazníkovi najít správnou nabídku
-            a pokračovat tam, kde může skutečně nakoupit.
-          </p>
-        </div>
-        <div className="partner-benefits">
-          {benefits.map((benefit) => (
-            <article key={benefit.number}>
-              <span>{benefit.number}</span>
-              <h3>{benefit.title}</h3>
-              <p>{benefit.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="principy" className="section section-dark">
-        <div className="shell">
+      <section id="prinos" className="section section-dark">
+        <div id="principy" className="shell">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Jak pracujeme</p>
-              <h2>Transparentně vůči obchodům i zákazníkům.</h2>
+              <p className="eyebrow">Co nabízíme</p>
+              <h2>Co váš e-shop získá.</h2>
             </div>
           </div>
           <div className="partner-principles">

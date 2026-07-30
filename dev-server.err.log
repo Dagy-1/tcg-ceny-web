@@ -1,0 +1,10 @@
+$ node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs && wrangler d1 migrations apply tcg-ceny-portfolio --local --config wrangler.jsonc
+$ vite build && vite preview --host localhost --port 3100 --strictPort
+[33m[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/shims/error-boundary.js is dynamically imported by \0virtual:vite-rsc/client-references but also statically imported by node_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/server/app-browser-entry.js, dynamic import will not move module into another chunk.
+[39m
+[33m[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/shims/slot.js is dynamically imported by \0virtual:vite-rsc/client-references but also statically imported by node_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/server/app-browser-entry.js, node_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/server/app-browser-visible-commit.js, dynamic import will not move module into another chunk.
+[39m
+[33m[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/shims/slot.js is dynamically imported by \0virtual:vite-rsc/client-references but also statically imported by node_modules/.pnpm/vinext@0.0.50_@vitejs+plugi_9df4d5ce2a99e8227fc76c162f36a1ca/node_modules/vinext/dist/server/app-ssr-entry.js, dynamic import will not move module into another chunk.
+[39m
+[2mDefault inspector port 9229 not available, using 9230 instead
+[22m

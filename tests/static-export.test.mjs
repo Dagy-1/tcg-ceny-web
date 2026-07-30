@@ -1,0 +1,178 @@
+import assert from "node:assert/strict";
+import { access, readFile } from "node:fs/promises";
+import test from "node:test";
+
+const output = new URL("../out/", import.meta.url);
+
+async function readOutput(path) {
+  return readFile(new URL(path, output), "utf8");
+}
+
+test("static export contains every public page", async () => {
+  await Promise.all([
+    access(new URL("index.html", output)),
+    access(new URL("katalog/index.html", output)),
+    access(new URL("portfolio/index.html", output)),
+    access(new URL("pro-eshopy/index.html", output)),
+    access(new URL("podminky-pouziti/index.html", output)),
+    access(new URL("soukromi-a-cookies/index.html", output)),
+    access(new URL("sitemap.xml", output)),
+    access(new URL("robots.txt", output)),
+    access(new URL("_headers", output)),
+  ]);
+});
+
+test("portfolio uses the dedicated investment database", async () => {
+  const [portfolio, portfolioDataText, portfolioSource, catalog, catalogSource, privacy] = await Promise.all([
+    readOutput("portfolio/index.html"),
+    readFile(new URL("../app/portfolio/portfolio-data.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/portfolio/PortfolioClient.tsx", import.meta.url), "utf8"),
+    readOutput("katalog/index.html"),
+    readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
+    readOutput("soukromi-a-cookies/index.html"),
+  ]);
+  const portfolioData = JSON.parse(portfolioDataText);
+
+  assert.match(portfolio, /Hodnota tvé sbírky/);
+  assert.match(portfolio, /sealed produktů v portfolio databázi/);
+  assert.match(portfolioSource, /Přihlásit přes Discord/);
+  assert.match(portfolioSource, /Přihlásit přes Google/);
+  assert.match(portfolioSource, /Hesla od Discordu ani Googlu/);
+  assert.doesNotMatch(portfolio, /178 produktů připravených k přidání z katalogu/);
+  assert.ok(portfolioData.productCount > 1500);
+  assert.equal(portfolioData.products.length, portfolioData.productCount);
+  assert.ok(portfolioData.products.every((product) => product.id && product.name && product.type));
+  assert.ok(portfolioData.products.some((product) => product.marketPrice > 0));
+  for (const productId of ["cardmarket:728730", "cardmarket:719700"]) {
+    const product = portfolioData.products.find((item) => item.id === productId);
+    assert.ok(product, `portfolio should contain ${productId}`);
+    assert.ok(product.marketPrice > 0, `${productId} should have a CZK market price`);
+    assert.match(
+      product.image,
+      /^\/catalog-products\//,
+      `${productId} should reuse a prepared local catalog image`,
+    );
+  }
+  assert.match(portfolioSource, /useState<LoadState>\("loading"\)/);
+  assert.match(portfolioSource, /credentials: "include"/);
+  assert.match(portfolioSource, /method: "PATCH"/);
+  assert.match(portfolioSource, /Upravit produkt/);
+  assert.match(portfolioSource, /Trash2/);
+  assert.match(portfolioSource, /setBuyPriceInput\(event\.target\.value\)/);
+  assert.doesNotMatch(portfolioSource, /setBuyPrice\(Number\(event\.target\.value\)\)/);
+  assert.match(catalog, /href="\/portfolio\/"/);
+  assert.match(catalogSource, /Přidat do portfolia/);
+  assert.match(privacy, /Discord ID/);
+  assert.match(privacy, /Přihlášení přes Google/);
+  assert.match(privacy, /technicky nezbytnou zabezpečenou cookie/);
+});
+
+test("portfolio API keeps authentication and ownership checks server-side", async () => {
+  const [api, migration, exampleVars] = await Promise.all([
+    readFile(new URL("../worker/portfolio-api.ts", import.meta.url), "utf8"),
+    readFile(new URL("../migrations/0001_portfolio.sql", import.meta.url), "utf8"),
+    readFile(new URL("../.dev.vars.example", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(api, /scope: "identify"/);
+  assert.match(api, /scope: "openid profile email"/);
+  assert.match(api, /protocol === "https:" \? "; Secure" : ""/);
+  assert.match(api, /HttpOnly\$\{secure\}; SameSite=Lax/);
+  assert.match(api, /code_challenge_method: "S256"/);
+  assert.match(api, /WHERE discord_user_id = \?/);
+  assert.match(api, /UPDATE portfolio_items/);
+  assert.match(api, /WHERE id = \? AND discord_user_id = \?/);
+  assert.match(api, /validMutationOrigin/);
+  assert.match(api, /hasDiscordOAuthConfig/);
+  assert.match(api, /discord_not_configured/);
+  assert.match(api, /google_not_configured/);
+  assert.match(api, /google:\$\{profile\.sub\}/);
+  assert.match(migration, /FOREIGN KEY \(discord_user_id\)/);
+  assert.match(exampleVars, /SESSION_SECRET=/);
+  assert.match(exampleVars, /GOOGLE_CLIENT_ID=/);
+  assert.doesNotMatch(api, /scope: "email"/);
+});
+
+test("catalog contains the complete public product snapshot", async () => {
+  const [html, dataText] = await Promise.all([
+    readOutput("katalog/index.html"),
+    readFile(new URL("../app/katalog/catalog-data.json", import.meta.url), "utf8"),
+  ]);
+  const data = JSON.parse(dataText);
+
+  assert.match(html, /Najdi produkt/);
+  assert.match(html, /Porovnej český trh/);
+  assert.equal(data.productCount, 178);
+  assert.equal(data.products.length, 178);
+  assert.ok(data.products.every((product) => product.id && product.era && product.set));
+  assert.ok(data.products.every((product) => Array.isArray(product.offers)));
+  assert.ok(data.products.every((product) => typeof product.verified === "boolean"));
+  assert.equal(data.products.filter((product) => product.condition === "sealed").length, 137);
+  assert.equal(data.products.filter((product) => product.condition === "opening").length, 41);
+  assert.ok(
+    data.products.every((product) => product.image.startsWith("/catalog-products/")),
+    "every catalog product should use a prepared local image",
+  );
+  const journeyTogether = data.products.find(
+    (product) => product.name === "Journey Together Booster Box",
+  );
+  assert.ok(journeyTogether.offers.some((offer) => offer.shop === "Vortexstore"));
+  assert.ok(journeyTogether.offers.every((offer) => offer.shop !== "Pikastore"));
+
+  const destinedRivalsHalf = data.products.find(
+    (product) => product.name === "Destined Rivals Half Booster Box",
+  );
+  assert.ok(destinedRivalsHalf);
+  assert.ok(destinedRivalsHalf.offers.every((offer) => offer.shop !== "Vortexstore"));
+});
+
+test("homepage contains production metadata and core content", async () => {
+  const html = await readOutput("index.html");
+
+  assert.match(html, /<html lang="cs"(?:\s[^>]*)?>/i);
+  assert.match(html, /TCG Ceny \| Ceny, skladovost a alerty Pokémon TCG/i);
+  assert.match(html, /https:\/\/tcgceny\.cz/);
+  assert.match(html, /application\/ld\+json/);
+  assert.match(html, /Chyť nejlepší cenu/);
+  assert.match(html, /Nezmeškej naskladnění/);
+  assert.match(html, /Historie cen/);
+  assert.match(html, /Portfolio sbírky/);
+  assert.match(html, /https:\/\/discord\.gg\/pRC8GKAKxG/);
+  assert.match(html, /podpora@tcgceny\.cz/);
+  assert.doesNotMatch(
+    html,
+    /codex-preview|chatgpt|openai|Your site is taking shape|react-loading-skeleton/i,
+  );
+});
+
+test("partner and legal pages contain required information", async () => {
+  const [shops, terms, privacy] = await Promise.all([
+    readOutput("pro-eshopy/index.html"),
+    readOutput("podminky-pouziti/index.html"),
+    readOutput("soukromi-a-cookies/index.html"),
+  ]);
+
+  assert.match(shops, /TCG Ceny pro e-shopy/);
+  assert.match(shops, /Přímý odkaz na zdroj/);
+  assert.match(shops, /Bez provize z objednávky/);
+  assert.match(terms, /TCG Ceny není prodejce/);
+  assert.match(privacy, /Petr Mládek/);
+  assert.match(privacy, /podpora@tcgceny\.cz/);
+});
+
+test("search and security support files are production-ready", async () => {
+  const [sitemap, robots, headers] = await Promise.all([
+    readOutput("sitemap.xml"),
+    readOutput("robots.txt"),
+    readOutput("_headers"),
+  ]);
+
+  assert.match(sitemap, /https:\/\/tcgceny\.cz\//);
+  assert.match(sitemap, /katalog/);
+  assert.match(sitemap, /portfolio/);
+  assert.match(sitemap, /pro-eshopy/);
+  assert.match(robots, /Sitemap: https:\/\/tcgceny\.cz\/sitemap\.xml/);
+  assert.match(headers, /Content-Security-Policy/i);
+  assert.match(headers, /Strict-Transport-Security/i);
+  assert.match(headers, /X-Frame-Options:\s*DENY/i);
+});
