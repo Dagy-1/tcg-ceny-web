@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { handleCatalogApi } from "../worker/catalog-api.ts";
 
 const output = new URL("../out/", import.meta.url);
 
@@ -91,6 +92,74 @@ test("portfolio API keeps authentication and ownership checks server-side", asyn
   assert.match(exampleVars, /SESSION_SECRET=/);
   assert.match(exampleVars, /GOOGLE_CLIENT_ID=/);
   assert.doesNotMatch(api, /scope: "email"/);
+});
+
+test("catalog prefers the central API and keeps the build snapshot as fallback", async () => {
+  const [client, proxy, exampleVars] = await Promise.all([
+    readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../worker/catalog-api.ts", import.meta.url), "utf8"),
+    readFile(new URL("../.dev.vars.example", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(client, /fetch\(`\/api\/catalog\/products\?limit=100/);
+  assert.match(client, /items\.length !== total/);
+  assert.match(client, /embedded build snapshot is the deliberate availability fallback/);
+  assert.match(client, /api\/catalog\/products\/\$\{encodeURIComponent\(product\.id\)\}/);
+  assert.match(proxy, /CENTRAL_API_BASE_URL/);
+  assert.match(proxy, /REQUEST_TIMEOUT_MS = 5_000/);
+  assert.match(proxy, /headers: \{ Accept: "application\/json" \}/);
+  assert.doesNotMatch(proxy, /Authorization|Cookie/);
+  assert.match(exampleVars, /CENTRAL_API_BASE_URL=http:\/\/127\.0\.0\.1:8000/);
+});
+
+test("catalog proxy is read-only and forwards no user credentials", async () => {
+  assert.equal(
+    await handleCatalogApi(new Request("https://tcgceny.cz/katalog/"), {}),
+    null,
+  );
+
+  const notConfigured = await handleCatalogApi(
+    new Request("https://tcgceny.cz/api/catalog/products"),
+    {},
+  );
+  assert.equal(notConfigured.status, 503);
+  assert.deepEqual(await notConfigured.json(), { error: "central_catalog_not_configured" });
+
+  const rejected = await handleCatalogApi(
+    new Request("https://tcgceny.cz/api/catalog/products", { method: "POST" }),
+    { CENTRAL_API_BASE_URL: "https://backend.example" },
+  );
+  assert.equal(rejected.status, 405);
+
+  const originalFetch = globalThis.fetch;
+  let forwardedUrl = "";
+  let forwardedInit;
+  globalThis.fetch = async (input, init) => {
+    forwardedUrl = String(input);
+    forwardedInit = init;
+    return Response.json({ items: [], total: 0, limit: 100, offset: 0 });
+  };
+  try {
+    const response = await handleCatalogApi(
+      new Request("https://tcgceny.cz/api/catalog/products?limit=100&offset=0", {
+        headers: {
+          Authorization: "Bearer must-not-leak",
+          Cookie: "session=must-not-leak",
+        },
+      }),
+      { CENTRAL_API_BASE_URL: "https://backend.example" },
+    );
+    assert.equal(response.status, 200);
+    assert.equal(
+      forwardedUrl,
+      "https://backend.example/api/v1/catalog/products?limit=100&offset=0",
+    );
+    assert.equal(forwardedInit.method, "GET");
+    assert.deepEqual(forwardedInit.headers, { Accept: "application/json" });
+    assert.equal(response.headers.get("X-TCG-Catalog-Source"), "central-api");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("catalog contains the complete public product snapshot", async () => {

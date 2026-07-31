@@ -36,11 +36,88 @@ type Product = {
   releaseDate: string | null;
 };
 
+type ApiOffer = {
+  shop: string;
+  price_czk: number | null;
+  url: string;
+  availability: string;
+  checked_at: string;
+  stale: boolean;
+  verified: boolean;
+};
+
+type ApiProduct = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  condition_group: string;
+  product_type: string | null;
+  era: string | null;
+  set_name: string | null;
+  release_date: string | null;
+  availability: string;
+  best_price_czk: number | null;
+  available_offers: number;
+  store_offers: number;
+  checked_at: string | null;
+  data_stale: boolean;
+  offers?: ApiOffer[];
+};
+
+type ApiCatalogPage = {
+  items: ApiProduct[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
 export type CatalogData = {
   generatedAt: string | number;
   productCount: number;
   products: Product[];
 };
+
+function apiAvailability(value: string): Availability {
+  if (value === "online" || value === "store") return value;
+  return "unavailable";
+}
+
+function apiTimestamp(value: string | null): number | null {
+  if (!value) return null;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : null;
+}
+
+function productFromApi(product: ApiProduct, fallback?: Product): Product {
+  const offers = product.offers
+    ? product.offers.map((offer) => ({
+        shop: offer.shop,
+        price: offer.price_czk,
+        url: offer.url,
+        status: apiAvailability(offer.availability),
+        stale: offer.stale,
+      }))
+    : fallback?.offers || [];
+  return {
+    id: product.id,
+    name: product.name,
+    type: product.product_type || fallback?.type || "Produkt",
+    era: product.era || fallback?.era || "Nezařazeno",
+    set: product.set_name || fallback?.set || "Nezařazeno",
+    image: fallback?.image || product.image_url || "",
+    condition: product.condition_group === "sealed" ? "sealed" : "opening",
+    availability: apiAvailability(product.availability),
+    bestPrice: product.best_price_czk,
+    availableOffers: product.available_offers,
+    storeOffers: product.store_offers,
+    offers,
+    checkedAt: apiTimestamp(product.checked_at),
+    verified: product.offers
+      ? product.offers.some((offer) => offer.verified && !offer.stale)
+      : Boolean(fallback?.verified && !product.data_stale),
+    releaseDate: product.release_date,
+  };
+}
 
 type SortMode = "recommended" | "price-asc" | "price-desc" | "name" | "newest";
 type ConditionMode = Product["condition"];
@@ -279,6 +356,7 @@ function ProductDetail({
 }
 
 export default function CatalogClient({ data }: { data: CatalogData }) {
+  const [catalogData, setCatalogData] = useState(data);
   const [query, setQuery] = useState("");
   const [era, setEra] = useState("all");
   const [setName, setSetName] = useState("all");
@@ -289,24 +367,79 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Product | null>(null);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    const loadCatalog = async () => {
+      try {
+        const items: ApiProduct[] = [];
+        let total = 1;
+        for (let offset = 0; offset < total; offset += 100) {
+          const response = await fetch(`/api/catalog/products?limit=100&offset=${offset}&sort=newest`, {
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error("Central catalog is unavailable");
+          const page = (await response.json()) as ApiCatalogPage;
+          if (!Array.isArray(page.items) || !Number.isInteger(page.total) || page.total < 0) {
+            throw new Error("Central catalog returned an invalid response");
+          }
+          total = page.total;
+          items.push(...page.items);
+        }
+        if (items.length !== total) throw new Error("Central catalog response is incomplete");
+        const fallbackById = new Map(data.products.map((product) => [product.id, product]));
+        if (active) {
+          setCatalogData({
+            generatedAt: Date.now(),
+            productCount: total,
+            products: items.map((product) => productFromApi(product, fallbackById.get(product.id))),
+          });
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        // The embedded build snapshot is the deliberate availability fallback.
+      }
+    };
+    void loadCatalog();
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [data]);
+
+  const openProduct = async (product: Product) => {
+    setSelected(product);
+    try {
+      const response = await fetch(`/api/catalog/products/${encodeURIComponent(product.id)}`, {
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) return;
+      const detail = productFromApi((await response.json()) as ApiProduct, product);
+      setSelected((current) => current?.id === product.id ? detail : current);
+    } catch {
+      // Keep the embedded detail if the central API cannot be reached.
+    }
+  };
+
   const eras = useMemo(
-    () => [...new Set(data.products.map((product) => product.era))].sort((a, b) => a.localeCompare(b, "cs")),
-    [data.products],
+    () => [...new Set(catalogData.products.map((product) => product.era))].sort((a, b) => a.localeCompare(b, "cs")),
+    [catalogData.products],
   );
   const sets = useMemo(
     () =>
-      [...new Set(data.products.filter((product) => era === "all" || product.era === era).map((product) => product.set))]
+      [...new Set(catalogData.products.filter((product) => era === "all" || product.era === era).map((product) => product.set))]
         .sort((a, b) => a.localeCompare(b, "cs")),
-    [data.products, era],
+    [catalogData.products, era],
   );
   const types = useMemo(
-    () => [...new Set(data.products.map((product) => product.type))].sort((a, b) => a.localeCompare(b, "cs")),
-    [data.products],
+    () => [...new Set(catalogData.products.map((product) => product.type))].sort((a, b) => a.localeCompare(b, "cs")),
+    [catalogData.products],
   );
 
   const filtered = useMemo(() => {
     const needle = normalize(query.trim());
-    const products = data.products.filter((product) => {
+    const products = catalogData.products.filter((product) => {
       const searchable = normalize(`${product.name} ${product.era} ${product.set} ${product.type}`);
       return (
         (!needle || searchable.includes(needle)) &&
@@ -337,13 +470,13 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         (left.bestPrice ?? Number.MAX_SAFE_INTEGER) - (right.bestPrice ?? Number.MAX_SAFE_INTEGER)
       );
     });
-  }, [availability, condition, data.products, era, query, setName, sort, type]);
+  }, [availability, condition, catalogData.products, era, query, setName, sort, type]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visibleProducts = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const onlineCount = data.products.filter((product) => product.availability === "online").length;
-  const sealedCount = data.products.filter((product) => product.condition === "sealed").length;
-  const openingCount = data.products.filter((product) => product.condition === "opening").length;
+  const onlineCount = catalogData.products.filter((product) => product.availability === "online").length;
+  const sealedCount = catalogData.products.filter((product) => product.condition === "sealed").length;
+  const openingCount = catalogData.products.filter((product) => product.condition === "opening").length;
   const activeFilters = [era, setName, type, availability].filter((value) => value !== "all").length +
     Number(Boolean(query));
 
@@ -382,7 +515,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
           </p>
         </div>
         <div className="catalog-summary" aria-label="Souhrn katalogu">
-          <div><strong>{data.productCount}</strong><span>produktů v katalogu</span></div>
+          <div><strong>{catalogData.productCount}</strong><span>produktů v katalogu</span></div>
           <div><strong>{onlineCount}</strong><span>právě skladem online</span></div>
           <div><strong>{eras.length}</strong><span>hlavní produktové série</span></div>
         </div>
@@ -553,7 +686,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                 type="button"
                 className={`catalog-card catalog-card-${product.availability}`}
                 key={product.id}
-                onClick={() => setSelected(product)}
+                onClick={() => void openProduct(product)}
                 aria-label={`Otevřít detail produktu ${product.name}`}
               >
                 <div className="catalog-card-image">

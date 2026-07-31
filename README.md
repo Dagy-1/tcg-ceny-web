@@ -27,6 +27,19 @@ npm run dev
 Web se otevře na `http://localhost:3100`. Příkaz spustí také lokální Worker,
 Discord OAuth API a portfolio databázi.
 
+## Centrální katalog API
+
+Web načítá katalog přes vlastní cestu `/api/catalog/*`, kterou Worker bezpečně
+předává centrálnímu Python API. Nastavte `CENTRAL_API_BASE_URL` na kořenovou URL
+backendu, například `http://127.0.0.1:8000` pro lokální staging. URL se neposílá
+do klientského JavaScriptu a Worker nepředává uživatelské cookies ani přihlašovací
+hlavičky.
+
+Pokud centrální API není nakonfigurované, neodpoví v limitu nebo vrátí neúplná
+data, katalog automaticky ponechá snapshot vložený při buildu. Přechod je proto
+vratný a výpadek backendu nezpůsobí prázdnou stránku. Detail produktu se při
+otevření znovu načte z API, aby nabídky a časy kontroly byly aktuální.
+
 ## Kontrola před publikováním
 
 ```powershell

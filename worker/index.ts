@@ -2,6 +2,7 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import { handlePortfolioApi } from "./portfolio-api";
+import { handleCatalogApi } from "./catalog-api";
 
 interface Env {
   ASSETS: Fetcher;
@@ -13,6 +14,7 @@ interface Env {
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_REDIRECT_URI: string;
   SESSION_SECRET: string;
+  CENTRAL_API_BASE_URL?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -73,6 +75,11 @@ function withSecurityHeaders(response: Response, isHttps: boolean): Response {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    const catalogResponse = await handleCatalogApi(request, env);
+    if (catalogResponse) {
+      return withSecurityHeaders(catalogResponse, url.protocol === "https:");
+    }
 
     const apiResponse = await handlePortfolioApi(request, env);
     if (apiResponse) {
