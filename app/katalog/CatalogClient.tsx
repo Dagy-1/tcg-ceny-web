@@ -59,6 +59,17 @@ function formatDate(timestamp: number | null) {
   }).format(new Date(timestamp * 1000));
 }
 
+function formatReleaseDate(value: string | null) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Intl.DateTimeFormat("cs-CZ", {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
 function normalize(value: string) {
   return value
     .normalize("NFD")
@@ -274,7 +285,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
   const [type, setType] = useState("all");
   const [availability, setAvailability] = useState("all");
   const [condition, setCondition] = useState<ConditionMode>("sealed");
-  const [sort, setSort] = useState<SortMode>("recommended");
+  const [sort, setSort] = useState<SortMode>("newest");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Product | null>(null);
 
@@ -525,10 +536,10 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                   setPage(1);
                 }}
               >
+                <option value="newest">Nejnovější vydání</option>
                 <option value="recommended">Doporučené</option>
                 <option value="price-asc">Nejnižší cena</option>
                 <option value="price-desc">Nejvyšší cena</option>
-                <option value="newest">Nejnovější edice</option>
                 <option value="name">Název A–Z</option>
               </select>
             </label>
@@ -557,7 +568,12 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                     <b>{product.type}</b>
                   </div>
                   <h2>{product.name}</h2>
-                  <p>{product.era}</p>
+                  <p>
+                    {product.era}
+                    {formatReleaseDate(product.releaseDate) && (
+                      <> · Vydání <time dateTime={product.releaseDate || undefined}>{formatReleaseDate(product.releaseDate)}</time></>
+                    )}
+                  </p>
                   <div className="catalog-card-bottom">
                     <div>
                       <span className={`catalog-status catalog-status-${product.availability}`}>

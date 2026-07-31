@@ -146,6 +146,10 @@ const publicProducts = products.map((product) => {
 });
 
 publicProducts.sort((left, right) => {
+  const releaseOrder = String(right.releaseDate || "").localeCompare(
+    String(left.releaseDate || ""),
+  );
+  if (releaseOrder) return releaseOrder;
   if (left.availability !== right.availability) {
     const priority = { online: 0, store: 1, unavailable: 2 };
     return priority[left.availability] - priority[right.availability];

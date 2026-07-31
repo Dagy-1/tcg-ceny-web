@@ -107,6 +107,7 @@ test("catalog contains the complete public product snapshot", async () => {
   assert.ok(data.products.every((product) => product.id && product.era && product.set));
   assert.ok(data.products.every((product) => Array.isArray(product.offers)));
   assert.ok(data.products.every((product) => typeof product.verified === "boolean"));
+  assert.ok(data.products.every((product) => product.releaseDate === null || /^\d{4}-\d{2}-\d{2}$/.test(product.releaseDate)));
   assert.equal(data.products.filter((product) => product.condition === "sealed").length, 137);
   assert.equal(data.products.filter((product) => product.condition === "opening").length, 41);
   assert.ok(
@@ -118,6 +119,17 @@ test("catalog contains the complete public product snapshot", async () => {
   );
   assert.ok(journeyTogether.offers.some((offer) => offer.shop === "Vortexstore"));
   assert.ok(journeyTogether.offers.every((offer) => offer.shop !== "Pikastore"));
+
+  const sealedProducts = data.products.filter((product) => product.condition === "sealed");
+  assert.deepEqual(
+    [...new Set(sealedProducts.slice(0, 3).map((product) => product.set))],
+    ["Pitch Black"],
+    "the newest sealed Pitch Black products should lead the catalog snapshot",
+  );
+  assert.deepEqual(
+    new Set(sealedProducts.slice(0, 3).map((product) => product.type)),
+    new Set(["ETB", "Booster Bundle", "Booster Box"]),
+  );
 
   const destinedRivalsHalf = data.products.find(
     (product) => product.name === "Destined Rivals Half Booster Box",
