@@ -1,5 +1,6 @@
 interface CatalogApiEnv {
   CENTRAL_API_BASE_URL?: string;
+  CENTRAL_API_SERVICE_TOKEN?: string;
 }
 
 const CATALOG_PREFIX = "/api/catalog";
@@ -14,6 +15,21 @@ function jsonError(status: number, error: string): Response {
       headers: { "Cache-Control": "no-store" },
     },
   );
+}
+
+async function anonymousClientKey(request: Request, token: string) {
+  const address = request.headers.get("CF-Connecting-IP")?.trim();
+  if (!address || token.length < 32) return null;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(token),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(address));
+  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export async function handleCatalogApi(
@@ -44,19 +60,27 @@ export async function handleCatalogApi(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
+    const upstreamHeaders = new Headers({ Accept: "application/json" });
+    const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim() || "";
+    const clientKey = await anonymousClientKey(request, serviceToken);
+    if (clientKey) {
+      upstreamHeaders.set("X-TCG-Proxy-Token", serviceToken);
+      upstreamHeaders.set("X-TCG-Client-Key", clientKey);
+    }
+    upstreamHeaders.set("X-Request-ID", crypto.randomUUID());
     const upstream = await fetch(upstreamUrl, {
       method: request.method,
-      headers: { Accept: "application/json" },
+      headers: upstreamHeaders,
       signal: controller.signal,
     });
-    const headers = new Headers();
-    headers.set("Content-Type", upstream.headers.get("Content-Type") || "application/json; charset=utf-8");
-    headers.set("Cache-Control", upstream.headers.get("Cache-Control") || "public, max-age=30, stale-while-revalidate=120");
-    headers.set("X-TCG-Catalog-Source", "central-api");
+    const responseHeaders = new Headers();
+    responseHeaders.set("Content-Type", upstream.headers.get("Content-Type") || "application/json; charset=utf-8");
+    responseHeaders.set("Cache-Control", upstream.headers.get("Cache-Control") || "public, max-age=30, stale-while-revalidate=120");
+    responseHeaders.set("X-TCG-Catalog-Source", "central-api");
     return new Response(upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
-      headers,
+      headers: responseHeaders,
     });
   } catch {
     return jsonError(502, "central_catalog_unavailable");

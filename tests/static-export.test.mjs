@@ -127,7 +127,8 @@ test("catalog prefers the central API and keeps the build snapshot as fallback",
   assert.match(client, /api\/catalog\/products\/\$\{encodeURIComponent\(product\.id\)\}/);
   assert.match(proxy, /CENTRAL_API_BASE_URL/);
   assert.match(proxy, /REQUEST_TIMEOUT_MS = 5_000/);
-  assert.match(proxy, /headers: \{ Accept: "application\/json" \}/);
+  assert.match(proxy, /X-TCG-Proxy-Token/);
+  assert.match(proxy, /X-TCG-Client-Key/);
   assert.doesNotMatch(proxy, /Authorization|Cookie/);
   assert.match(exampleVars, /CENTRAL_API_BASE_URL=http:\/\/127\.0\.0\.1:8000/);
 });
@@ -164,10 +165,14 @@ test("catalog proxy is read-only and forwards no user credentials", async () => 
       new Request("https://tcgceny.cz/api/catalog/products?limit=100&offset=0", {
         headers: {
           Authorization: "Bearer must-not-leak",
+          "CF-Connecting-IP": "203.0.113.10",
           Cookie: "session=must-not-leak",
         },
       }),
-      { CENTRAL_API_BASE_URL: "https://backend.example" },
+      {
+        CENTRAL_API_BASE_URL: "https://backend.example",
+        CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+      },
     );
     assert.equal(response.status, 200);
     assert.equal(
@@ -175,7 +180,12 @@ test("catalog proxy is read-only and forwards no user credentials", async () => 
       "https://backend.example/api/v1/catalog/products?limit=100&offset=0",
     );
     assert.equal(forwardedInit.method, "GET");
-    assert.deepEqual(forwardedInit.headers, { Accept: "application/json" });
+    assert.equal(forwardedInit.headers.get("Accept"), "application/json");
+    assert.equal(forwardedInit.headers.get("Authorization"), null);
+    assert.equal(forwardedInit.headers.get("Cookie"), null);
+    assert.equal(forwardedInit.headers.get("X-TCG-Proxy-Token"), "s".repeat(48));
+    assert.match(forwardedInit.headers.get("X-TCG-Client-Key"), /^[a-f0-9]{64}$/);
+    assert.match(forwardedInit.headers.get("X-Request-ID"), /^[a-f0-9-]{36}$/);
     assert.equal(response.headers.get("X-TCG-Catalog-Source"), "central-api");
   } finally {
     globalThis.fetch = originalFetch;
