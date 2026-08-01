@@ -572,6 +572,8 @@ function PortfolioHistoryChart({
   const first = points[0] ?? null;
   const change = latest && first ? latest.marketValue - first.marketValue : 0;
   const changePercent = first?.marketValue ? (change / first.marketValue) * 100 : 0;
+  const currentProfit = latest?.profit ?? 0;
+  const currentProfitPercent = latest?.invested ? (currentProfit / latest.invested) * 100 : 0;
   const effectiveActiveIndex = activeIndex === null
     ? Math.max(points.length - 1, 0)
     : Math.min(activeIndex, Math.max(points.length - 1, 0));
@@ -597,6 +599,9 @@ function PortfolioHistoryChart({
         <div>
           <p className="portfolio-kicker">Historie portfolia</p>
           <h2>Vývoj hodnoty sbírky</h2>
+          <p className="portfolio-history-description">
+            Tržní hodnota v čase, porovnaná s částkou, kterou jsi skutečně investoval.
+          </p>
         </div>
         <div className="portfolio-history-periods" aria-label="Období grafu">
           {([7, 30, 90] as HistoryPeriod[]).map((value) => (
@@ -625,18 +630,23 @@ function PortfolioHistoryChart({
               <span>Aktuální hodnota</span>
               <strong>{formatCzk(latest?.marketValue ?? 0)}</strong>
             </div>
+            <div>
+              <span>Investováno</span>
+              <strong>{formatCzk(latest?.invested ?? 0)}</strong>
+            </div>
+            <div className={currentProfit > 0 ? "is-positive" : currentProfit < 0 ? "is-negative" : "is-neutral"}>
+              <span>Aktuální zisk / ztráta</span>
+              <strong>{currentProfit > 0 ? "+" : ""}{formatCzk(currentProfit)}</strong>
+              <small>{formatPercent(currentProfitPercent)}</small>
+            </div>
             <div className={change > 0 ? "is-positive" : change < 0 ? "is-negative" : "is-neutral"}>
-              <span>{points.length > 1 ? `Změna od ${formatDate(points[0].date)}` : "První záznam historie"}</span>
+              <span>{points.length > 1 ? `Pohyb hodnoty od ${formatDate(points[0].date)}` : "První záznam historie"}</span>
               <strong>
                 {points.length > 1
                   ? `${change > 0 ? "+" : ""}${formatCzk(change)}`
                   : "Data se začala sbírat"}
               </strong>
               {points.length > 1 && <small>{formatPercent(changePercent)}</small>}
-            </div>
-            <div>
-              <span>Investováno</span>
-              <strong>{formatCzk(latest?.invested ?? 0)}</strong>
             </div>
           </div>
 
@@ -685,13 +695,17 @@ function PortfolioHistoryChart({
                 <span>{formatDate(active.date)}</span>
                 <strong>{formatCzk(active.marketValue)}</strong>
                 <small>Investováno {formatCzk(active.invested)}</small>
+                <em className={active.profit > 0 ? "is-positive" : active.profit < 0 ? "is-negative" : "is-neutral"}>
+                  Zisk / ztráta {active.profit > 0 ? "+" : ""}{formatCzk(active.profit)}
+                  {" · "}{formatPercent(active.invested ? (active.profit / active.invested) * 100 : 0)}
+                </em>
               </div>
             )}
           </div>
 
           <div className="portfolio-history-legend">
-            <span className="market">Tržní hodnota</span>
-            <span className="invested">Investováno</span>
+            <span className="market">Tržní hodnota sbírky</span>
+            <span className="invested">Celkem investováno</span>
             <small>{`Skutečné denní záznamy od ${formatDate(points[0].date)}.`}</small>
           </div>
             </>
@@ -918,6 +932,7 @@ export default function PortfolioClient({
               {items.map((item) => {
                 const current = (item.product.marketPrice ?? item.buyPrice) * item.quantity;
                 const invested = item.buyPrice * item.quantity;
+                const profit = current - invested;
                 const change = invested ? ((current - invested) / invested) * 100 : 0;
                 return (
                   <article className="portfolio-item" key={item.id}>
@@ -931,7 +946,7 @@ export default function PortfolioClient({
                       <small>Aktuální hodnota</small>
                       <strong>{formatCzk(current)}</strong>
                       <span className={change >= 0 ? "is-positive" : "is-negative"}>
-                        {formatPercent(change)}
+                        {profit > 0 ? "+" : ""}{formatCzk(profit)} · {formatPercent(change)}
                       </span>
                     </div>
                     <div className="portfolio-item-actions" aria-label={`Akce pro ${item.product.name}`}>

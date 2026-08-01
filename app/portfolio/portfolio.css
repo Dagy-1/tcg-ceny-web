@@ -388,6 +388,13 @@
   font-size: 22px;
 }
 
+.portfolio-history-description {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: #8198af;
+  font-size: 13px;
+}
+
 .portfolio-history-periods {
   display: flex;
   padding: 3px;
@@ -591,7 +598,7 @@
   position: absolute;
   z-index: 2;
   top: 13px;
-  min-width: 145px;
+  min-width: 190px;
   padding: 10px 12px;
   border: 1px solid rgba(105, 169, 255, 0.34);
   border-radius: 5px;
@@ -614,6 +621,16 @@
   margin: 4px 0;
   color: var(--pf-green);
   font-size: 16px;
+}
+
+.portfolio-chart-tooltip em {
+  display: block;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--pf-line);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .portfolio-history-legend {
@@ -1309,10 +1326,19 @@
   }
 
   .portfolio-history-summary > div:first-child {
-    grid-column: 1 / -1;
+    grid-column: auto;
     padding-left: 10px;
+    border-right: 1px solid var(--pf-line);
+    border-bottom: 1px solid var(--pf-line);
+  }
+
+  .portfolio-history-summary > div:nth-child(2) {
     border-right: 0;
     border-bottom: 1px solid var(--pf-line);
+  }
+
+  .portfolio-history-summary > div:nth-child(3) {
+    border-right: 1px solid var(--pf-line);
   }
 
   .portfolio-history-summary strong {
