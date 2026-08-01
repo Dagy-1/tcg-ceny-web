@@ -4,11 +4,13 @@
   "main": "./worker/index.ts",
   "compatibility_date": "2026-05-15",
   "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "tcg-ceny-portfolio",
-      "database_id": "00000000-0000-0000-0000-000000000001",
+      "database_id": "df3735ed-1378-4057-8e26-72ab48e12607",
       "migrations_dir": "migrations"
     }
   ]
