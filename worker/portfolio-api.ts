@@ -1,4 +1,4 @@
-import portfolioData from "../app/portfolio/portfolio-data.json";
+import portfolioData from "../app/portfolio/portfolio-data.json" with { type: "json" };
 
 type Env = {
   DB: D1Database;
@@ -9,6 +9,9 @@ type Env = {
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_REDIRECT_URI: string;
   SESSION_SECRET: string;
+  CENTRAL_API_BASE_URL?: string;
+  CENTRAL_API_SERVICE_TOKEN?: string;
+  PORTFOLIO_DATA_SOURCE?: string;
 };
 
 type AuthProvider = "discord" | "google";
@@ -43,10 +46,56 @@ type CatalogProduct = {
 const SESSION_COOKIE = "tcg_session";
 const OAUTH_COOKIE = "tcg_oauth";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
+const CENTRAL_REQUEST_TIMEOUT_MS = 5_000;
 const encoder = new TextEncoder();
 const products = new Map(
   (portfolioData.products as CatalogProduct[]).map((product) => [product.id, product]),
 );
+
+type CentralPortfolioItem = {
+  id: string;
+  product: { id: string; name: string; image_url: string | null };
+  quantity: number;
+  buy_price_czk: number;
+  buy_date: string;
+  note: string;
+  latest_market_price: { price_czk: number; priced_on: string } | null;
+};
+
+function portfolioDataSource(env: Env) {
+  return String(env.PORTFOLIO_DATA_SOURCE || "legacy").trim().toLowerCase();
+}
+
+function centralIdentitySubject(user: SessionUser) {
+  const prefix = `${user.provider}:`;
+  return user.sub.startsWith(prefix) ? user.sub.slice(prefix.length) : user.sub;
+}
+
+function centralProduct(item: CentralPortfolioItem) {
+  const embedded = products.get(item.product.id);
+  return {
+    id: item.product.id,
+    name: item.product.name,
+    type: embedded?.type ?? "",
+    era: embedded?.era ?? "",
+    set: embedded?.set ?? "",
+    image: item.product.image_url || embedded?.image || "",
+    marketPrice: item.latest_market_price?.price_czk ?? embedded?.marketPrice ?? null,
+    priceUpdatedAt: item.latest_market_price?.priced_on ?? embedded?.priceUpdatedAt ?? "",
+  };
+}
+
+function webPortfolioItem(item: CentralPortfolioItem) {
+  return {
+    id: item.id,
+    productId: item.product.id,
+    quantity: item.quantity,
+    buyPrice: item.buy_price_czk,
+    buyDate: item.buy_date,
+    note: item.note,
+    product: centralProduct(item),
+  };
+}
 
 function json(data: unknown, status = 200, headers?: HeadersInit) {
   return new Response(JSON.stringify(data), {
@@ -184,6 +233,101 @@ async function session(request: Request, env: Env) {
 function validMutationOrigin(request: Request) {
   const origin = request.headers.get("Origin");
   return Boolean(origin && origin === new URL(request.url).origin);
+}
+
+export async function centralPortfolioRequest(
+  request: Request,
+  user: SessionUser,
+  env: Env,
+  itemId?: string,
+) {
+  const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
+  const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim();
+  if (!baseUrl || !serviceToken || serviceToken.length < 32) {
+    return json({ error: "Centrální portfolio není nakonfigurované." }, 503);
+  }
+
+  let upstreamBase: URL;
+  try {
+    upstreamBase = new URL(baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+  } catch {
+    return json({ error: "Centrální portfolio má neplatnou konfiguraci." }, 503);
+  }
+
+  if (request.method !== "GET" && !validMutationOrigin(request)) {
+    return json({ error: "Neplatný původ požadavku." }, 403);
+  }
+
+  const upstreamUrl = new URL(
+    `/api/v1/portfolio/items${itemId ? `/${encodeURIComponent(itemId)}` : ""}`,
+    upstreamBase,
+  );
+  const headers = new Headers({
+    Accept: "application/json",
+    Authorization: `Bearer ${serviceToken}`,
+    "X-TCG-Identity-Provider": user.provider,
+    "X-TCG-Identity-Subject": centralIdentitySubject(user),
+    "X-TCG-Identity-Name": user.username.slice(0, 120),
+    "X-Request-ID": crypto.randomUUID(),
+  });
+  if (user.avatar) headers.set("X-TCG-Identity-Avatar", user.avatar);
+
+  let body: string | undefined;
+  if (request.method === "POST" || request.method === "PATCH") {
+    let input: Record<string, unknown>;
+    try {
+      input = await request.json<Record<string, unknown>>();
+    } catch {
+      return json({ error: "Neplatná data." }, 400);
+    }
+    const translated: Record<string, unknown> = {
+      quantity: input.quantity,
+      buy_price_czk: input.buyPrice,
+      buy_date: input.buyDate,
+      note: input.note,
+    };
+    if (request.method === "POST") translated.product_id = input.productId;
+    body = JSON.stringify(translated);
+    headers.set("Content-Type", "application/json");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CENTRAL_REQUEST_TIMEOUT_MS);
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: request.method,
+      headers,
+      body,
+      signal: controller.signal,
+    });
+    if (upstream.status === 204) {
+      return new Response(null, {
+        status: 204,
+        headers: { "Cache-Control": "no-store" },
+      });
+    }
+    const payload = await upstream.json() as Record<string, unknown>;
+    if (!upstream.ok) {
+      return json(
+        { error: String(payload.detail || "Centrální portfolio požadavek odmítlo.") },
+        upstream.status,
+      );
+    }
+    if (request.method === "GET") {
+      const items = Array.isArray(payload.items)
+        ? (payload.items as CentralPortfolioItem[]).map(webPortfolioItem)
+        : [];
+      return json({ items, summary: payload.summary });
+    }
+    return json(
+      webPortfolioItem(payload as unknown as CentralPortfolioItem),
+      upstream.status,
+    );
+  } catch {
+    return json({ error: "Centrální portfolio je dočasně nedostupné." }, 502);
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function beginDiscordLogin(request: Request, env: Env) {
@@ -563,15 +707,36 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
     });
   }
   if (!user) return json({ error: "Pro tuto akci se nejdříve přihlas." }, 401);
+  const source = portfolioDataSource(env);
+  if (!["legacy", "central-readonly", "central"].includes(source)) {
+    return json({ error: "Neplatný režim portfolio dat." }, 503);
+  }
   if (request.method === "GET" && url.pathname === "/api/portfolio") {
+    if (source !== "legacy") return centralPortfolioRequest(request, user, env);
     return listPortfolio(user, env);
   }
   if (request.method === "POST" && url.pathname === "/api/portfolio") {
+    if (source === "central-readonly") {
+      return json({ error: "Portfolio je během kontroly pouze pro čtení." }, 503);
+    }
+    if (source === "central") return centralPortfolioRequest(request, user, env);
     return addPortfolioItem(request, user, env);
   }
-  const updateMatch = request.method === "PATCH" && url.pathname.match(/^\/api\/portfolio\/(\d+)$/);
+  const updateMatch = request.method === "PATCH" && url.pathname.match(/^\/api\/portfolio\/([^/]+)$/);
+  if (source === "central-readonly" && updateMatch) {
+    return json({ error: "Portfolio je během kontroly pouze pro čtení." }, 503);
+  }
+  if (source === "central" && updateMatch) {
+    return centralPortfolioRequest(request, user, env, updateMatch[1]);
+  }
   if (updateMatch) return updatePortfolioItem(request, user, env, updateMatch[1]);
-  const deleteMatch = request.method === "DELETE" && url.pathname.match(/^\/api\/portfolio\/(\d+)$/);
+  const deleteMatch = request.method === "DELETE" && url.pathname.match(/^\/api\/portfolio\/([^/]+)$/);
+  if (source === "central-readonly" && deleteMatch) {
+    return json({ error: "Portfolio je během kontroly pouze pro čtení." }, 503);
+  }
+  if (source === "central" && deleteMatch) {
+    return centralPortfolioRequest(request, user, env, deleteMatch[1]);
+  }
   if (deleteMatch) return deletePortfolioItem(request, user, env, deleteMatch[1]);
 
   return json({ error: "API cesta neexistuje." }, 404);

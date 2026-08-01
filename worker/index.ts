@@ -15,6 +15,8 @@ interface Env {
   GOOGLE_REDIRECT_URI: string;
   SESSION_SECRET: string;
   CENTRAL_API_BASE_URL?: string;
+  CENTRAL_API_SERVICE_TOKEN?: string;
+  PORTFOLIO_DATA_SOURCE?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {

@@ -2,11 +2,30 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { handleCatalogApi } from "../worker/catalog-api.ts";
+import {
+  centralPortfolioRequest,
+  handlePortfolioApi,
+} from "../worker/portfolio-api.ts";
 
 const output = new URL("../out/", import.meta.url);
 
 async function readOutput(path) {
   return readFile(new URL(path, output), "utf8");
+}
+
+async function webSessionCookie(payload, secret) {
+  const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = Buffer.from(
+    await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(encoded)),
+  ).toString("base64url");
+  return `tcg_session=${encoded}.${signature}`;
 }
 
 test("static export contains every public page", async () => {
@@ -160,6 +179,128 @@ test("catalog proxy is read-only and forwards no user credentials", async () => 
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("central portfolio proxy uses only its service identity", async () => {
+  const originalFetch = globalThis.fetch;
+  let forwardedUrl = "";
+  let forwardedInit;
+  globalThis.fetch = async (input, init) => {
+    forwardedUrl = String(input);
+    forwardedInit = init;
+    return Response.json({
+      items: [
+        {
+          id: "central-item-1",
+          product: {
+            id: "cardmarket:728730",
+            name: "Test product",
+            image_url: "/catalog-products/test.png",
+          },
+          quantity: 2,
+          buy_price_czk: 1000,
+          buy_date: "2026-07-30",
+          note: "sealed",
+          latest_market_price: {
+            price_czk: 1500,
+            priced_on: "2026-08-01",
+            source: "cardmarket",
+          },
+        },
+      ],
+      summary: { invested_czk: 2000, market_value_czk: 3000 },
+    });
+  };
+  try {
+    const response = await centralPortfolioRequest(
+      new Request("https://tcgceny.cz/api/portfolio", {
+        headers: {
+          Authorization: "Bearer browser-token-must-not-leak",
+          Cookie: "browser-cookie-must-not-leak",
+        },
+      }),
+      {
+        sub: "google:subject-1",
+        username: "Collector",
+        avatar: null,
+        provider: "google",
+        exp: 9999999999,
+      },
+      {
+        CENTRAL_API_BASE_URL: "https://backend.example",
+        CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+      },
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(forwardedUrl, "https://backend.example/api/v1/portfolio/items");
+    assert.equal(forwardedInit.method, "GET");
+    assert.equal(forwardedInit.headers.get("Authorization"), `Bearer ${"s".repeat(48)}`);
+    assert.equal(forwardedInit.headers.get("X-TCG-Identity-Provider"), "google");
+    assert.equal(forwardedInit.headers.get("X-TCG-Identity-Subject"), "subject-1");
+    assert.equal(forwardedInit.headers.get("Cookie"), null);
+    const payload = await response.json();
+    assert.equal(payload.items[0].id, "central-item-1");
+    assert.equal(payload.items[0].buyPrice, 1000);
+    assert.equal(payload.items[0].product.marketPrice, 1500);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("central portfolio mutations keep the origin gate", async () => {
+  const response = await centralPortfolioRequest(
+    new Request("https://tcgceny.cz/api/portfolio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }),
+    {
+      sub: "123456789",
+      username: "Collector",
+      avatar: null,
+      provider: "discord",
+      exp: 9999999999,
+    },
+    {
+      CENTRAL_API_BASE_URL: "https://backend.example",
+      CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+    },
+  );
+
+  assert.equal(response.status, 403);
+});
+
+test("central readonly mode rejects writes before reaching either database", async () => {
+  const secret = "session-secret-for-tests";
+  const cookie = await webSessionCookie(
+    {
+      sub: "123456789",
+      username: "Collector",
+      avatar: null,
+      provider: "discord",
+      exp: Math.floor(Date.now() / 1000) + 60,
+    },
+    secret,
+  );
+  const response = await handlePortfolioApi(
+    new Request("https://tcgceny.cz/api/portfolio", {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+        Origin: "https://tcgceny.cz",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    }),
+    {
+      SESSION_SECRET: secret,
+      PORTFOLIO_DATA_SOURCE: "central-readonly",
+    },
+  );
+
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /pouze pro čtení/);
 });
 
 test("catalog contains the complete public product snapshot", async () => {

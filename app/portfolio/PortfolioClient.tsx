@@ -23,7 +23,7 @@ type SessionUser = {
 };
 
 type PortfolioItem = {
-  id: number;
+  id: number | string;
   productId: string;
   quantity: number;
   buyPrice: number;
