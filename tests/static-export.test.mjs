@@ -80,7 +80,8 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /Upravit produkt/);
   assert.match(portfolioSource, /Vývoj hodnoty sbírky/);
   assert.match(portfolioSource, /api\/portfolio\/history/);
-  assert.match(portfolioSource, /\[7, 30, 90\]/);
+  assert.match(portfolioSource, /value: 365, label: "1 rok"/);
+  assert.match(portfolioSource, /value: "max", label: "Maximum"/);
   assert.match(portfolioSource, /Trash2/);
   assert.match(portfolioSource, /setBuyPriceInput\(event\.target\.value\)/);
   assert.doesNotMatch(portfolioSource, /setBuyPrice\(Number\(event\.target\.value\)\)/);

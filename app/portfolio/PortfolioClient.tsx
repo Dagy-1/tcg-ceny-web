@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { CalendarDays, Check, ChevronDown, Pencil, Plus, Trash2, X } from "lucide-react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AuthMenu from "../AuthMenu";
 
 type Product = {
@@ -32,7 +32,7 @@ type PortfolioItem = {
   product: Product;
 };
 
-type HistoryPeriod = 7 | 30 | 90;
+type HistoryPeriod = 7 | 30 | 90 | 365 | "max";
 
 type PortfolioHistoryPoint = {
   date: string;
@@ -57,6 +57,14 @@ const formatPercent = (value: number) =>
   `${value > 0 ? "+" : ""}${new Intl.NumberFormat("cs-CZ", {
     maximumFractionDigits: 1,
   }).format(value)} %`;
+
+const historyPeriodOptions: Array<{ value: HistoryPeriod; label: string }> = [
+  { value: 7, label: "7 dní" },
+  { value: 30, label: "30 dní" },
+  { value: 90, label: "90 dní" },
+  { value: 365, label: "1 rok" },
+  { value: "max", label: "Maximum" },
+];
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -543,10 +551,12 @@ function PortfolioHistoryChart({
   onPeriodChange: (period: HistoryPeriod) => void;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
+  const periodPickerRef = useRef<HTMLDivElement>(null);
   const points = history?.points ?? [];
   const width = 760;
   const height = 280;
-  const plot = { left: 30, right: 18, top: 22, bottom: 45 };
+  const plot = { left: 82, right: 18, top: 22, bottom: 45 };
   const bottom = height - plot.bottom;
   const plotWidth = width - plot.left - plot.right;
   const values = points.flatMap((point) => [point.invested, point.marketValue]);
@@ -572,8 +582,7 @@ function PortfolioHistoryChart({
   const first = points[0] ?? null;
   const change = latest && first ? latest.marketValue - first.marketValue : 0;
   const changePercent = first?.marketValue ? (change / first.marketValue) * 100 : 0;
-  const currentProfit = latest?.profit ?? 0;
-  const currentProfitPercent = latest?.invested ? (currentProfit / latest.invested) * 100 : 0;
+  const periodLabel = historyPeriodOptions.find((option) => option.value === period)?.label ?? "Období";
   const effectiveActiveIndex = activeIndex === null
     ? Math.max(points.length - 1, 0)
     : Math.min(activeIndex, Math.max(points.length - 1, 0));
@@ -585,6 +594,22 @@ function PortfolioHistoryChart({
     day: "numeric",
     month: "short",
   }).format(new Date(`${value}T12:00:00`));
+
+  useEffect(() => {
+    if (!periodMenuOpen) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!periodPickerRef.current?.contains(event.target as Node)) setPeriodMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPeriodMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [periodMenuOpen]);
 
   const selectNearestPoint = (event: React.PointerEvent<SVGSVGElement>) => {
     if (points.length < 2) return;
@@ -603,21 +628,50 @@ function PortfolioHistoryChart({
             Tržní hodnota v čase, porovnaná s částkou, kterou jsi skutečně investoval.
           </p>
         </div>
-        <div className="portfolio-history-periods" aria-label="Období grafu">
-          {([7, 30, 90] as HistoryPeriod[]).map((value) => (
+        <div className="portfolio-history-controls">
+          {points.length > 1 && (
+            <div className={`portfolio-history-movement ${change > 0 ? "is-positive" : change < 0 ? "is-negative" : "is-neutral"}`}>
+              <span>Pohyb od {formatDate(points[0].date)}</span>
+              <strong>{change > 0 ? "+" : ""}{formatCzk(change)}</strong>
+              <small>{formatPercent(changePercent)}</small>
+            </div>
+          )}
+          <div
+            ref={periodPickerRef}
+            className={`portfolio-period-picker ${periodMenuOpen ? "is-open" : ""}`}
+          >
             <button
-              key={value}
               type="button"
-              className={period === value ? "is-active" : ""}
-              onClick={() => {
-                setActiveIndex(null);
-                onPeriodChange(value);
-              }}
-              aria-pressed={period === value}
+              className="portfolio-period-trigger"
+              aria-label={`Zvolit období grafu, nyní ${periodLabel}`}
+              aria-expanded={periodMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setPeriodMenuOpen((open) => !open)}
             >
-              {value} dní
+              <CalendarDays size={16} aria-hidden="true" />
+              <span>{periodLabel}</span>
+              <ChevronDown size={15} aria-hidden="true" />
             </button>
-          ))}
+            <div className="portfolio-period-menu" role="menu" aria-label="Období grafu">
+              {historyPeriodOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={period === option.value}
+                  className={period === option.value ? "is-active" : ""}
+                  onClick={() => {
+                    setActiveIndex(null);
+                    setPeriodMenuOpen(false);
+                    onPeriodChange(option.value);
+                  }}
+                >
+                  <span>{option.label}</span>
+                  {period === option.value && <Check size={15} aria-hidden="true" />}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -625,44 +679,32 @@ function PortfolioHistoryChart({
         <div className="portfolio-history-loading"><span /> Načítám skutečný vývoj sbírky…</div>
       ) : points.length ? (
         <>
-          <div className="portfolio-history-summary">
-            <div>
-              <span>Aktuální hodnota</span>
-              <strong>{formatCzk(latest?.marketValue ?? 0)}</strong>
-            </div>
-            <div>
-              <span>Investováno</span>
-              <strong>{formatCzk(latest?.invested ?? 0)}</strong>
-            </div>
-            <div className={currentProfit > 0 ? "is-positive" : currentProfit < 0 ? "is-negative" : "is-neutral"}>
-              <span>Aktuální zisk / ztráta</span>
-              <strong>{currentProfit > 0 ? "+" : ""}{formatCzk(currentProfit)}</strong>
-              <small>{formatPercent(currentProfitPercent)}</small>
-            </div>
-            <div className={change > 0 ? "is-positive" : change < 0 ? "is-negative" : "is-neutral"}>
-              <span>{points.length > 1 ? `Pohyb hodnoty od ${formatDate(points[0].date)}` : "První záznam historie"}</span>
-              <strong>
-                {points.length > 1
-                  ? `${change > 0 ? "+" : ""}${formatCzk(change)}`
-                  : "Data se začala sbírat"}
-              </strong>
-              {points.length > 1 && <small>{formatPercent(changePercent)}</small>}
-            </div>
-          </div>
-
           {points.length > 1 ? (
             <>
           <div className="portfolio-history-visual">
             <svg
               viewBox={`0 0 ${width} ${height}`}
               role="img"
-              aria-label={`Tržní hodnota portfolia za posledních ${period} dní`}
+              aria-label={`Tržní hodnota portfolia za období ${periodLabel}`}
               onPointerMove={selectNearestPoint}
               onPointerDown={selectNearestPoint}
             >
               {[0, 1, 2, 3].map((line) => {
                 const y = plot.top + (line / 3) * (bottom - plot.top);
-                return <line key={line} className="portfolio-chart-grid" x1={plot.left} y1={y} x2={width - plot.right} y2={y} />;
+                const axisValue = maximum - (line / 3) * (maximum - minimum);
+                return (
+                  <g key={line}>
+                    <text
+                      className="portfolio-chart-axis-value"
+                      x={plot.left - 12}
+                      y={y + 4}
+                      textAnchor="end"
+                    >
+                      {formatCzk(Math.round(axisValue / 10) * 10)}
+                    </text>
+                    <line className="portfolio-chart-grid" x1={plot.left} y1={y} x2={width - plot.right} y2={y} />
+                  </g>
+                );
               })}
               {areaPath && <path className="portfolio-chart-area" d={areaPath} />}
               {investedPath && <path className="portfolio-chart-invested" d={investedPath} />}
@@ -757,7 +799,8 @@ export default function PortfolioClient({
   const loadHistory = useCallback(async (period: HistoryPeriod) => {
     setHistoryLoading(true);
     try {
-      const response = await fetch(`/api/portfolio/history?days=${period}`, {
+      const days = period === "max" ? 0 : period;
+      const response = await fetch(`/api/portfolio/history?days=${days}`, {
         cache: "no-store",
         credentials: "include",
         headers: { Accept: "application/json" },
