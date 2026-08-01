@@ -78,6 +78,9 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /credentials: "include"/);
   assert.match(portfolioSource, /method: "PATCH"/);
   assert.match(portfolioSource, /Upravit produkt/);
+  assert.match(portfolioSource, /Vývoj hodnoty sbírky/);
+  assert.match(portfolioSource, /api\/portfolio\/history/);
+  assert.match(portfolioSource, /\[7, 30, 90\]/);
   assert.match(portfolioSource, /Trash2/);
   assert.match(portfolioSource, /setBuyPriceInput\(event\.target\.value\)/);
   assert.doesNotMatch(portfolioSource, /setBuyPrice\(Number\(event\.target\.value\)\)/);
@@ -254,6 +257,56 @@ test("central portfolio proxy uses only its service identity", async () => {
     assert.equal(payload.items[0].id, "central-item-1");
     assert.equal(payload.items[0].buyPrice, 1000);
     assert.equal(payload.items[0].product.marketPrice, 1500);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("central portfolio history proxy preserves the selected period", async () => {
+  const originalFetch = globalThis.fetch;
+  let forwardedUrl = "";
+  globalThis.fetch = async (input) => {
+    forwardedUrl = String(input);
+    return Response.json({
+      days: 30,
+      points: [
+        {
+          valued_on: "2026-08-01",
+          invested_czk: 9990,
+          market_value_czk: 10097,
+          profit_czk: 107,
+        },
+      ],
+      first_valued_on: "2026-08-01",
+      latest_valued_on: "2026-08-01",
+    });
+  };
+  try {
+    const response = await centralPortfolioRequest(
+      new Request("https://tcgceny.cz/api/portfolio/history?days=30"),
+      {
+        sub: "discord:123456789",
+        username: "Collector",
+        avatar: null,
+        provider: "discord",
+        exp: 9999999999,
+      },
+      {
+        CENTRAL_API_BASE_URL: "https://backend.example",
+        CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+      },
+      undefined,
+      "history",
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(forwardedUrl, "https://backend.example/api/v1/portfolio/history?days=30");
+    assert.deepEqual((await response.json()).points[0], {
+      date: "2026-08-01",
+      invested: 9990,
+      marketValue: 10097,
+      profit: 107,
+    });
   } finally {
     globalThis.fetch = originalFetch;
   }

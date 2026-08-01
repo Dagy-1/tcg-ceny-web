@@ -240,6 +240,7 @@ export async function centralPortfolioRequest(
   user: SessionUser,
   env: Env,
   itemId?: string,
+  resource: "items" | "history" = "items",
 ) {
   const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
   const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim();
@@ -259,9 +260,12 @@ export async function centralPortfolioRequest(
   }
 
   const upstreamUrl = new URL(
-    `/api/v1/portfolio/items${itemId ? `/${encodeURIComponent(itemId)}` : ""}`,
+    `/api/v1/portfolio/${resource}${resource === "items" && itemId ? `/${encodeURIComponent(itemId)}` : ""}`,
     upstreamBase,
   );
+  if (resource === "history") {
+    upstreamUrl.searchParams.set("days", new URL(request.url).searchParams.get("days") || "90");
+  }
   const headers = new Headers({
     Accept: "application/json",
     Authorization: `Bearer ${serviceToken}`,
@@ -312,6 +316,22 @@ export async function centralPortfolioRequest(
         { error: String(payload.detail || "Centrální portfolio požadavek odmítlo.") },
         upstream.status,
       );
+    }
+    if (request.method === "GET" && resource === "history") {
+      const points = Array.isArray(payload.points)
+        ? (payload.points as Record<string, unknown>[]).map((point) => ({
+            date: String(point.valued_on || ""),
+            invested: Number(point.invested_czk) || 0,
+            marketValue: Number(point.market_value_czk) || 0,
+            profit: Number(point.profit_czk) || 0,
+          }))
+        : [];
+      return json({
+        days: Number(payload.days) || 90,
+        points,
+        firstDate: payload.first_valued_on || null,
+        latestDate: payload.latest_valued_on || null,
+      });
     }
     if (request.method === "GET") {
       const items = Array.isArray(payload.items)
@@ -710,6 +730,12 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
   const source = portfolioDataSource(env);
   if (!["legacy", "central-readonly", "central"].includes(source)) {
     return json({ error: "Neplatný režim portfolio dat." }, 503);
+  }
+  if (request.method === "GET" && url.pathname === "/api/portfolio/history") {
+    if (source === "legacy") {
+      return json({ error: "Portfolio history requires the central database." }, 503);
+    }
+    return centralPortfolioRequest(request, user, env, undefined, "history");
   }
   if (request.method === "GET" && url.pathname === "/api/portfolio") {
     if (source !== "legacy") return centralPortfolioRequest(request, user, env);

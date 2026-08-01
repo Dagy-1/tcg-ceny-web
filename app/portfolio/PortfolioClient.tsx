@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import AuthMenu from "../AuthMenu";
 
 type Product = {
@@ -30,6 +30,22 @@ type PortfolioItem = {
   buyDate: string;
   note: string;
   product: Product;
+};
+
+type HistoryPeriod = 7 | 30 | 90;
+
+type PortfolioHistoryPoint = {
+  date: string;
+  invested: number;
+  marketValue: number;
+  profit: number;
+};
+
+type PortfolioHistory = {
+  days: number;
+  points: PortfolioHistoryPoint[];
+  firstDate: string | null;
+  latestDate: string | null;
 };
 
 type LoadState = "loading" | "signed-out" | "signed-in";
@@ -499,6 +515,198 @@ function SignedOutPreview({
   );
 }
 
+function smoothChartPath(points: Array<{ x: number; y: number }>) {
+  if (!points.length) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const previous = points[index - 1] ?? points[index];
+    const current = points[index];
+    const next = points[index + 1];
+    const after = points[index + 2] ?? next;
+    path += ` C ${current.x + (next.x - previous.x) / 6} ${current.y + (next.y - previous.y) / 6}`;
+    path += ` ${next.x - (after.x - current.x) / 6} ${next.y - (after.y - current.y) / 6}`;
+    path += ` ${next.x} ${next.y}`;
+  }
+  return path;
+}
+
+function PortfolioHistoryChart({
+  history,
+  period,
+  loading,
+  onPeriodChange,
+}: {
+  history: PortfolioHistory | null;
+  period: HistoryPeriod;
+  loading: boolean;
+  onPeriodChange: (period: HistoryPeriod) => void;
+}) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const points = history?.points ?? [];
+  const width = 760;
+  const height = 280;
+  const plot = { left: 30, right: 18, top: 22, bottom: 45 };
+  const bottom = height - plot.bottom;
+  const plotWidth = width - plot.left - plot.right;
+  const values = points.flatMap((point) => [point.invested, point.marketValue]);
+  const rawMinimum = values.length ? Math.min(...values) : 0;
+  const rawMaximum = values.length ? Math.max(...values) : 1;
+  const padding = Math.max((rawMaximum - rawMinimum) * 0.16, rawMaximum * 0.035, 100);
+  const minimum = Math.max(0, rawMinimum - padding);
+  const maximum = Math.max(rawMaximum + padding, minimum + 1);
+  const xFor = (index: number) => (
+    points.length === 1
+      ? plot.left + plotWidth / 2
+      : plot.left + (index / Math.max(points.length - 1, 1)) * plotWidth
+  );
+  const yFor = (value: number) => plot.top + ((maximum - value) / (maximum - minimum)) * (bottom - plot.top);
+  const marketPoints = points.map((point, index) => ({ x: xFor(index), y: yFor(point.marketValue) }));
+  const investedPoints = points.map((point, index) => ({ x: xFor(index), y: yFor(point.invested) }));
+  const marketPath = smoothChartPath(marketPoints);
+  const investedPath = smoothChartPath(investedPoints);
+  const areaPath = marketPoints.length > 1
+    ? `${marketPath} L ${marketPoints.at(-1)?.x} ${bottom} L ${marketPoints[0].x} ${bottom} Z`
+    : "";
+  const latest = points.at(-1) ?? null;
+  const first = points[0] ?? null;
+  const change = latest && first ? latest.marketValue - first.marketValue : 0;
+  const changePercent = first?.marketValue ? (change / first.marketValue) * 100 : 0;
+  const effectiveActiveIndex = activeIndex === null
+    ? Math.max(points.length - 1, 0)
+    : Math.min(activeIndex, Math.max(points.length - 1, 0));
+  const active = points[effectiveActiveIndex] ?? null;
+  const activeX = points.length > 1
+    ? Math.max(10, Math.min(90, (effectiveActiveIndex / (points.length - 1)) * 100))
+    : 50;
+  const formatDate = (value: string) => new Intl.DateTimeFormat("cs-CZ", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(`${value}T12:00:00`));
+
+  const selectNearestPoint = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (points.length < 2) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const relative = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    setActiveIndex(Math.round(relative * (points.length - 1)));
+  };
+
+  return (
+    <section className="portfolio-history" aria-label="Vývoj hodnoty portfolia">
+      <div className="portfolio-history-header">
+        <div>
+          <p className="portfolio-kicker">Historie portfolia</p>
+          <h2>Vývoj hodnoty sbírky</h2>
+        </div>
+        <div className="portfolio-history-periods" aria-label="Období grafu">
+          {([7, 30, 90] as HistoryPeriod[]).map((value) => (
+            <button
+              key={value}
+              type="button"
+              className={period === value ? "is-active" : ""}
+              onClick={() => {
+                setActiveIndex(null);
+                onPeriodChange(value);
+              }}
+              aria-pressed={period === value}
+            >
+              {value} dní
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading && !history ? (
+        <div className="portfolio-history-loading"><span /> Načítám skutečný vývoj sbírky…</div>
+      ) : points.length ? (
+        <>
+          <div className="portfolio-history-summary">
+            <div>
+              <span>Aktuální hodnota</span>
+              <strong>{formatCzk(latest?.marketValue ?? 0)}</strong>
+            </div>
+            <div className={change >= 0 ? "is-positive" : "is-negative"}>
+              <span>{points.length > 1 ? `Změna za ${period} dní` : "První záznam historie"}</span>
+              <strong>
+                {points.length > 1
+                  ? `${change > 0 ? "+" : ""}${formatCzk(change)}`
+                  : "Data se začala sbírat"}
+              </strong>
+              {points.length > 1 && <small>{formatPercent(changePercent)}</small>}
+            </div>
+            <div>
+              <span>Investováno</span>
+              <strong>{formatCzk(latest?.invested ?? 0)}</strong>
+            </div>
+          </div>
+
+          <div className="portfolio-history-visual">
+            <svg
+              viewBox={`0 0 ${width} ${height}`}
+              role="img"
+              aria-label={`Tržní hodnota portfolia za posledních ${period} dní`}
+              onPointerMove={selectNearestPoint}
+              onPointerDown={selectNearestPoint}
+            >
+              {[0, 1, 2, 3].map((line) => {
+                const y = plot.top + (line / 3) * (bottom - plot.top);
+                return <line key={line} className="portfolio-chart-grid" x1={plot.left} y1={y} x2={width - plot.right} y2={y} />;
+              })}
+              {areaPath && <path className="portfolio-chart-area" d={areaPath} />}
+              {investedPath && <path className="portfolio-chart-invested" d={investedPath} />}
+              {marketPath && <path className="portfolio-chart-market" d={marketPath} />}
+              {marketPoints.map((point, index) => (
+                <circle
+                  key={points[index].date}
+                  className={index === effectiveActiveIndex ? "portfolio-chart-dot is-active" : "portfolio-chart-dot"}
+                  cx={point.x}
+                  cy={point.y}
+                  r={index === effectiveActiveIndex ? 5 : 3.5}
+                />
+              ))}
+              {active && (
+                <line
+                  className="portfolio-chart-cursor"
+                  x1={xFor(effectiveActiveIndex)}
+                  y1={plot.top}
+                  x2={xFor(effectiveActiveIndex)}
+                  y2={bottom}
+                />
+              )}
+              <text className="portfolio-chart-date" x={plot.left} y={height - 13}>{formatDate(points[0].date)}</text>
+              <text className="portfolio-chart-date" x={width - plot.right} y={height - 13} textAnchor="end">
+                {formatDate(points.at(-1)?.date ?? points[0].date)}
+              </text>
+            </svg>
+            {active && (
+              <div className="portfolio-chart-tooltip" style={{ left: `${activeX}%` }}>
+                <span>{formatDate(active.date)}</span>
+                <strong>{formatCzk(active.marketValue)}</strong>
+                <small>Investováno {formatCzk(active.invested)}</small>
+              </div>
+            )}
+          </div>
+
+          <div className="portfolio-history-legend">
+            <span className="market">Tržní hodnota</span>
+            <span className="invested">Investováno</span>
+            <small>
+              {points.length > 1
+                ? `Skutečné denní záznamy od ${formatDate(points[0].date)}.`
+                : `Historii sbíráme od ${formatDate(points[0].date)}. Další body přibudou automaticky.`}
+            </small>
+          </div>
+        </>
+      ) : (
+        <div className="portfolio-history-empty">
+          <strong>Historii začneme sbírat dnes.</strong>
+          <p>Graf se zobrazí, jakmile bude mít portfolio dostupné tržní ocenění.</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function PortfolioClient({
   products,
   productCount,
@@ -515,6 +723,26 @@ export default function PortfolioClient({
   const [editing, setEditing] = useState<PortfolioItem | null>(null);
   const [initialProductId, setInitialProductId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  const [historyPeriod, setHistoryPeriod] = useState<HistoryPeriod>(90);
+  const [history, setHistory] = useState<PortfolioHistory | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const loadHistory = useCallback(async (period: HistoryPeriod) => {
+    setHistoryLoading(true);
+    try {
+      const response = await fetch(`/api/portfolio/history?days=${period}`, {
+        cache: "no-store",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("History unavailable");
+      setHistory(await response.json() as PortfolioHistory);
+    } catch {
+      setHistory(null);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -545,10 +773,11 @@ export default function PortfolioClient({
         const portfolio = await response.json() as { items: PortfolioItem[] };
         setItems(portfolio.items);
         setState("signed-in");
+        if (portfolio.items.length) void loadHistory(90);
         if (add) setAdding(true);
       })
       .catch(() => setState("signed-out"));
-  }, []);
+  }, [loadHistory]);
 
   const totals = useMemo(() => {
     const invested = items.reduce((sum, item) => sum + item.buyPrice * item.quantity, 0);
@@ -571,6 +800,11 @@ export default function PortfolioClient({
   const discordHref = `/api/auth/discord?return_to=${encodeURIComponent(returnTo)}`;
   const googleHref = `/api/auth/google?return_to=${encodeURIComponent(returnTo)}`;
 
+  const changeHistoryPeriod = (period: HistoryPeriod) => {
+    setHistoryPeriod(period);
+    if (state === "signed-in" && items.length) void loadHistory(period);
+  };
+
   const removeItem = async (item: PortfolioItem) => {
     if (!window.confirm(`Odebrat ${item.product.name} z portfolia?`)) return;
     const response = await fetch(`/api/portfolio/${item.id}`, {
@@ -579,6 +813,7 @@ export default function PortfolioClient({
     });
     if (response.ok) {
       setItems((current) => current.filter((entry) => entry.id !== item.id));
+      void loadHistory(historyPeriod);
       setNotice("Položka byla odebrána.");
     } else {
       setNotice("Položku se nepodařilo odebrat.");
@@ -649,6 +884,15 @@ export default function PortfolioClient({
             </article>
             <article><span>Produkty</span><strong>{items.length}</strong><small>{totals.pieces} ks celkem</small></article>
           </div>
+
+          {items.length > 0 && (
+            <PortfolioHistoryChart
+              history={history}
+              period={historyPeriod}
+              loading={historyLoading}
+              onPeriodChange={changeHistoryPeriod}
+            />
+          )}
 
           {notice && <p className="portfolio-notice" role="status">{notice}</p>}
 
@@ -730,6 +974,7 @@ export default function PortfolioClient({
           }}
           onCreated={(item) => {
             setItems((current) => [item, ...current]);
+            void loadHistory(historyPeriod);
             setNotice("Produkt byl přidán do portfolia.");
           }}
         />
@@ -741,6 +986,7 @@ export default function PortfolioClient({
           onClose={() => setEditing(null)}
           onUpdated={(updated) => {
             setItems((current) => current.map((item) => item.id === updated.id ? updated : item));
+            void loadHistory(historyPeriod);
             setNotice("Změny produktu byly uloženy.");
           }}
         />
