@@ -6,6 +6,9 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
+  "vars": {
+    "DISCORD_REDIRECT_URI": "https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/discord/callback"
+  },
   "routes": [
     {
       "pattern": "tcgceny.cz/*",
