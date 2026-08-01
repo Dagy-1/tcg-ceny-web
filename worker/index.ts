@@ -3,6 +3,7 @@ import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } fr
 import handler from "vinext/server/app-router-entry";
 import { handlePortfolioApi } from "./portfolio-api";
 import { handleCatalogApi } from "./catalog-api";
+import { canonicalHostRedirect } from "./canonical-host";
 
 interface Env {
   ASSETS: Fetcher;
@@ -77,6 +78,11 @@ function withSecurityHeaders(response: Response, isHttps: boolean): Response {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    const canonicalResponse = canonicalHostRedirect(request);
+    if (canonicalResponse) {
+      return withSecurityHeaders(canonicalResponse, url.protocol === "https:");
+    }
 
     const catalogResponse = await handleCatalogApi(request, env);
     if (catalogResponse) {

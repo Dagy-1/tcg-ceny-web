@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { handleCatalogApi } from "../worker/catalog-api.ts";
+import { canonicalHostRedirect } from "../worker/canonical-host.ts";
 import {
   centralPortfolioRequest,
   handlePortfolioApi,
@@ -380,6 +381,26 @@ test("partner and legal pages contain required information", async () => {
   assert.match(terms, /TCG Ceny není prodejce/);
   assert.match(privacy, /Petr Mládek/);
   assert.match(privacy, /podpora@tcgceny\.cz/);
+});
+
+test("production www requests redirect to the canonical host", () => {
+  const redirect = canonicalHostRedirect(
+    new Request("https://www.tcgceny.cz/katalog/?serie=ME05"),
+  );
+
+  assert.equal(redirect?.status, 308);
+  assert.equal(
+    redirect?.headers.get("location"),
+    "https://tcgceny.cz/katalog/?serie=ME05",
+  );
+  assert.equal(
+    canonicalHostRedirect(new Request("https://tcgceny.cz/katalog/")),
+    null,
+  );
+  assert.equal(
+    canonicalHostRedirect(new Request("http://localhost:3100/katalog/")),
+    null,
+  );
 });
 
 test("search and security support files are production-ready", async () => {

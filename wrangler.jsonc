@@ -6,6 +6,16 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "tcgceny.cz/*",
+      "zone_name": "tcgceny.cz"
+    },
+    {
+      "pattern": "www.tcgceny.cz/*",
+      "zone_name": "tcgceny.cz"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
