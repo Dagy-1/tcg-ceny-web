@@ -625,8 +625,8 @@ function PortfolioHistoryChart({
               <span>Aktuální hodnota</span>
               <strong>{formatCzk(latest?.marketValue ?? 0)}</strong>
             </div>
-            <div className={change >= 0 ? "is-positive" : "is-negative"}>
-              <span>{points.length > 1 ? `Změna za ${period} dní` : "První záznam historie"}</span>
+            <div className={change > 0 ? "is-positive" : change < 0 ? "is-negative" : "is-neutral"}>
+              <span>{points.length > 1 ? `Změna od ${formatDate(points[0].date)}` : "První záznam historie"}</span>
               <strong>
                 {points.length > 1
                   ? `${change > 0 ? "+" : ""}${formatCzk(change)}`

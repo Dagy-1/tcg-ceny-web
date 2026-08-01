@@ -360,6 +360,11 @@
   color: var(--pf-red) !important;
 }
 
+.portfolio-history-summary .is-neutral strong,
+.portfolio-history-summary .is-neutral small {
+  color: var(--pf-text);
+}
+
 .portfolio-history {
   margin: 34px 0 42px;
   padding: 28px;
