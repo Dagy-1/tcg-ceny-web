@@ -640,6 +640,8 @@ function PortfolioHistoryChart({
             </div>
           </div>
 
+          {points.length > 1 ? (
+            <>
           <div className="portfolio-history-visual">
             <svg
               viewBox={`0 0 ${width} ${height}`}
@@ -690,12 +692,23 @@ function PortfolioHistoryChart({
           <div className="portfolio-history-legend">
             <span className="market">Tržní hodnota</span>
             <span className="invested">Investováno</span>
-            <small>
-              {points.length > 1
-                ? `Skutečné denní záznamy od ${formatDate(points[0].date)}.`
-                : `Historii sbíráme od ${formatDate(points[0].date)}. Další body přibudou automaticky.`}
-            </small>
+            <small>{`Skutečné denní záznamy od ${formatDate(points[0].date)}.`}</small>
           </div>
+            </>
+          ) : (
+            <div className="portfolio-history-first-record">
+              <div className="portfolio-history-first-marker" aria-hidden="true"><span /></div>
+              <div>
+                <span>Start historie · {formatDate(points[0].date)}</span>
+                <strong>První bod je bezpečně uložený</strong>
+                <p>
+                  Odteď budeme průběžně zaznamenávat skutečnou hodnotu sbírky.
+                  Jakmile přibude další denní ocenění, zobrazí se zde vývojová křivka.
+                </p>
+              </div>
+              <small>1 skutečný záznam</small>
+            </div>
+          )}
         </>
       ) : (
         <div className="portfolio-history-empty">
