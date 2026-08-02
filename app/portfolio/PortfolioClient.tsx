@@ -605,7 +605,10 @@ function PortfolioHistoryChart({
   loading: boolean;
   onPeriodChange: (period: HistoryPeriod) => void;
 }) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeTarget, setActiveTarget] = useState<{
+    series: "market" | "invested";
+    index: number;
+  } | null>(null);
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
   const periodPickerRef = useRef<HTMLDivElement>(null);
   const points = history?.points ?? [];
@@ -650,18 +653,21 @@ function PortfolioHistoryChart({
   const change = latest && first ? latest.marketValue - first.marketValue : 0;
   const changePercent = first?.marketValue ? (change / first.marketValue) * 100 : 0;
   const periodLabel = historyPeriodOptions.find((option) => option.value === period)?.label ?? "Období";
-  const effectiveActiveIndex = activeIndex === null
-    ? null
-    : Math.min(activeIndex, Math.max(points.length - 1, 0));
-  const active = effectiveActiveIndex === null ? null : points[effectiveActiveIndex] ?? null;
-  const activeX = active
-    ? Math.max(10, Math.min(90, (xForDate(active.date) / width) * 100))
+  const activeMarket = activeTarget?.series === "market"
+    ? points[Math.min(activeTarget.index, Math.max(points.length - 1, 0))] ?? null
+    : null;
+  const activeInvestment = activeTarget?.series === "invested"
+    ? investmentPoints[Math.min(activeTarget.index, Math.max(investmentPoints.length - 1, 0))] ?? null
+    : null;
+  const activeDate = activeMarket?.date ?? activeInvestment?.date ?? null;
+  const activeX = activeDate
+    ? Math.max(10, Math.min(90, (xForDate(activeDate) / width) * 100))
     : 50;
-  const activeInvested = active
+  const activeInvested = activeMarket
     ? [...investmentPoints]
         .reverse()
-        .find((point) => point.date <= active.date)?.invested ?? active.invested
-    : 0;
+        .find((point) => point.date <= activeMarket.date)?.invested ?? activeMarket.invested
+    : activeInvestment?.invested ?? 0;
   const formatDate = (value: string) => new Intl.DateTimeFormat("cs-CZ", {
     day: "numeric",
     month: "short",
@@ -683,13 +689,15 @@ function PortfolioHistoryChart({
     };
   }, [periodMenuOpen]);
 
-  const selectNearestPoint = (event: React.PointerEvent<SVGSVGElement>) => {
+  const pointerX = (event: React.PointerEvent<SVGPathElement>) => {
+    const bounds = event.currentTarget.ownerSVGElement?.getBoundingClientRect();
+    if (!bounds) return 0;
+    return Math.max(0, Math.min(width, ((event.clientX - bounds.left) / bounds.width) * width));
+  };
+
+  const selectMarketPoint = (event: React.PointerEvent<SVGPathElement>) => {
     if (!points.length) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const cursorX = Math.max(
-      0,
-      Math.min(width, ((event.clientX - bounds.left) / bounds.width) * width),
-    );
+    const cursorX = pointerX(event);
     const nearest = marketPoints.reduce(
       (best, point, index) => (
         Math.abs(point.x - cursorX) < Math.abs(marketPoints[best].x - cursorX)
@@ -698,8 +706,20 @@ function PortfolioHistoryChart({
       ),
       0,
     );
-    setActiveIndex(nearest);
+    setActiveTarget({ series: "market", index: nearest });
   };
+
+  const selectInvestmentPoint = (event: React.PointerEvent<SVGPathElement>) => {
+    if (!investmentPoints.length) return;
+    const cursorX = pointerX(event);
+    let index = 0;
+    investmentPoints.forEach((point, pointIndex) => {
+      if (xForDate(point.date) <= cursorX + 1) index = pointIndex;
+    });
+    setActiveTarget({ series: "invested", index });
+  };
+
+  const clearActiveTarget = () => setActiveTarget(null);
 
   return (
     <section className="portfolio-history" aria-label="Vývoj hodnoty portfolia">
@@ -744,7 +764,7 @@ function PortfolioHistoryChart({
                   aria-checked={period === option.value}
                   className={period === option.value ? "is-active" : ""}
                   onClick={() => {
-                    setActiveIndex(null);
+                    setActiveTarget(null);
                     setPeriodMenuOpen(false);
                     onPeriodChange(option.value);
                   }}
@@ -769,9 +789,7 @@ function PortfolioHistoryChart({
               viewBox={`0 0 ${width} ${height}`}
               role="img"
               aria-label={`Tržní hodnota portfolia za období ${periodLabel}`}
-              onPointerMove={selectNearestPoint}
-              onPointerDown={selectNearestPoint}
-              onPointerLeave={() => setActiveIndex(null)}
+              onPointerLeave={clearActiveTarget}
             >
               {[...axisTicks].reverse().map((axisValue) => {
                 const y = yFor(axisValue);
@@ -792,21 +810,37 @@ function PortfolioHistoryChart({
               {areaPath && <path className="portfolio-chart-area" d={areaPath} />}
               {investedPath && <path className="portfolio-chart-invested" d={investedPath} />}
               {marketPath && <path className="portfolio-chart-market" d={marketPath} />}
+              {investedPath && (
+                <path
+                  className="portfolio-chart-hit"
+                  d={investedPath}
+                  onPointerMove={selectInvestmentPoint}
+                  onPointerDown={selectInvestmentPoint}
+                />
+              )}
+              {marketPath && (
+                <path
+                  className="portfolio-chart-hit"
+                  d={marketPath}
+                  onPointerMove={selectMarketPoint}
+                  onPointerDown={selectMarketPoint}
+                />
+              )}
               {marketPoints.map((point, index) => (
                 <circle
                   key={points[index].date}
-                  className={index === effectiveActiveIndex ? "portfolio-chart-dot is-active" : "portfolio-chart-dot"}
+                  className={activeTarget?.series === "market" && index === activeTarget.index ? "portfolio-chart-dot is-active" : "portfolio-chart-dot"}
                   cx={point.x}
                   cy={point.y}
-                  r={index === effectiveActiveIndex ? 5 : 3.5}
+                  r={activeTarget?.series === "market" && index === activeTarget.index ? 5 : 3.5}
                 />
               ))}
-              {active && (
+              {activeDate && (
                 <line
                   className="portfolio-chart-cursor"
-                  x1={xForDate(active.date)}
+                  x1={xForDate(activeDate)}
                   y1={plot.top}
-                  x2={xForDate(active.date)}
+                  x2={xForDate(activeDate)}
                   y2={bottom}
                 />
               )}
@@ -815,15 +849,24 @@ function PortfolioHistoryChart({
                 {formatDate(chartDates.at(-1) ?? chartDates[0])}
               </text>
             </svg>
-            {active && (
-              <div className="portfolio-chart-tooltip" style={{ left: `${activeX}%` }}>
-                <span>{formatDate(active.date)}</span>
-                <strong>{formatCzk(active.marketValue)}</strong>
-                <small>Investováno {formatCzk(activeInvested)}</small>
-                <em className={active.marketValue - activeInvested > 0 ? "is-positive" : active.marketValue - activeInvested < 0 ? "is-negative" : "is-neutral"}>
-                  Zisk / ztráta {active.marketValue - activeInvested > 0 ? "+" : ""}{formatCzk(active.marketValue - activeInvested)}
-                  {" · "}{formatPercent(activeInvested ? ((active.marketValue - activeInvested) / activeInvested) * 100 : 0)}
-                </em>
+            {activeDate && (
+              <div className={`portfolio-chart-tooltip ${activeInvestment ? "is-invested" : "is-market"}`} style={{ left: `${activeX}%` }}>
+                <span>{formatDate(activeDate)}</span>
+                {activeMarket ? (
+                  <>
+                    <strong>{formatCzk(activeMarket.marketValue)}</strong>
+                    <small>Investováno {formatCzk(activeInvested)}</small>
+                    <em className={activeMarket.marketValue - activeInvested > 0 ? "is-positive" : activeMarket.marketValue - activeInvested < 0 ? "is-negative" : "is-neutral"}>
+                      Zisk / ztráta {activeMarket.marketValue - activeInvested > 0 ? "+" : ""}{formatCzk(activeMarket.marketValue - activeInvested)}
+                      {" · "}{formatPercent(activeInvested ? ((activeMarket.marketValue - activeInvested) / activeInvested) * 100 : 0)}
+                    </em>
+                  </>
+                ) : (
+                  <>
+                    <strong>{formatCzk(activeInvested)}</strong>
+                    <small>Celkem investováno po nákupu</small>
+                  </>
+                )}
               </div>
             )}
           </div>
