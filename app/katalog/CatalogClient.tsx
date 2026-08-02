@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, PackageCheck, PackageX, X } from "lucide-react";
 import AuthMenu from "../AuthMenu";
+import MobileNav from "../MobileNav";
 
 const PAGE_SIZE = 24;
 
@@ -502,7 +503,10 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
           <Link href="/portfolio">Portfolio</Link>
           <Link href="/pro-eshopy">Pro e-shopy</Link>
         </div>
-        <AuthMenu />
+        <div className="nav-actions">
+          <AuthMenu />
+          <MobileNav />
+        </div>
       </nav>
 
       <header className="catalog-header shell">

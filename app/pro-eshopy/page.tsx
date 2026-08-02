@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AuthMenu from "../AuthMenu";
+import MobileNav from "../MobileNav";
 
 const CONTACT_URL =
   "mailto:podpora@tcgceny.cz?subject=Spolupráce%20s%20TCG%20Ceny&body=Dobrý%20den%2C%0A%0Ajmenuji%20se%20...%20a%20zastupuji%20e-shop%20...%0A%0ARádi%20bychom%20s%20vámi%20probrali%20...%0A";
@@ -86,7 +87,10 @@ export default function ForShops() {
           <Link href="/portfolio/">Portfolio</Link>
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
-        <AuthMenu />
+        <div className="nav-actions">
+          <AuthMenu />
+          <MobileNav />
+        </div>
       </nav>
 
       <section className="shop-page-hero shell">

@@ -6,6 +6,7 @@ import {
   ChartNoAxesCombined,
 } from "lucide-react";
 import AuthMenu from "./AuthMenu";
+import MobileNav from "./MobileNav";
 import PriceHistoryDemo from "./PriceHistoryDemo";
 
 const DISCORD_URL = "https://discord.gg/pRC8GKAKxG";
@@ -93,7 +94,10 @@ export default function Home() {
           <a href="#spolehlivost">Spolehlivost</a>
           <a className="nav-partner" href="/pro-eshopy">Pro e-shopy</a>
         </div>
-        <AuthMenu />
+        <div className="nav-actions">
+          <AuthMenu />
+          <MobileNav />
+        </div>
       </nav>
 
       <section id="uvod" className="hero shell">

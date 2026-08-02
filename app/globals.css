@@ -66,6 +66,72 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-links a:hover, .footer-links a:hover, .text-link:hover { color: var(--gold-soft); }
 .nav-links .nav-partner { color: #d9e4f3; }
 
+.nav-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.mobile-nav { position: relative; display: none; flex: none; }
+.mobile-nav-trigger {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(230, 184, 74, .32);
+  border-radius: 8px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .045);
+  cursor: pointer;
+  transition: color .18s ease, border-color .18s ease, background-color .18s ease;
+}
+.mobile-nav-trigger:hover,
+.mobile-nav-trigger[aria-expanded="true"] {
+  border-color: rgba(230, 184, 74, .7);
+  color: var(--gold-soft);
+  background: rgba(230, 184, 74, .1);
+}
+.mobile-nav-trigger:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.mobile-nav-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 11px);
+  right: 0;
+  width: min(260px, calc(100vw - 26px));
+  padding: 7px;
+  display: grid;
+  border: 1px solid rgba(230, 184, 74, .35);
+  border-radius: 8px;
+  background: rgba(5, 14, 27, .99);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(18px);
+  animation: mobile-nav-in .16s ease-out;
+}
+.mobile-nav-panel a {
+  min-height: 43px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  color: #bdc8d8;
+  font-size: 13px;
+  font-weight: 750;
+  transition: color .16s ease, background-color .16s ease;
+}
+.mobile-nav-panel a:hover,
+.mobile-nav-panel a:focus-visible {
+  color: var(--ink);
+  background: rgba(255, 255, 255, .06);
+  outline: none;
+}
+.mobile-nav-panel a.is-active {
+  color: var(--gold-soft);
+  background: rgba(230, 184, 74, .09);
+}
+@keyframes mobile-nav-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .auth-menu {
   position: relative;
   flex: none;
@@ -657,6 +723,7 @@ h1 span { display: block; color: var(--gold); }
 
 @media (max-width: 980px) {
   .nav-links { display: none; }
+  .mobile-nav { display: block; }
   .hero { grid-template-columns: 1fr; padding-top: 70px; }
   .hero-copy { text-align: center; }
   .hero-lead { margin-inline: auto; }
@@ -680,6 +747,7 @@ h1 span { display: block; color: var(--gold); }
   .nav { width: calc(100% - 18px); margin-top: 8px; padding-left: 12px; }
   .nav .button-small { min-height: 38px; padding-inline: 12px; font-size: 11px; }
   .auth-trigger.is-signed-in { max-width: 126px; padding-right: 8px; }
+  .nav-actions { gap: 6px; }
   .auth-popover { position: fixed; top: 65px; right: 9px; }
   .brand { font-size: 17px; }
   .hero { min-height: auto; padding-block: 62px 65px; gap: 50px; }
