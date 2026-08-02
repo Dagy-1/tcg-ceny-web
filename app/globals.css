@@ -300,6 +300,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background: rgba(56, 215, 129, .07);
   font-size: 11px;
   line-height: 1.45;
+  animation: auth-notice-lifecycle 4.2s ease forwards;
+}
+
+@keyframes auth-notice-lifecycle {
+  0% { opacity: 0; transform: translateY(-3px); }
+  10%, 78% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-3px); }
 }
 
 .auth-privacy {
@@ -829,4 +836,5 @@ h1 span { display: block; color: var(--gold); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
+  .auth-notice { animation: none; }
 }

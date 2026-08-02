@@ -89,6 +89,12 @@ export default function AuthMenu() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
   const loginHref = (provider: "discord" | "google") =>
     `/api/auth/${provider}?return_to=${encodeURIComponent(returnTo)}`;
   const linkHref = (provider: "discord" | "google") =>
