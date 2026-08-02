@@ -960,17 +960,21 @@ export default function PortfolioClient({
           setState("signed-out");
           return;
         }
-        const response = await fetch("/api/portfolio", {
-          cache: "no-store",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        });
-        if (!response.ok) throw new Error();
-        const portfolio = await response.json() as { items: PortfolioItem[] };
-        setItems(portfolio.items);
         setState("signed-in");
-        if (portfolio.items.length) void loadHistory(90);
-        if (add) setAdding(true);
+        try {
+          const response = await fetch("/api/portfolio", {
+            cache: "no-store",
+            credentials: "include",
+            headers: { Accept: "application/json" },
+          });
+          if (!response.ok) throw new Error();
+          const portfolio = await response.json() as { items: PortfolioItem[] };
+          setItems(portfolio.items);
+          if (portfolio.items.length) void loadHistory(90);
+          if (add) setAdding(true);
+        } catch {
+          setNotice("Jsi přihlášený, ale portfolio se teď nepodařilo načíst. Obnov stránku a zkus to znovu.");
+        }
       })
       .catch(() => setState("signed-out"));
   }, [loadHistory]);
