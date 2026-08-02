@@ -9,6 +9,7 @@ type SessionUser = {
   username: string;
   avatar: string | null;
   provider?: "discord" | "google";
+  linkedProviders?: Array<"discord" | "google">;
 };
 
 function authErrorMessage(code: string | null) {
@@ -99,6 +100,12 @@ export default function AuthMenu() {
     `/api/auth/${provider}?return_to=${encodeURIComponent(returnTo)}`;
   const linkHref = (provider: "discord" | "google") =>
     `/api/auth/${provider}?link=1&return_to=${encodeURIComponent(returnTo)}`;
+  const alternateProvider = user?.provider === "google" ? "discord" : "google";
+  const linkedProviders = user?.linkedProviders ?? (user?.provider ? [user.provider] : []);
+  const canLinkAlternate = Boolean(user && !linkedProviders.includes(alternateProvider));
+  const providerLabel = linkedProviders.includes("discord") && linkedProviders.includes("google")
+    ? "Discord + Google"
+    : user?.provider === "google" ? "Google" : "Discord";
 
   const logout = async () => {
     const response = await fetch("/api/logout", {
@@ -144,20 +151,22 @@ export default function AuthMenu() {
                 <span>
                   <small>Přihlášený účet</small>
                   <strong>{user.username}</strong>
-                  <em>{user.provider === "google" ? "Google" : "Discord"}</em>
+                  <em>{providerLabel}</em>
                 </span>
               </div>
               <Link className="auth-menu-link" href="/portfolio/" role="menuitem">
                 Moje portfolio <span aria-hidden="true">→</span>
               </Link>
-              <a
-                className="auth-menu-link auth-link-account"
-                href={linkHref(user.provider === "google" ? "discord" : "google")}
-                role="menuitem"
-              >
-                Propojit {user.provider === "google" ? "Discord" : "Google"}
-                <span aria-hidden="true">+</span>
-              </a>
+              {canLinkAlternate && (
+                <a
+                  className="auth-menu-link auth-link-account"
+                  href={linkHref(alternateProvider)}
+                  role="menuitem"
+                >
+                  Propojit {alternateProvider === "google" ? "Google" : "Discord"}
+                  <span aria-hidden="true">+</span>
+                </a>
+              )}
               {notice && <p className="auth-notice" role="status">{notice}</p>}
               {error && <p className="auth-error" role="alert">{error}</p>}
               <button className="auth-logout" type="button" role="menuitem" onClick={logout}>

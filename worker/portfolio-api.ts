@@ -405,6 +405,48 @@ async function linkCentralIdentity(
   }
 }
 
+async function linkedCentralProviders(
+  user: SessionUser,
+  env: Env,
+): Promise<AuthProvider[]> {
+  const fallback: AuthProvider[] = [user.provider];
+  const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
+  const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim();
+  if (!baseUrl || !serviceToken || serviceToken.length < 32) return fallback;
+
+  const upstreamUrl = new URL("/api/v1/account/identities", baseUrl);
+  const headers = new Headers({
+    Accept: "application/json",
+    Authorization: `Bearer ${serviceToken}`,
+    "X-TCG-Identity-Provider": user.provider,
+    "X-TCG-Identity-Subject": centralIdentitySubject(user),
+    "X-TCG-Identity-Name": user.username.slice(0, 120),
+    "X-Request-ID": crypto.randomUUID(),
+  });
+  if (user.avatar) headers.set("X-TCG-Identity-Avatar", user.avatar);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CENTRAL_REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(upstreamUrl, {
+      method: "GET",
+      headers,
+      signal: controller.signal,
+    });
+    if (!response.ok) return fallback;
+    const payload = await response.json<{ providers?: unknown }>();
+    if (!Array.isArray(payload.providers)) return fallback;
+    const providers = payload.providers.filter(
+      (provider): provider is AuthProvider => provider === "discord" || provider === "google",
+    );
+    return providers.length ? [...new Set(providers)] : fallback;
+  } catch {
+    return fallback;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function beginDiscordLogin(request: Request, env: Env) {
   const url = new URL(request.url);
   const returnTo = safeReturnTo(url.searchParams.get("return_to"));
@@ -829,6 +871,7 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
 
   const user = await session(request, env);
   if (request.method === "GET" && url.pathname === "/api/session") {
+    const linkedProviders = user ? await linkedCentralProviders(user, env) : [];
     return json({
       user: user
         ? {
@@ -836,6 +879,7 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
             username: user.username,
             avatar: user.avatar,
             provider: user.provider ?? "discord",
+            linkedProviders,
           }
         : null,
     });
