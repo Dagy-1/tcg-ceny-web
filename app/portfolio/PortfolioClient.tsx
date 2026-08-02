@@ -651,9 +651,9 @@ function PortfolioHistoryChart({
   const changePercent = first?.marketValue ? (change / first.marketValue) * 100 : 0;
   const periodLabel = historyPeriodOptions.find((option) => option.value === period)?.label ?? "Období";
   const effectiveActiveIndex = activeIndex === null
-    ? Math.max(points.length - 1, 0)
+    ? null
     : Math.min(activeIndex, Math.max(points.length - 1, 0));
-  const active = points[effectiveActiveIndex] ?? null;
+  const active = effectiveActiveIndex === null ? null : points[effectiveActiveIndex] ?? null;
   const activeX = active
     ? Math.max(10, Math.min(90, (xForDate(active.date) / width) * 100))
     : 50;
@@ -684,7 +684,7 @@ function PortfolioHistoryChart({
   }, [periodMenuOpen]);
 
   const selectNearestPoint = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (points.length < 2) return;
+    if (!points.length) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     const cursorX = Math.max(
       0,
@@ -771,6 +771,7 @@ function PortfolioHistoryChart({
               aria-label={`Tržní hodnota portfolia za období ${periodLabel}`}
               onPointerMove={selectNearestPoint}
               onPointerDown={selectNearestPoint}
+              onPointerLeave={() => setActiveIndex(null)}
             >
               {[...axisTicks].reverse().map((axisValue) => {
                 const y = yFor(axisValue);
