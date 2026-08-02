@@ -21,6 +21,15 @@ function authErrorMessage(code: string | null) {
   if (code === "oauth_failed") {
     return "Přihlášení se nepodařilo dokončit. Zkus to prosím znovu.";
   }
+  if (code === "identity_in_use") {
+    return "Tento účet už patří jinému profilu. Kvůli ochraně portfolia jsme účty nespojili.";
+  }
+  if (code === "link_requires_login") {
+    return "Pro propojení účtů se nejdříve znovu přihlas.";
+  }
+  if (code === "link_failed" || code === "link_unavailable") {
+    return "Propojení účtů se nyní nepodařilo dokončit. Tvoje portfolio zůstalo beze změny.";
+  }
   return "";
 }
 
@@ -28,22 +37,30 @@ export default function AuthMenu() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [returnTo, setReturnTo] = useState("/");
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const message = authErrorMessage(params.get("auth_error"));
+    const linkedProvider = params.get("account_linked");
     if (message) {
       queueMicrotask(() => {
         setError(message);
         setOpen(true);
       });
       params.delete("auth_error");
-      const query = params.toString();
-      window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    }
+    if (linkedProvider === "discord" || linkedProvider === "google") {
+      queueMicrotask(() => {
+        setNotice(`Účet ${linkedProvider === "google" ? "Google" : "Discord"} je bezpečně propojený.`);
+        setOpen(true);
+      });
+      params.delete("account_linked");
     }
     const query = params.toString();
+    window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
     const current = `${window.location.pathname}${query ? `?${query}` : ""}`;
     queueMicrotask(() => setReturnTo(current.startsWith("//") ? "/" : current));
 
@@ -74,6 +91,8 @@ export default function AuthMenu() {
 
   const loginHref = (provider: "discord" | "google") =>
     `/api/auth/${provider}?return_to=${encodeURIComponent(returnTo)}`;
+  const linkHref = (provider: "discord" | "google") =>
+    `/api/auth/${provider}?link=1&return_to=${encodeURIComponent(returnTo)}`;
 
   const logout = async () => {
     const response = await fetch("/api/logout", {
@@ -125,6 +144,16 @@ export default function AuthMenu() {
               <Link className="auth-menu-link" href="/portfolio/" role="menuitem">
                 Moje portfolio <span aria-hidden="true">→</span>
               </Link>
+              <a
+                className="auth-menu-link auth-link-account"
+                href={linkHref(user.provider === "google" ? "discord" : "google")}
+                role="menuitem"
+              >
+                Propojit {user.provider === "google" ? "Discord" : "Google"}
+                <span aria-hidden="true">+</span>
+              </a>
+              {notice && <p className="auth-notice" role="status">{notice}</p>}
+              {error && <p className="auth-error" role="alert">{error}</p>}
               <button className="auth-logout" type="button" role="menuitem" onClick={logout}>
                 Odhlásit se
               </button>

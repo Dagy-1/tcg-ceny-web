@@ -30,6 +30,7 @@ type OAuthState = {
   verifier: string;
   returnTo: string;
   exp: number;
+  linkFrom?: SessionUser;
 };
 
 type CatalogProduct = {
@@ -224,6 +225,12 @@ function authErrorRedirect(request: Request, returnTo: string, code: string) {
   return Response.redirect(target, 302);
 }
 
+function sameIdentity(left: SessionUser | null, right: SessionUser) {
+  return Boolean(
+    left && left.provider === right.provider && left.sub === right.sub,
+  );
+}
+
 async function session(request: Request, env: Env) {
   const user = await readSignedToken<SessionUser>(cookie(request, SESSION_COOKIE), env.SESSION_SECRET);
   if (!user || user.exp <= Math.floor(Date.now() / 1000)) return null;
@@ -357,8 +364,50 @@ export async function centralPortfolioRequest(
   }
 }
 
+async function linkCentralIdentity(
+  request: Request,
+  user: SessionUser,
+  env: Env,
+  provider: AuthProvider,
+  accessToken: string,
+) {
+  const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
+  const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim();
+  if (!baseUrl || !serviceToken || serviceToken.length < 32) return "link_unavailable";
+
+  const upstreamUrl = new URL("/api/v1/account/identities", baseUrl);
+  const headers = new Headers({
+    Accept: "application/json",
+    Authorization: `Bearer ${serviceToken}`,
+    "Content-Type": "application/json",
+    "X-TCG-Identity-Provider": user.provider,
+    "X-TCG-Identity-Subject": centralIdentitySubject(user),
+    "X-TCG-Identity-Name": user.username.slice(0, 120),
+    "X-Request-ID": crypto.randomUUID(),
+  });
+  if (user.avatar) headers.set("X-TCG-Identity-Avatar", user.avatar);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CENTRAL_REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(upstreamUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ provider, access_token: accessToken }),
+      signal: controller.signal,
+    });
+    if (response.ok) return null;
+    return response.status === 409 ? "identity_in_use" : "link_failed";
+  } catch {
+    return "link_unavailable";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function beginDiscordLogin(request: Request, env: Env) {
-  const returnTo = safeReturnTo(new URL(request.url).searchParams.get("return_to"));
+  const url = new URL(request.url);
+  const returnTo = safeReturnTo(url.searchParams.get("return_to"));
   if (!hasDiscordOAuthConfig(env)) {
     return authErrorRedirect(request, returnTo, "discord_not_configured");
   }
@@ -368,8 +417,19 @@ async function beginDiscordLogin(request: Request, env: Env) {
   const challenge = base64Url(
     new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(verifier))),
   );
+  const linkFrom = url.searchParams.get("link") === "1" ? await session(request, env) : null;
+  if (url.searchParams.get("link") === "1" && !linkFrom) {
+    return authErrorRedirect(request, returnTo, "link_requires_login");
+  }
   const payload = await signedToken(
-    { provider: "discord", state, verifier, returnTo, exp: Math.floor(Date.now() / 1000) + 600 },
+    {
+      provider: "discord",
+      state,
+      verifier,
+      returnTo,
+      exp: Math.floor(Date.now() / 1000) + 600,
+      linkFrom: linkFrom ?? undefined,
+    },
     env.SESSION_SECRET,
   );
   const authorize = new URL("https://discord.com/oauth2/authorize");
@@ -433,6 +493,24 @@ async function finishDiscordLogin(request: Request, env: Env) {
     : null;
   const now = Math.floor(Date.now() / 1000);
 
+  if (oauth.linkFrom) {
+    const current = await session(request, env);
+    if (!sameIdentity(current, oauth.linkFrom)) {
+      return authErrorRedirect(request, oauth.returnTo, "link_requires_login");
+    }
+    const error = await linkCentralIdentity(
+      request,
+      oauth.linkFrom,
+      env,
+      "discord",
+      token.access_token,
+    );
+    if (error) return authErrorRedirect(request, oauth.returnTo, error);
+    const target = new URL(safeReturnTo(oauth.returnTo), request.url);
+    target.searchParams.set("account_linked", "discord");
+    return Response.redirect(target, 302);
+  }
+
   await env.DB.prepare(
     `INSERT INTO users (discord_user_id, username, avatar_hash, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?)
@@ -461,7 +539,8 @@ async function finishDiscordLogin(request: Request, env: Env) {
 }
 
 async function beginGoogleLogin(request: Request, env: Env) {
-  const returnTo = safeReturnTo(new URL(request.url).searchParams.get("return_to"));
+  const url = new URL(request.url);
+  const returnTo = safeReturnTo(url.searchParams.get("return_to"));
   if (!hasGoogleOAuthConfig(env)) {
     return authErrorRedirect(request, returnTo, "google_not_configured");
   }
@@ -471,8 +550,19 @@ async function beginGoogleLogin(request: Request, env: Env) {
   const challenge = base64Url(
     new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(verifier))),
   );
+  const linkFrom = url.searchParams.get("link") === "1" ? await session(request, env) : null;
+  if (url.searchParams.get("link") === "1" && !linkFrom) {
+    return authErrorRedirect(request, returnTo, "link_requires_login");
+  }
   const payload = await signedToken(
-    { provider: "google", state, verifier, returnTo, exp: Math.floor(Date.now() / 1000) + 600 },
+    {
+      provider: "google",
+      state,
+      verifier,
+      returnTo,
+      exp: Math.floor(Date.now() / 1000) + 600,
+      linkFrom: linkFrom ?? undefined,
+    },
     env.SESSION_SECRET,
   );
   const authorize = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -543,6 +633,23 @@ async function finishGoogleLogin(request: Request, env: Env) {
   const username = profile.name?.trim() || profile.email?.split("@")[0] || "Google účet";
   const avatar = profile.picture ?? null;
   const now = Math.floor(Date.now() / 1000);
+  if (oauth.linkFrom) {
+    const current = await session(request, env);
+    if (!sameIdentity(current, oauth.linkFrom)) {
+      return authErrorRedirect(request, oauth.returnTo, "link_requires_login");
+    }
+    const error = await linkCentralIdentity(
+      request,
+      oauth.linkFrom,
+      env,
+      "google",
+      token.access_token,
+    );
+    if (error) return authErrorRedirect(request, oauth.returnTo, error);
+    const target = new URL(safeReturnTo(oauth.returnTo), request.url);
+    target.searchParams.set("account_linked", "google");
+    return Response.redirect(target, 302);
+  }
   await env.DB.prepare(
     `INSERT INTO users (discord_user_id, username, avatar_hash, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?)

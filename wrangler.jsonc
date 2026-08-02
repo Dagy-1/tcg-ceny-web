@@ -7,7 +7,8 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
-    "DISCORD_REDIRECT_URI": "https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/discord/callback"
+    "DISCORD_REDIRECT_URI": "https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/discord/callback",
+    "GOOGLE_REDIRECT_URI": "https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/google/callback"
   },
   "routes": [
     {

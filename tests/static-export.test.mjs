@@ -112,6 +112,10 @@ test("portfolio API keeps authentication and ownership checks server-side", asyn
   assert.match(api, /discord_not_configured/);
   assert.match(api, /google_not_configured/);
   assert.match(api, /google:\$\{profile\.sub\}/);
+  assert.match(api, /linkFrom\?: SessionUser/);
+  assert.match(api, /\/api\/v1\/account\/identities/);
+  assert.match(api, /access_token: accessToken/);
+  assert.match(api, /sameIdentity\(current, oauth\.linkFrom\)/);
   assert.match(migration, /FOREIGN KEY \(discord_user_id\)/);
   assert.match(exampleVars, /SESSION_SECRET=/);
   assert.match(exampleVars, /GOOGLE_CLIENT_ID=/);

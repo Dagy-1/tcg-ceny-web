@@ -292,6 +292,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
   line-height: 1.45;
 }
 
+.auth-notice {
+  margin: 9px 3px 0;
+  padding: 9px 10px;
+  border-left: 2px solid #38d781;
+  color: #bff5d5;
+  background: rgba(56, 215, 129, .07);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .auth-privacy {
   margin: 10px 6px 2px;
   color: #738197;
@@ -341,6 +351,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .auth-menu-link:hover {
   color: var(--gold-soft);
   background: rgba(230, 184, 74, .06);
+}
+
+.auth-link-account {
+  color: #c9d5e5;
+}
+
+.auth-link-account span {
+  color: var(--gold-soft);
+  font-size: 16px;
 }
 
 .auth-logout {
