@@ -539,6 +539,44 @@ function smoothChartPath(points: Array<{ x: number; y: number }>) {
   return path;
 }
 
+function portfolioAxisStep(maximumValue: number, valueRange: number) {
+  let step = maximumValue < 5_000
+    ? 250
+    : maximumValue < 20_000
+      ? 500
+      : maximumValue < 50_000
+        ? 1_000
+        : maximumValue < 100_000
+          ? 2_500
+          : 5_000;
+
+  while (valueRange / step > 4) step *= 2;
+  return step;
+}
+
+function portfolioAxisScale(values: number[]) {
+  const rawMinimum = values.length ? Math.min(...values) : 0;
+  const rawMaximum = values.length ? Math.max(...values) : 1;
+  const step = portfolioAxisStep(rawMaximum, rawMaximum - rawMinimum);
+  let minimum = Math.max(0, Math.floor(rawMinimum / step) * step);
+  let maximum = Math.ceil(rawMaximum / step) * step;
+
+  if (minimum === maximum) {
+    minimum = Math.max(0, minimum - step);
+    maximum += step;
+  } else if (maximum - minimum < step * 2) {
+    if (minimum >= step) minimum -= step;
+    else maximum += step;
+  }
+
+  const ticks = Array.from(
+    { length: Math.round((maximum - minimum) / step) + 1 },
+    (_, index) => minimum + index * step,
+  );
+
+  return { minimum, maximum, ticks };
+}
+
 function PortfolioHistoryChart({
   history,
   period,
@@ -560,11 +598,7 @@ function PortfolioHistoryChart({
   const bottom = height - plot.bottom;
   const plotWidth = width - plot.left - plot.right;
   const values = points.flatMap((point) => [point.invested, point.marketValue]);
-  const rawMinimum = values.length ? Math.min(...values) : 0;
-  const rawMaximum = values.length ? Math.max(...values) : 1;
-  const padding = Math.max((rawMaximum - rawMinimum) * 0.16, rawMaximum * 0.035, 100);
-  const minimum = Math.max(0, rawMinimum - padding);
-  const maximum = Math.max(rawMaximum + padding, minimum + 1);
+  const { minimum, maximum, ticks: axisTicks } = portfolioAxisScale(values);
   const xFor = (index: number) => (
     points.length === 1
       ? plot.left + plotWidth / 2
@@ -689,18 +723,17 @@ function PortfolioHistoryChart({
               onPointerMove={selectNearestPoint}
               onPointerDown={selectNearestPoint}
             >
-              {[0, 1, 2, 3].map((line) => {
-                const y = plot.top + (line / 3) * (bottom - plot.top);
-                const axisValue = maximum - (line / 3) * (maximum - minimum);
+              {[...axisTicks].reverse().map((axisValue) => {
+                const y = yFor(axisValue);
                 return (
-                  <g key={line}>
+                  <g key={axisValue}>
                     <text
                       className="portfolio-chart-axis-value"
                       x={plot.left - 12}
                       y={y + 4}
                       textAnchor="end"
                     >
-                      {formatCzk(Math.round(axisValue / 10) * 10)}
+                      {formatCzk(axisValue)}
                     </text>
                     <line className="portfolio-chart-grid" x1={plot.left} y1={y} x2={width - plot.right} y2={y} />
                   </g>

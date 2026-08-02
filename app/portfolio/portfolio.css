@@ -622,9 +622,10 @@
 
 .portfolio-chart-invested {
   stroke: var(--pf-gold);
-  stroke-width: 2;
-  stroke-dasharray: 8 7;
-  opacity: 0.78;
+  stroke-width: 2.5;
+  stroke-dasharray: 9 6;
+  opacity: 0.94;
+  filter: drop-shadow(0 0 5px rgba(246, 196, 72, 0.24));
 }
 
 .portfolio-chart-dot {
@@ -709,7 +710,12 @@
 }
 
 .portfolio-history-legend > span.invested::before {
-  background: var(--pf-gold);
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--pf-gold) 0 8px,
+    transparent 8px 12px
+  );
 }
 
 .portfolio-history-legend small {
