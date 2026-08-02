@@ -41,9 +41,15 @@ type PortfolioHistoryPoint = {
   profit: number;
 };
 
+type PortfolioInvestmentPoint = {
+  date: string;
+  invested: number;
+};
+
 type PortfolioHistory = {
   days: number;
   points: PortfolioHistoryPoint[];
+  investmentPoints: PortfolioInvestmentPoint[];
   firstDate: string | null;
   latestDate: string | null;
 };
@@ -539,6 +545,17 @@ function smoothChartPath(points: Array<{ x: number; y: number }>) {
   return path;
 }
 
+function stepChartPath(points: Array<{ x: number; y: number }>) {
+  if (!points.length) return "";
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    path += ` L ${current.x} ${previous.y} L ${current.x} ${current.y}`;
+  }
+  return path;
+}
+
 function portfolioAxisStep(maximumValue: number, valueRange: number) {
   let step = maximumValue < 5_000
     ? 250
@@ -592,23 +609,39 @@ function PortfolioHistoryChart({
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
   const periodPickerRef = useRef<HTMLDivElement>(null);
   const points = history?.points ?? [];
+  const investmentPoints = history?.investmentPoints?.length
+    ? history.investmentPoints
+    : points.map((point) => ({ date: point.date, invested: point.invested }));
   const width = 760;
   const height = 280;
   const plot = { left: 82, right: 18, top: 22, bottom: 45 };
   const bottom = height - plot.bottom;
   const plotWidth = width - plot.left - plot.right;
-  const values = points.flatMap((point) => [point.invested, point.marketValue]);
+  const values = [
+    ...points.map((point) => point.marketValue),
+    ...investmentPoints.map((point) => point.invested),
+  ];
   const { minimum, maximum, ticks: axisTicks } = portfolioAxisScale(values);
-  const xFor = (index: number) => (
-    points.length === 1
+  const chartDates = [...new Set([
+    ...points.map((point) => point.date),
+    ...investmentPoints.map((point) => point.date),
+  ])].sort();
+  const firstTimestamp = chartDates.length ? Date.parse(`${chartDates[0]}T12:00:00`) : 0;
+  const lastTimestamp = chartDates.length
+    ? Date.parse(`${chartDates.at(-1)}T12:00:00`)
+    : firstTimestamp;
+  const xForDate = (value: string) => (
+    firstTimestamp === lastTimestamp
       ? plot.left + plotWidth / 2
-      : plot.left + (index / Math.max(points.length - 1, 1)) * plotWidth
+      : plot.left
+        + ((Date.parse(`${value}T12:00:00`) - firstTimestamp) / (lastTimestamp - firstTimestamp))
+          * plotWidth
   );
   const yFor = (value: number) => plot.top + ((maximum - value) / (maximum - minimum)) * (bottom - plot.top);
-  const marketPoints = points.map((point, index) => ({ x: xFor(index), y: yFor(point.marketValue) }));
-  const investedPoints = points.map((point, index) => ({ x: xFor(index), y: yFor(point.invested) }));
+  const marketPoints = points.map((point) => ({ x: xForDate(point.date), y: yFor(point.marketValue) }));
+  const investedPoints = investmentPoints.map((point) => ({ x: xForDate(point.date), y: yFor(point.invested) }));
   const marketPath = smoothChartPath(marketPoints);
-  const investedPath = smoothChartPath(investedPoints);
+  const investedPath = stepChartPath(investedPoints);
   const areaPath = marketPoints.length > 1
     ? `${marketPath} L ${marketPoints.at(-1)?.x} ${bottom} L ${marketPoints[0].x} ${bottom} Z`
     : "";
@@ -621,9 +654,14 @@ function PortfolioHistoryChart({
     ? Math.max(points.length - 1, 0)
     : Math.min(activeIndex, Math.max(points.length - 1, 0));
   const active = points[effectiveActiveIndex] ?? null;
-  const activeX = points.length > 1
-    ? Math.max(10, Math.min(90, (effectiveActiveIndex / (points.length - 1)) * 100))
+  const activeX = active
+    ? Math.max(10, Math.min(90, (xForDate(active.date) / width) * 100))
     : 50;
+  const activeInvested = active
+    ? [...investmentPoints]
+        .reverse()
+        .find((point) => point.date <= active.date)?.invested ?? active.invested
+    : 0;
   const formatDate = (value: string) => new Intl.DateTimeFormat("cs-CZ", {
     day: "numeric",
     month: "short",
@@ -648,8 +686,19 @@ function PortfolioHistoryChart({
   const selectNearestPoint = (event: React.PointerEvent<SVGSVGElement>) => {
     if (points.length < 2) return;
     const bounds = event.currentTarget.getBoundingClientRect();
-    const relative = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
-    setActiveIndex(Math.round(relative * (points.length - 1)));
+    const cursorX = Math.max(
+      0,
+      Math.min(width, ((event.clientX - bounds.left) / bounds.width) * width),
+    );
+    const nearest = marketPoints.reduce(
+      (best, point, index) => (
+        Math.abs(point.x - cursorX) < Math.abs(marketPoints[best].x - cursorX)
+          ? index
+          : best
+      ),
+      0,
+    );
+    setActiveIndex(nearest);
   };
 
   return (
@@ -713,7 +762,7 @@ function PortfolioHistoryChart({
         <div className="portfolio-history-loading"><span /> Načítám skutečný vývoj sbírky…</div>
       ) : points.length ? (
         <>
-          {points.length > 1 ? (
+          {chartDates.length > 1 ? (
             <>
           <div className="portfolio-history-visual">
             <svg
@@ -754,25 +803,25 @@ function PortfolioHistoryChart({
               {active && (
                 <line
                   className="portfolio-chart-cursor"
-                  x1={xFor(effectiveActiveIndex)}
+                  x1={xForDate(active.date)}
                   y1={plot.top}
-                  x2={xFor(effectiveActiveIndex)}
+                  x2={xForDate(active.date)}
                   y2={bottom}
                 />
               )}
-              <text className="portfolio-chart-date" x={plot.left} y={height - 13}>{formatDate(points[0].date)}</text>
+              <text className="portfolio-chart-date" x={plot.left} y={height - 13}>{formatDate(chartDates[0])}</text>
               <text className="portfolio-chart-date" x={width - plot.right} y={height - 13} textAnchor="end">
-                {formatDate(points.at(-1)?.date ?? points[0].date)}
+                {formatDate(chartDates.at(-1) ?? chartDates[0])}
               </text>
             </svg>
             {active && (
               <div className="portfolio-chart-tooltip" style={{ left: `${activeX}%` }}>
                 <span>{formatDate(active.date)}</span>
                 <strong>{formatCzk(active.marketValue)}</strong>
-                <small>Investováno {formatCzk(active.invested)}</small>
-                <em className={active.profit > 0 ? "is-positive" : active.profit < 0 ? "is-negative" : "is-neutral"}>
-                  Zisk / ztráta {active.profit > 0 ? "+" : ""}{formatCzk(active.profit)}
-                  {" · "}{formatPercent(active.invested ? (active.profit / active.invested) * 100 : 0)}
+                <small>Investováno {formatCzk(activeInvested)}</small>
+                <em className={active.marketValue - activeInvested > 0 ? "is-positive" : active.marketValue - activeInvested < 0 ? "is-negative" : "is-neutral"}>
+                  Zisk / ztráta {active.marketValue - activeInvested > 0 ? "+" : ""}{formatCzk(active.marketValue - activeInvested)}
+                  {" · "}{formatPercent(activeInvested ? ((active.marketValue - activeInvested) / activeInvested) * 100 : 0)}
                 </em>
               </div>
             )}

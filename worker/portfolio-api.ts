@@ -326,9 +326,16 @@ export async function centralPortfolioRequest(
             profit: Number(point.profit_czk) || 0,
           }))
         : [];
+      const investmentPoints = Array.isArray(payload.investment_points)
+        ? (payload.investment_points as Record<string, unknown>[]).map((point) => ({
+            date: String(point.invested_on || ""),
+            invested: Number(point.invested_czk) || 0,
+          }))
+        : [];
       return json({
         days: Number(payload.days) || 90,
         points,
+        investmentPoints,
         firstDate: payload.first_valued_on || null,
         latestDate: payload.latest_valued_on || null,
       });

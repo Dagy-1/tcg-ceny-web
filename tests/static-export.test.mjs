@@ -278,6 +278,12 @@ test("central portfolio history proxy preserves the selected period", async () =
           profit_czk: 107,
         },
       ],
+      investment_points: [
+        {
+          invested_on: "2026-07-22",
+          invested_czk: 2790,
+        },
+      ],
       first_valued_on: "2026-08-01",
       latest_valued_on: "2026-08-01",
     });
@@ -302,11 +308,16 @@ test("central portfolio history proxy preserves the selected period", async () =
 
     assert.equal(response.status, 200);
     assert.equal(forwardedUrl, "https://backend.example/api/v1/portfolio/history?days=30");
-    assert.deepEqual((await response.json()).points[0], {
+    const payload = await response.json();
+    assert.deepEqual(payload.points[0], {
       date: "2026-08-01",
       invested: 9990,
       marketValue: 10097,
       profit: 107,
+    });
+    assert.deepEqual(payload.investmentPoints[0], {
+      date: "2026-07-22",
+      invested: 2790,
     });
   } finally {
     globalThis.fetch = originalFetch;
