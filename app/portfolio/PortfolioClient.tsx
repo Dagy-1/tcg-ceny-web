@@ -630,6 +630,22 @@ function PortfolioHistoryChart({
     ...points.map((point) => point.date),
     ...investmentPoints.map((point) => point.date),
   ])].sort();
+  const chartEndDate = chartDates.at(-1) ?? null;
+  const lastInvestmentPoint = investmentPoints.at(-1) ?? null;
+  const investmentContinuesToChartEnd = Boolean(
+    chartEndDate
+      && lastInvestmentPoint
+      && lastInvestmentPoint.date < chartEndDate,
+  );
+  const displayedInvestmentPoints = investmentContinuesToChartEnd
+    ? [
+        ...investmentPoints,
+        {
+          date: chartEndDate as string,
+          invested: lastInvestmentPoint?.invested ?? 0,
+        },
+      ]
+    : investmentPoints;
   const firstTimestamp = chartDates.length ? Date.parse(`${chartDates[0]}T12:00:00`) : 0;
   const lastTimestamp = chartDates.length
     ? Date.parse(`${chartDates.at(-1)}T12:00:00`)
@@ -643,7 +659,10 @@ function PortfolioHistoryChart({
   );
   const yFor = (value: number) => plot.top + ((maximum - value) / (maximum - minimum)) * (bottom - plot.top);
   const marketPoints = points.map((point) => ({ x: xForDate(point.date), y: yFor(point.marketValue) }));
-  const investedPoints = investmentPoints.map((point) => ({ x: xForDate(point.date), y: yFor(point.invested) }));
+  const investedPoints = displayedInvestmentPoints.map((point) => ({
+    x: xForDate(point.date),
+    y: yFor(point.invested),
+  }));
   const marketPath = smoothChartPath(marketPoints);
   const investedPath = stepChartPath(investedPoints);
   const areaPath = marketPoints.length > 1
@@ -658,8 +677,16 @@ function PortfolioHistoryChart({
     ? points[Math.min(activeTarget.index, Math.max(points.length - 1, 0))] ?? null
     : null;
   const activeInvestment = activeTarget?.series === "invested"
-    ? investmentPoints[Math.min(activeTarget.index, Math.max(investmentPoints.length - 1, 0))] ?? null
+    ? displayedInvestmentPoints[
+        Math.min(activeTarget.index, Math.max(displayedInvestmentPoints.length - 1, 0))
+      ] ?? null
     : null;
+  const activeInvestmentIsContinuation = Boolean(
+    activeInvestment
+      && investmentContinuesToChartEnd
+      && activeTarget?.series === "invested"
+      && activeTarget.index === displayedInvestmentPoints.length - 1,
+  );
   const activeDate = activeMarket?.date ?? activeInvestment?.date ?? null;
   const activeX = activeDate
     ? Math.max(10, Math.min(90, (xForDate(activeDate) / width) * 100))
@@ -711,10 +738,10 @@ function PortfolioHistoryChart({
   };
 
   const selectInvestmentPoint = (event: React.PointerEvent<SVGPathElement>) => {
-    if (!investmentPoints.length) return;
+    if (!displayedInvestmentPoints.length) return;
     const cursorX = pointerX(event);
     let index = 0;
-    investmentPoints.forEach((point, pointIndex) => {
+    displayedInvestmentPoints.forEach((point, pointIndex) => {
       if (xForDate(point.date) <= cursorX + 1) index = pointIndex;
     });
     setActiveTarget({ series: "invested", index });
@@ -865,7 +892,11 @@ function PortfolioHistoryChart({
                 ) : (
                   <>
                     <strong>{formatCzk(activeInvested)}</strong>
-                    <small>Celkem investováno po nákupu</small>
+                    <small>
+                      {activeInvestmentIsContinuation
+                        ? "Celkem investováno k tomuto dni"
+                        : "Celkem investováno po nákupu"}
+                    </small>
                   </>
                 )}
               </div>
