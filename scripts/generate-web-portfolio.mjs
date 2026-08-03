@@ -114,6 +114,7 @@ for (const source of masterProducts) {
 
   const cached = prices[id] || {};
   const cachedPrice = Number(cached.price_czk);
+  const sourceCzk = Number(source.market_value_czk);
   const sourceUsd = Number(source.market_value_usd ?? source.pricing?.market_value_usd);
   const sourceEur = Number(
     source.market_value_eur ??
@@ -123,6 +124,8 @@ for (const source of masterProducts) {
   );
   const marketPrice = Number.isFinite(cachedPrice) && cachedPrice > 0
     ? Math.round(cachedPrice)
+    : Number.isFinite(sourceCzk) && sourceCzk > 0
+      ? Math.round(sourceCzk)
     : Number.isFinite(sourceUsd) && sourceUsd > 0
       ? Math.round(sourceUsd * usdToCzk)
       : Number.isFinite(sourceEur) && sourceEur > 0
@@ -149,6 +152,7 @@ for (const source of masterProducts) {
     priceUpdatedAt: marketPrice
       ? String(
           cached.updated_at ||
+          source.pricing?.observed_at ||
           source.pricing?.snapshot_created_at ||
           priceCache.updated_at ||
           "",
