@@ -6,6 +6,7 @@ import { canonicalHostRedirect } from "../worker/canonical-host.ts";
 import {
   centralPortfolioRequest,
   handlePortfolioApi,
+  oauthRedirectUri,
 } from "../worker/portfolio-api.ts";
 
 const output = new URL("../out/", import.meta.url);
@@ -478,6 +479,32 @@ test("production www requests redirect to the canonical host", () => {
   );
   assert.equal(
     canonicalHostRedirect(new Request("http://localhost:3100/katalog/")),
+    null,
+  );
+});
+
+test("OAuth callbacks follow the approved current host", () => {
+  assert.equal(
+    oauthRedirectUri(
+      new Request("https://tcgceny.cz/api/auth/discord"),
+      "discord",
+      "https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/discord/callback",
+    ),
+    "https://tcgceny.cz/api/auth/discord/callback",
+  );
+  assert.equal(
+    oauthRedirectUri(
+      new Request("https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/google"),
+      "google",
+    ),
+    "https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/google/callback",
+  );
+  assert.equal(
+    oauthRedirectUri(
+      new Request("https://attacker.example/api/auth/discord"),
+      "discord",
+      "https://attacker.example/api/auth/discord/callback",
+    ),
     null,
   );
 });

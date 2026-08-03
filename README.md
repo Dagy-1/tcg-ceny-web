@@ -50,10 +50,21 @@ Příkaz vytvoří statickou produkční verzi ve složce `out/` a následně
 zkontroluje všechny veřejné stránky, sitemapu, robots.txt a bezpečnostní
 hlavičky.
 
-## Publikování na Netlify
+## Publikování na Cloudflare Workers
 
 1. Spusť `npm test`.
-2. Nahraj obsah výsledné složky `out/` do stejného projektu na Netlify.
-3. Po nasazení ověř `https://tcgceny.cz/` a `https://tcgceny.cz/sitemap.xml`.
+2. Nasaď Worker příkazem `npx wrangler deploy`.
+3. Ověř testovací adresu `https://tcg-ceny-web.tcg-ceny.workers.dev/`.
+4. Po přepnutí nameserverů ověř také `https://tcgceny.cz/`, katalog,
+   portfolio, sitemapu a přihlášení přes oba poskytovatele.
 
-Doména, HTTPS a e-mailové DNS záznamy se při běžné aktualizaci webu nemění.
+Před ostrým přechodem musí být u OAuth aplikací povolené tyto callbacky:
+
+- `https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/discord/callback`
+- `https://tcgceny.cz/api/auth/discord/callback`
+- `https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/google/callback`
+- `https://tcgceny.cz/api/auth/google/callback`
+
+Worker callback odvozuje z aktuální povolené domény. Testovací a ostrá verze proto
+mohou fungovat souběžně. Doména, HTTPS ani e-mailové DNS záznamy se při běžném
+nasazení Workeru nemění.

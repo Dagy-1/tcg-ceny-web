@@ -49,6 +49,12 @@ const OAUTH_COOKIE = "tcg_oauth";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const CENTRAL_REQUEST_TIMEOUT_MS = 5_000;
 const encoder = new TextEncoder();
+const OAUTH_CALLBACK_HOSTS = new Set([
+  "tcgceny.cz",
+  "tcg-ceny-web.tcg-ceny.workers.dev",
+  "localhost",
+  "127.0.0.1",
+]);
 const products = new Map(
   (portfolioData.products as CatalogProduct[]).map((product) => [product.id, product]),
 );
@@ -195,7 +201,6 @@ function hasDiscordOAuthConfig(env: Env) {
   return [
     env.DISCORD_CLIENT_ID,
     env.DISCORD_CLIENT_SECRET,
-    env.DISCORD_REDIRECT_URI,
     env.SESSION_SECRET,
   ].every((value) => (
     typeof value === "string" &&
@@ -209,7 +214,6 @@ function hasGoogleOAuthConfig(env: Env) {
   return [
     env.GOOGLE_CLIENT_ID,
     env.GOOGLE_CLIENT_SECRET,
-    env.GOOGLE_REDIRECT_URI,
     env.SESSION_SECRET,
   ].every((value) => (
     typeof value === "string" &&
@@ -217,6 +221,33 @@ function hasGoogleOAuthConfig(env: Env) {
     !value.startsWith("your_") &&
     !value.startsWith("generate_")
   ));
+}
+
+export function oauthRedirectUri(
+  request: Request,
+  provider: AuthProvider,
+  configuredRedirectUri = "",
+) {
+  const requestUrl = new URL(request.url);
+  const callbackPath = `/api/auth/${provider}/callback`;
+
+  if (OAUTH_CALLBACK_HOSTS.has(requestUrl.hostname.toLowerCase())) {
+    return new URL(callbackPath, requestUrl.origin).toString();
+  }
+
+  try {
+    const configured = new URL(configuredRedirectUri);
+    if (
+      OAUTH_CALLBACK_HOSTS.has(configured.hostname.toLowerCase()) &&
+      configured.pathname === callbackPath
+    ) {
+      return configured.toString();
+    }
+  } catch {
+    // Invalid or missing fallback configuration is handled by the caller.
+  }
+
+  return null;
 }
 
 function authErrorRedirect(request: Request, returnTo: string, code: string) {
@@ -450,7 +481,8 @@ async function linkedCentralProviders(
 async function beginDiscordLogin(request: Request, env: Env) {
   const url = new URL(request.url);
   const returnTo = safeReturnTo(url.searchParams.get("return_to"));
-  if (!hasDiscordOAuthConfig(env)) {
+  const redirectUri = oauthRedirectUri(request, "discord", env.DISCORD_REDIRECT_URI);
+  if (!hasDiscordOAuthConfig(env) || !redirectUri) {
     return authErrorRedirect(request, returnTo, "discord_not_configured");
   }
 
@@ -477,7 +509,7 @@ async function beginDiscordLogin(request: Request, env: Env) {
   const authorize = new URL("https://discord.com/oauth2/authorize");
   authorize.search = new URLSearchParams({
     client_id: env.DISCORD_CLIENT_ID,
-    redirect_uri: env.DISCORD_REDIRECT_URI,
+    redirect_uri: redirectUri,
     response_type: "code",
     scope: "identify",
     state,
@@ -497,6 +529,7 @@ async function beginDiscordLogin(request: Request, env: Env) {
 
 async function finishDiscordLogin(request: Request, env: Env) {
   const url = new URL(request.url);
+  const redirectUri = oauthRedirectUri(request, "discord", env.DISCORD_REDIRECT_URI);
   const oauth = await readSignedToken<OAuthState>(cookie(request, OAUTH_COOKIE), env.SESSION_SECRET);
   const state = url.searchParams.get("state");
   const code = url.searchParams.get("code");
@@ -506,7 +539,8 @@ async function finishDiscordLogin(request: Request, env: Env) {
     oauth.exp < Date.now() / 1000 ||
     !state ||
     oauth.state !== state ||
-    !code
+    !code ||
+    !redirectUri
   ) {
     return authErrorRedirect(request, oauth?.returnTo ?? "/portfolio/", "oauth_failed");
   }
@@ -519,7 +553,7 @@ async function finishDiscordLogin(request: Request, env: Env) {
       client_secret: env.DISCORD_CLIENT_SECRET,
       grant_type: "authorization_code",
       code,
-      redirect_uri: env.DISCORD_REDIRECT_URI,
+      redirect_uri: redirectUri,
       code_verifier: oauth.verifier,
     }),
   });
@@ -583,7 +617,8 @@ async function finishDiscordLogin(request: Request, env: Env) {
 async function beginGoogleLogin(request: Request, env: Env) {
   const url = new URL(request.url);
   const returnTo = safeReturnTo(url.searchParams.get("return_to"));
-  if (!hasGoogleOAuthConfig(env)) {
+  const redirectUri = oauthRedirectUri(request, "google", env.GOOGLE_REDIRECT_URI);
+  if (!hasGoogleOAuthConfig(env) || !redirectUri) {
     return authErrorRedirect(request, returnTo, "google_not_configured");
   }
 
@@ -610,7 +645,7 @@ async function beginGoogleLogin(request: Request, env: Env) {
   const authorize = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authorize.search = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID,
-    redirect_uri: env.GOOGLE_REDIRECT_URI,
+    redirect_uri: redirectUri,
     response_type: "code",
     scope: "openid profile email",
     state,
@@ -631,6 +666,7 @@ async function beginGoogleLogin(request: Request, env: Env) {
 
 async function finishGoogleLogin(request: Request, env: Env) {
   const url = new URL(request.url);
+  const redirectUri = oauthRedirectUri(request, "google", env.GOOGLE_REDIRECT_URI);
   const oauth = await readSignedToken<OAuthState>(cookie(request, OAUTH_COOKIE), env.SESSION_SECRET);
   const state = url.searchParams.get("state");
   const code = url.searchParams.get("code");
@@ -640,7 +676,8 @@ async function finishGoogleLogin(request: Request, env: Env) {
     oauth.exp < Date.now() / 1000 ||
     !state ||
     oauth.state !== state ||
-    !code
+    !code ||
+    !redirectUri
   ) {
     return authErrorRedirect(request, oauth?.returnTo ?? "/portfolio/", "oauth_failed");
   }
@@ -653,7 +690,7 @@ async function finishGoogleLogin(request: Request, env: Env) {
       client_secret: env.GOOGLE_CLIENT_SECRET,
       grant_type: "authorization_code",
       code,
-      redirect_uri: env.GOOGLE_REDIRECT_URI,
+      redirect_uri: redirectUri,
       code_verifier: oauth.verifier,
     }),
   });
