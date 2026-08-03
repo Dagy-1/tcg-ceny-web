@@ -75,14 +75,194 @@ const historyPeriodOptions: Array<{ value: HistoryPeriod; label: string }> = [
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+function productImageSource(source: string) {
+  try {
+    const url = new URL(source, window.location.origin);
+    return url.hostname === "pokemonproductimages.pokedata.io"
+      ? `/api/product-image?url=${encodeURIComponent(url.toString())}`
+      : source;
+  } catch {
+    return source;
+  }
+}
+
+function loadImage(source: string, signal: AbortSignal) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    const abort = () => {
+      image.src = "";
+      reject(new DOMException("Image load aborted", "AbortError"));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    image.onload = () => {
+      signal.removeEventListener("abort", abort);
+      resolve(image);
+    };
+    image.onerror = () => {
+      signal.removeEventListener("abort", abort);
+      reject(new Error("Product image could not be loaded"));
+    };
+    image.decoding = "async";
+    image.src = source;
+  });
+}
+
+function canvasBlob(canvas: HTMLCanvasElement) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => blob ? resolve(blob) : reject(new Error("Transparent image could not be created")),
+      "image/webp",
+      0.86,
+    );
+  });
+}
+
+async function removeEdgeWhite(source: string, signal: AbortSignal) {
+  const image = await loadImage(productImageSource(source), signal);
+  if (signal.aborted) throw new DOMException("Image processing aborted", "AbortError");
+
+  const maximumSide = 480;
+  const scale = Math.min(1, maximumSide / Math.max(image.naturalWidth, image.naturalHeight));
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("Canvas is unavailable");
+  context.drawImage(image, 0, 0, width, height);
+
+  const imageData = context.getImageData(0, 0, width, height);
+  const pixels = imageData.data;
+  const removable = new Uint8Array(width * height);
+  const queue = new Int32Array(width * height);
+  let queueStart = 0;
+  let queueEnd = 0;
+
+  const enqueue = (x: number, y: number) => {
+    const index = y * width + x;
+    if (removable[index]) return;
+    const offset = index * 4;
+    const red = pixels[offset];
+    const green = pixels[offset + 1];
+    const blue = pixels[offset + 2];
+    const alpha = pixels[offset + 3];
+    const minimum = Math.min(red, green, blue);
+    const maximum = Math.max(red, green, blue);
+    if (alpha !== 0 && (minimum < 224 || maximum - minimum > 24)) return;
+    removable[index] = 1;
+    queue[queueEnd++] = index;
+  };
+
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x, 0);
+    enqueue(x, height - 1);
+  }
+  for (let y = 0; y < height; y += 1) {
+    enqueue(0, y);
+    enqueue(width - 1, y);
+  }
+
+  while (queueStart < queueEnd) {
+    const index = queue[queueStart++];
+    const x = index % width;
+    const y = Math.floor(index / width);
+    if (x > 0) enqueue(x - 1, y);
+    if (x + 1 < width) enqueue(x + 1, y);
+    if (y > 0) enqueue(x, y - 1);
+    if (y + 1 < height) enqueue(x, y + 1);
+  }
+
+  let left = width;
+  let top = height;
+  let right = -1;
+  let bottom = -1;
+  for (let index = 0; index < removable.length; index += 1) {
+    const offset = index * 4;
+    if (removable[index]) {
+      const whiteness = Math.min(pixels[offset], pixels[offset + 1], pixels[offset + 2]);
+      pixels[offset + 3] = Math.max(0, Math.min(255, (240 - whiteness) * 16));
+    }
+    if (pixels[offset + 3] > 8) {
+      const x = index % width;
+      const y = Math.floor(index / width);
+      left = Math.min(left, x);
+      top = Math.min(top, y);
+      right = Math.max(right, x);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  context.putImageData(imageData, 0, 0);
+
+  if (right < left || bottom < top) throw new Error("Product image is empty");
+  const padding = 2;
+  left = Math.max(0, left - padding);
+  top = Math.max(0, top - padding);
+  right = Math.min(width - 1, right + padding);
+  bottom = Math.min(height - 1, bottom + padding);
+  const output = document.createElement("canvas");
+  output.width = right - left + 1;
+  output.height = bottom - top + 1;
+  output.getContext("2d")?.drawImage(
+    canvas,
+    left,
+    top,
+    output.width,
+    output.height,
+    0,
+    0,
+    output.width,
+    output.height,
+  );
+  return canvasBlob(output);
+}
+
 function ProductImage({ product }: { product: Product }) {
   const [failed, setFailed] = useState(false);
-  if (!product.image || failed) {
+  const [displaySource, setDisplaySource] = useState("");
+
+  useEffect(() => {
+    setFailed(false);
+    setDisplaySource("");
+    if (!product.image) return;
+
+    let objectUrl = "";
+    const controller = new AbortController();
+    const source = product.image;
+    let isPokeData = false;
+    try {
+      isPokeData = new URL(source, window.location.origin).hostname === "pokemonproductimages.pokedata.io";
+    } catch {
+      isPokeData = false;
+    }
+
+    if (!isPokeData) {
+      setDisplaySource(source);
+      return () => controller.abort();
+    }
+
+    removeEdgeWhite(source, controller.signal)
+      .then((blob) => {
+        if (controller.signal.aborted) return;
+        objectUrl = URL.createObjectURL(blob);
+        setDisplaySource(objectUrl);
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) setFailed(true);
+      });
+
+    return () => {
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [product.image]);
+
+  if (!product.image || failed || !displaySource) {
     return <span className="portfolio-image-fallback">TCG</span>;
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={product.image} alt="" onError={() => setFailed(true)} />
+    <img src={displaySource} alt="" onError={() => setFailed(true)} />
   );
 }
 

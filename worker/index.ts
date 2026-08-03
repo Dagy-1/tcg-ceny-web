@@ -4,6 +4,7 @@ import handler from "vinext/server/app-router-entry";
 import { handlePortfolioApi } from "./portfolio-api";
 import { handleCatalogApi } from "./catalog-api";
 import { canonicalHostRedirect } from "./canonical-host";
+import { handleProductImage } from "./product-image";
 
 interface Env {
   ASSETS: Fetcher;
@@ -82,6 +83,11 @@ const worker = {
     const canonicalResponse = canonicalHostRedirect(request);
     if (canonicalResponse) {
       return withSecurityHeaders(canonicalResponse, url.protocol === "https:");
+    }
+
+    const productImageResponse = await handleProductImage(request);
+    if (productImageResponse) {
+      return withSecurityHeaders(productImageResponse, url.protocol === "https:");
     }
 
     const catalogResponse = await handleCatalogApi(request, env);
