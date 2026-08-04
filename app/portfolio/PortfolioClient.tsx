@@ -73,6 +73,8 @@ const historyPeriodOptions: Array<{ value: HistoryPeriod; label: string }> = [
   { value: "max", label: "Maximum" },
 ];
 
+const portfolioRefreshIntervalMs = 60_000;
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 function productImageSource(source: string) {
@@ -1133,6 +1135,7 @@ export default function PortfolioClient({
   const [historyPeriod, setHistoryPeriod] = useState<HistoryPeriod>(90);
   const [history, setHistory] = useState<PortfolioHistory | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const portfolioRefreshInFlight = useRef(false);
 
   const loadHistory = useCallback(async (period: HistoryPeriod) => {
     setHistoryLoading(true);
@@ -1149,6 +1152,24 @@ export default function PortfolioClient({
       setHistory(null);
     } finally {
       setHistoryLoading(false);
+    }
+  }, []);
+
+  const loadPortfolio = useCallback(async () => {
+    if (portfolioRefreshInFlight.current) return null;
+    portfolioRefreshInFlight.current = true;
+    try {
+      const response = await fetch("/api/portfolio", {
+        cache: "no-store",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("Portfolio unavailable");
+      const portfolio = await response.json() as { items: PortfolioItem[] };
+      setItems(portfolio.items);
+      return portfolio.items;
+    } finally {
+      portfolioRefreshInFlight.current = false;
     }
   }, []);
 
@@ -1174,22 +1195,46 @@ export default function PortfolioClient({
         }
         setState("signed-in");
         try {
-          const response = await fetch("/api/portfolio", {
-            cache: "no-store",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-          });
-          if (!response.ok) throw new Error();
-          const portfolio = await response.json() as { items: PortfolioItem[] };
-          setItems(portfolio.items);
-          if (portfolio.items.length) void loadHistory(90);
+          const portfolioItems = await loadPortfolio();
+          if (portfolioItems?.length) void loadHistory(90);
           if (add) setAdding(true);
         } catch {
           setNotice("Jsi přihlášený, ale portfolio se teď nepodařilo načíst. Obnov stránku a zkus to znovu.");
         }
       })
       .catch(() => setState("signed-out"));
-  }, [loadHistory]);
+  }, [loadHistory, loadPortfolio]);
+
+  useEffect(() => {
+    if (state !== "signed-in") return;
+
+    const refresh = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const portfolioItems = await loadPortfolio();
+        if (portfolioItems === null) return;
+        if (portfolioItems.length) {
+          void loadHistory(historyPeriod);
+        } else {
+          setHistory(null);
+        }
+      } catch {
+        // Keep the last successful view. A later focus or interval retries quietly.
+      }
+    };
+    const onFocus = () => void refresh();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    const interval = window.setInterval(() => void refresh(), portfolioRefreshIntervalMs);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [historyPeriod, loadHistory, loadPortfolio, state]);
 
   const totals = useMemo(() => {
     const invested = items.reduce((sum, item) => sum + item.buyPrice * item.quantity, 0);
