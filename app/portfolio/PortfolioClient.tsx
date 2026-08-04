@@ -1135,7 +1135,42 @@ export default function PortfolioClient({
   const [historyPeriod, setHistoryPeriod] = useState<HistoryPeriod>(90);
   const [history, setHistory] = useState<PortfolioHistory | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [availableProducts, setAvailableProducts] = useState(products);
   const portfolioRefreshInFlight = useRef(false);
+  const productDatabaseInFlight = useRef<Promise<Product[]> | null>(null);
+
+  const loadProductDatabase = useCallback(async () => {
+    if (availableProducts.length >= productCount) return availableProducts;
+    if (productDatabaseInFlight.current) return productDatabaseInFlight.current;
+
+    productDatabaseInFlight.current = fetch("/portfolio-products.json", {
+      cache: "force-cache",
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Product database unavailable");
+        const snapshot = await response.json() as { products?: Product[] };
+        if (!Array.isArray(snapshot.products) || snapshot.products.length < productCount) {
+          throw new Error("Product database is incomplete");
+        }
+        setAvailableProducts(snapshot.products);
+        return snapshot.products;
+      })
+      .finally(() => {
+        productDatabaseInFlight.current = null;
+      });
+
+    return productDatabaseInFlight.current;
+  }, [availableProducts, productCount]);
+
+  const openAddDialog = useCallback(async () => {
+    try {
+      await loadProductDatabase();
+      setAdding(true);
+    } catch {
+      setNotice("Databázi produktů se teď nepodařilo načíst. Zkus to prosím znovu.");
+    }
+  }, [loadProductDatabase]);
 
   const loadHistory = useCallback(async (period: HistoryPeriod) => {
     setHistoryLoading(true);
@@ -1197,13 +1232,17 @@ export default function PortfolioClient({
         try {
           const portfolioItems = await loadPortfolio();
           if (portfolioItems?.length) void loadHistory(90);
-          if (add) setAdding(true);
+          if (add) void openAddDialog();
         } catch {
           setNotice("Jsi přihlášený, ale portfolio se teď nepodařilo načíst. Obnov stránku a zkus to znovu.");
         }
       })
       .catch(() => setState("signed-out"));
-  }, [loadHistory, loadPortfolio]);
+  }, [loadHistory, loadPortfolio, openAddDialog]);
+
+  useEffect(() => {
+    if (state === "signed-in") void loadProductDatabase().catch(() => undefined);
+  }, [loadProductDatabase, state]);
 
   useEffect(() => {
     if (state !== "signed-in") return;
@@ -1328,7 +1367,7 @@ export default function PortfolioClient({
               <h2>Moje portfolio</h2>
               <p>{user?.username}, tady máš hodnotu své sbírky na jednom místě.</p>
             </div>
-            <button className="portfolio-button-primary" type="button" onClick={() => setAdding(true)}>
+            <button className="portfolio-button-primary" type="button" onClick={() => void openAddDialog()}>
               <Plus size={18} strokeWidth={2.5} aria-hidden="true" />
               Přidat produkt
             </button>
@@ -1411,7 +1450,7 @@ export default function PortfolioClient({
               <span aria-hidden="true">+</span>
               <h2>Portfolio čeká na první produkt</h2>
               <p>Vyber produkt z portfolio databáze a doplň cenu a datum nákupu.</p>
-              <button className="portfolio-button-primary" type="button" onClick={() => setAdding(true)}>
+              <button className="portfolio-button-primary" type="button" onClick={() => void openAddDialog()}>
                 Přidat první produkt
               </button>
             </div>
@@ -1426,7 +1465,7 @@ export default function PortfolioClient({
 
       {adding && (
         <AddItemDialog
-          products={products}
+          products={availableProducts}
           initialProductId={initialProductId}
           onClose={() => {
             setAdding(false);

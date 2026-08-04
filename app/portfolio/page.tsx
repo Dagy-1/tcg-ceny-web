@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function PortfolioPage() {
   return (
     <PortfolioClient
-      products={portfolioData.products}
+      products={portfolioData.products.slice(0, 8)}
       productCount={portfolioData.productCount}
       sourceUpdatedAt={portfolioData.sourceUpdatedAt}
     />

@@ -35,6 +35,7 @@ test("static export contains every public page", async () => {
     access(new URL("index.html", output)),
     access(new URL("katalog/index.html", output)),
     access(new URL("portfolio/index.html", output)),
+    access(new URL("portfolio-products.json", output)),
     access(new URL("pro-eshopy/index.html", output)),
     access(new URL("podminky-pouziti/index.html", output)),
     access(new URL("soukromi-a-cookies/index.html", output)),
@@ -45,15 +46,17 @@ test("static export contains every public page", async () => {
 });
 
 test("portfolio uses the dedicated investment database", async () => {
-  const [portfolio, portfolioDataText, portfolioSource, catalog, catalogSource, privacy] = await Promise.all([
+  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, catalog, catalogSource, privacy] = await Promise.all([
     readOutput("portfolio/index.html"),
     readFile(new URL("../app/portfolio/portfolio-data.json", import.meta.url), "utf8"),
+    readOutput("portfolio-products.json"),
     readFile(new URL("../app/portfolio/PortfolioClient.tsx", import.meta.url), "utf8"),
     readOutput("katalog/index.html"),
     readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
     readOutput("soukromi-a-cookies/index.html"),
   ]);
   const portfolioData = JSON.parse(portfolioDataText);
+  const publicPortfolioData = JSON.parse(publicPortfolioDataText);
 
   assert.match(portfolio, /Hodnota tvé sbírky/);
   assert.match(portfolio, /sealed produktů v portfolio databázi/);
@@ -63,6 +66,8 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.doesNotMatch(portfolio, /178 produktů připravených k přidání z katalogu/);
   assert.ok(portfolioData.productCount > 1500);
   assert.equal(portfolioData.products.length, portfolioData.productCount);
+  assert.equal(publicPortfolioData.products.length, portfolioData.productCount);
+  assert.ok(Buffer.byteLength(portfolio, "utf8") < 150_000, "portfolio HTML must not embed the full product database");
   assert.ok(portfolioData.products.every((product) => product.id && product.name && product.type));
   assert.ok(portfolioData.products.some((product) => product.marketPrice > 0));
   for (const productId of ["cardmarket:728730", "cardmarket:719700"]) {

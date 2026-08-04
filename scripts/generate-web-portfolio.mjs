@@ -7,6 +7,7 @@ const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const websiteDirectory = resolve(scriptDirectory, "..");
 const projectDirectory = resolve(websiteDirectory, "..");
 const outputFile = resolve(websiteDirectory, "app", "portfolio", "portfolio-data.json");
+const publicOutputFile = resolve(websiteDirectory, "public", "portfolio-products.json");
 const masterFile = resolve(projectDirectory, "data_master", "portfolio_products.json");
 const priceFile = resolve(projectDirectory, "portfolio_market_prices.json");
 const catalogFile = resolve(projectDirectory, "products.json");
@@ -54,7 +55,8 @@ function normalize(value) {
 try {
   await Promise.all([access(masterFile), access(priceFile), access(catalogFile)]);
 } catch {
-  await access(outputFile);
+  const existingSnapshot = JSON.parse(await readFile(outputFile, "utf8"));
+  await writeFile(publicOutputFile, JSON.stringify(existingSnapshot), "utf8");
   console.log("Portfolio source files are unavailable; keeping the committed snapshot.");
   process.exit(0);
 }
@@ -174,5 +176,8 @@ const snapshot = {
   products,
 };
 
-await writeFile(outputFile, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
+await Promise.all([
+  writeFile(outputFile, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8"),
+  writeFile(publicOutputFile, JSON.stringify(snapshot), "utf8"),
+]);
 console.log(`Generated portfolio snapshot with ${products.length} products.`);
