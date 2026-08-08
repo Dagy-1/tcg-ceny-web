@@ -219,29 +219,27 @@ async function removeEdgeWhite(source: string, signal: AbortSignal) {
   return canvasBlob(output);
 }
 
-function ProductImage({ product }: { product: Product }) {
+function isPokeDataImage(source: string) {
+  try {
+    return new URL(source, "https://tcgceny.cz").hostname === "pokemonproductimages.pokedata.io";
+  } catch {
+    return false;
+  }
+}
+
+function ResolvedProductImage({ product }: { product: Product }) {
   const [failed, setFailed] = useState(false);
-  const [displaySource, setDisplaySource] = useState("");
+  const [displaySource, setDisplaySource] = useState(() =>
+    product.image && !isPokeDataImage(product.image) ? product.image : "",
+  );
 
   useEffect(() => {
-    setFailed(false);
-    setDisplaySource("");
     if (!product.image) return;
 
     let objectUrl = "";
     const controller = new AbortController();
     const source = product.image;
-    let isPokeData = false;
-    try {
-      isPokeData = new URL(source, window.location.origin).hostname === "pokemonproductimages.pokedata.io";
-    } catch {
-      isPokeData = false;
-    }
-
-    if (!isPokeData) {
-      setDisplaySource(source);
-      return () => controller.abort();
-    }
+    if (!isPokeDataImage(source)) return () => controller.abort();
 
     removeEdgeWhite(source, controller.signal)
       .then((blob) => {
@@ -266,6 +264,10 @@ function ProductImage({ product }: { product: Product }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img src={displaySource} alt="" onError={() => setFailed(true)} />
   );
+}
+
+function ProductImage({ product }: { product: Product }) {
+  return <ResolvedProductImage key={product.image || product.id} product={product} />;
 }
 
 function DiscordMark() {

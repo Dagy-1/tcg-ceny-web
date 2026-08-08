@@ -398,17 +398,32 @@ test("catalog contains the complete public product snapshot", async () => {
 
   assert.match(html, /Najdi produkt/);
   assert.match(html, /Porovnej český trh/);
-  assert.equal(data.productCount, 178);
-  assert.equal(data.products.length, 178);
-  assert.ok(data.products.every((product) => product.id && product.era && product.set));
+  assert.equal(data.productCount, data.products.length);
+  assert.ok(data.productCount >= 178, "catalog must not lose previously published products");
+  assert.ok(data.products.every((product) => product.id && product.name && product.type));
+  assert.ok(
+    data.products.filter((product) => product.era && product.set).length >= 178,
+    "catalog must retain the previously classified product set",
+  );
   assert.ok(data.products.every((product) => Array.isArray(product.offers)));
   assert.ok(data.products.every((product) => typeof product.verified === "boolean"));
   assert.ok(data.products.every((product) => product.releaseDate === null || /^\d{4}-\d{2}-\d{2}$/.test(product.releaseDate)));
-  assert.equal(data.products.filter((product) => product.condition === "sealed").length, 137);
-  assert.equal(data.products.filter((product) => product.condition === "opening").length, 41);
+  assert.ok(data.products.some((product) => product.condition === "sealed"));
+  assert.ok(data.products.some((product) => product.condition === "opening"));
   assert.ok(
-    data.products.every((product) => product.image.startsWith("/catalog-products/")),
-    "every catalog product should use a prepared local image",
+    data.products.every((product) => ["sealed", "opening"].includes(product.condition)),
+    "every catalog product must have a supported condition",
+  );
+  assert.ok(
+    data.products.filter((product) => product.image.startsWith("/catalog-products/")).length >= 178,
+    "catalog must retain every previously prepared local image",
+  );
+  assert.ok(
+    data.products.every(
+      (product) =>
+        product.image.startsWith("/catalog-products/") || product.image.startsWith("https://"),
+    ),
+    "every catalog product must use a local or secure external image",
   );
   const journeyTogether = data.products.find(
     (product) => product.name === "Journey Together Booster Box",

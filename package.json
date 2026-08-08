@@ -9,11 +9,11 @@
     "predev": "node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs && wrangler d1 migrations apply tcg-ceny-portfolio --local --config wrangler.jsonc",
     "dev": "vite build && vite preview --host localhost --port 3100 --strictPort",
     "prebuild": "node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs",
-    "build": "next build",
+    "build": "next build --webpack",
     "predeploy": "node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs",
     "deploy": "vite build && wrangler deploy",
     "pretest": "node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs",
-    "test": "next build && node --test tests/static-export.test.mjs",
+    "test": "next build --webpack && node --test tests/static-export.test.mjs",
     "lint": "eslint . --ignore-pattern out --ignore-pattern .next"
   },
   "dependencies": {
