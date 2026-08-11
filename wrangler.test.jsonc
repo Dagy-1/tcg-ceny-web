@@ -7,8 +7,8 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
-    "DISCORD_REDIRECT_URI": "https://tcg-ceny-web-test.p-mladek99.workers.dev/api/auth/discord/callback",
-    "GOOGLE_REDIRECT_URI": "https://tcg-ceny-web-test.p-mladek99.workers.dev/api/auth/google/callback",
+    "DISCORD_REDIRECT_URI": "https://tcg-ceny-web-test.tcg-ceny.workers.dev/api/auth/discord/callback",
+    "GOOGLE_REDIRECT_URI": "https://tcg-ceny-web-test.tcg-ceny.workers.dev/api/auth/google/callback",
     "CENTRAL_API_BASE_URL": "https://tcg-ceny-api.onrender.com",
     "PORTFOLIO_DATA_SOURCE": "central"
   },
@@ -16,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "tcg-ceny-portfolio-test",
-      "database_id": "acc4cd84-5704-4237-a059-a236e84927d3",
+      "database_id": "18aed7a6-2c13-46ac-bb00-224342f49f54",
       "migrations_dir": "migrations"
     }
   ]

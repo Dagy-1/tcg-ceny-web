@@ -35,3 +35,7 @@ jobs:
       - name: Build and test
         run: pnpm test
 
+      - name: Build Cloudflare staging Worker
+        env:
+          TCG_CLOUDFLARE_CONFIG: wrangler.test.jsonc
+        run: pnpm exec vite build

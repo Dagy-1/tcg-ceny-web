@@ -14,6 +14,8 @@ export default defineConfig(async () => {
 
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
+  const cloudflareConfigPath =
+    process.env.TCG_CLOUDFLARE_CONFIG?.trim() || "./wrangler.jsonc";
 
   return {
     server: isCodexSeatbeltSandbox
@@ -23,6 +25,7 @@ export default defineConfig(async () => {
       vinext(),
       sites(),
       cloudflare({
+        configPath: cloudflareConfigPath,
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
       }),
     ],
