@@ -53,6 +53,8 @@ const OAUTH_CALLBACK_HOSTS = new Set([
   "tcgceny.cz",
   "tcg-ceny-web.tcg-ceny.workers.dev",
   "tcg-ceny-web-test.tcg-ceny.workers.dev",
+  "tcg-ceny-web.p-mladek99.workers.dev",
+  "tcg-ceny-web-test.p-mladek99.workers.dev",
   "localhost",
   "127.0.0.1",
 ]);

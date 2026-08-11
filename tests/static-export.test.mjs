@@ -535,6 +535,20 @@ test("OAuth callbacks follow the approved current host", () => {
   );
   assert.equal(
     oauthRedirectUri(
+      new Request("https://tcg-ceny-web-test.p-mladek99.workers.dev/api/auth/discord"),
+      "discord",
+    ),
+    "https://tcg-ceny-web-test.p-mladek99.workers.dev/api/auth/discord/callback",
+  );
+  assert.equal(
+    oauthRedirectUri(
+      new Request("https://tcg-ceny-web.p-mladek99.workers.dev/api/auth/google"),
+      "google",
+    ),
+    "https://tcg-ceny-web.p-mladek99.workers.dev/api/auth/google/callback",
+  );
+  assert.equal(
+    oauthRedirectUri(
       new Request("https://attacker.example/api/auth/discord"),
       "discord",
       "https://attacker.example/api/auth/discord/callback",

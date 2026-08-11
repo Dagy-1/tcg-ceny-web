@@ -54,15 +54,15 @@ hlavičky.
 
 1. Spusť `npm test`.
 2. Nasaď Worker příkazem `npx wrangler deploy`.
-3. Ověř testovací adresu `https://tcg-ceny-web.tcg-ceny.workers.dev/`.
+3. Ověř testovací adresu `https://tcg-ceny-web.p-mladek99.workers.dev/`.
 4. Po přepnutí nameserverů ověř také `https://tcgceny.cz/`, katalog,
    portfolio, sitemapu a přihlášení přes oba poskytovatele.
 
 Před ostrým přechodem musí být u OAuth aplikací povolené tyto callbacky:
 
-- `https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/discord/callback`
+- `https://tcg-ceny-web.p-mladek99.workers.dev/api/auth/discord/callback`
 - `https://tcgceny.cz/api/auth/discord/callback`
-- `https://tcg-ceny-web.tcg-ceny.workers.dev/api/auth/google/callback`
+- `https://tcg-ceny-web.p-mladek99.workers.dev/api/auth/google/callback`
 - `https://tcgceny.cz/api/auth/google/callback`
 
 Worker callback odvozuje z aktuální povolené domény. Testovací a ostrá verze proto

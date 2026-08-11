@@ -5,7 +5,7 @@ separate Worker names and separate D1 databases.
 
 ## Staging
 
-- URL: `https://tcg-ceny-web-test.tcg-ceny.workers.dev`
+- URL: `https://tcg-ceny-web-test.p-mladek99.workers.dev`
 - Wrangler config: `wrangler.test.jsonc`
 - D1 database: `tcg-ceny-portfolio-test`
 - Catalog source: central API with the generated JSON snapshot as a fallback
