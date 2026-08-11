@@ -12,6 +12,39 @@ type SessionUser = {
   linkedProviders?: Array<"discord" | "google">;
 };
 
+const SESSION_USER_CACHE_KEY = "tcg_session_user";
+let memorySessionUser: SessionUser | null | undefined;
+
+function readCachedSessionUser() {
+  if (memorySessionUser !== undefined) return memorySessionUser;
+  try {
+    const cached = window.sessionStorage.getItem(SESSION_USER_CACHE_KEY);
+    if (!cached) return undefined;
+    const parsed = JSON.parse(cached) as SessionUser;
+    if (parsed && typeof parsed.id === "string" && typeof parsed.username === "string") {
+      memorySessionUser = parsed;
+      return parsed;
+    }
+  } catch {
+    try {
+      window.sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+    } catch {
+      // Ignore browsers that disable session storage entirely.
+    }
+  }
+  return undefined;
+}
+
+function cacheSessionUser(user: SessionUser | null) {
+  memorySessionUser = user;
+  try {
+    if (user) window.sessionStorage.setItem(SESSION_USER_CACHE_KEY, JSON.stringify(user));
+    else window.sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+  } catch {
+    // The session remains valid even when browser storage is unavailable.
+  }
+}
+
 function authErrorMessage(code: string | null) {
   if (code === "discord_not_configured") {
     return "Přihlášení přes Discord ještě není nakonfigurované.";
@@ -35,7 +68,7 @@ function authErrorMessage(code: string | null) {
 }
 
 export default function AuthMenu() {
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const [user, setUser] = useState<SessionUser | null | undefined>(memorySessionUser);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -43,6 +76,9 @@ export default function AuthMenu() {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const cachedUser = readCachedSessionUser();
+    if (cachedUser) queueMicrotask(() => setUser(cachedUser));
+
     const params = new URLSearchParams(window.location.search);
     const message = authErrorMessage(params.get("auth_error"));
     const linkedProvider = params.get("account_linked");
@@ -71,8 +107,11 @@ export default function AuthMenu() {
       headers: { Accept: "application/json" },
     })
       .then(async (response) => response.ok ? response.json() : { user: null })
-      .then((data: { user: SessionUser | null }) => setUser(data.user))
-      .catch(() => setUser(null));
+      .then((data: { user: SessionUser | null }) => {
+        cacheSessionUser(data.user);
+        setUser(data.user);
+      })
+      .catch(() => setUser((current) => current ?? null));
   }, []);
 
   useEffect(() => {
@@ -112,19 +151,31 @@ export default function AuthMenu() {
       method: "POST",
       credentials: "include",
     });
-    if (response.ok) window.location.reload();
+    if (response.ok) {
+      cacheSessionUser(null);
+      window.location.reload();
+    }
   };
+
+  const isLoading = user === undefined;
 
   return (
     <div className="auth-menu" ref={root}>
       <button
-        className={`button button-small auth-trigger${user ? " is-signed-in" : ""}`}
+        className={`button button-small auth-trigger${user ? " is-signed-in" : isLoading ? " is-loading" : ""}`}
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-label={isLoading ? "Načítání přihlášeného účtu" : undefined}
+        disabled={isLoading}
         onClick={() => setOpen((value) => !value)}
       >
-        {user ? (
+        {isLoading ? (
+          <>
+            <span className="auth-avatar auth-avatar-placeholder" aria-hidden="true" />
+            <span className="auth-username-placeholder" aria-hidden="true" />
+          </>
+        ) : user ? (
           <>
             <span className="auth-avatar" aria-hidden="true">
               {user.avatar?.startsWith("https://")

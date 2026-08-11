@@ -141,6 +141,37 @@ button, a { -webkit-tap-highlight-color: transparent; }
   cursor: pointer;
 }
 
+.auth-trigger.is-loading {
+  min-width: 112px;
+  padding: 4px 12px 4px 5px;
+  gap: 9px;
+  border-color: rgba(230, 184, 74, .22);
+  background: rgba(255, 255, 255, .04);
+  box-shadow: none;
+  cursor: wait;
+}
+
+.auth-trigger.is-loading:disabled {
+  opacity: 1;
+}
+
+.auth-avatar-placeholder,
+.auth-username-placeholder {
+  background: rgba(255, 255, 255, .09);
+  animation: auth-session-loading 1.1s ease-in-out infinite alternate;
+}
+
+.auth-username-placeholder {
+  width: 52px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+@keyframes auth-session-loading {
+  from { opacity: .45; }
+  to { opacity: .85; }
+}
+
 .auth-trigger.is-signed-in {
   max-width: 210px;
   padding: 4px 12px 4px 5px;

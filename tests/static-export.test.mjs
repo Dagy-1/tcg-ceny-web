@@ -46,7 +46,7 @@ test("static export contains every public page", async () => {
 });
 
 test("portfolio uses the dedicated investment database", async () => {
-  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, catalog, catalogSource, privacy] = await Promise.all([
+  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, catalog, catalogSource, privacy, authMenuSource] = await Promise.all([
     readOutput("portfolio/index.html"),
     readFile(new URL("../app/portfolio/portfolio-data.json", import.meta.url), "utf8"),
     readOutput("portfolio-products.json"),
@@ -54,6 +54,7 @@ test("portfolio uses the dedicated investment database", async () => {
     readOutput("katalog/index.html"),
     readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
     readOutput("soukromi-a-cookies/index.html"),
+    readFile(new URL("../app/AuthMenu.tsx", import.meta.url), "utf8"),
   ]);
   const portfolioData = JSON.parse(portfolioDataText);
   const publicPortfolioData = JSON.parse(publicPortfolioDataText);
@@ -91,6 +92,10 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /Trash2/);
   assert.match(portfolioSource, /setBuyPriceInput\(event\.target\.value\)/);
   assert.doesNotMatch(portfolioSource, /setBuyPrice\(Number\(event\.target\.value\)\)/);
+  assert.match(authMenuSource, /useState<SessionUser \| null \| undefined>/);
+  assert.match(authMenuSource, /sessionStorage\.getItem\(SESSION_USER_CACHE_KEY\)/);
+  assert.match(authMenuSource, /isLoading \? " is-loading"/);
+  assert.match(authMenuSource, /disabled=\{isLoading\}/);
   assert.match(catalog, /href="\/portfolio\/"/);
   assert.match(catalogSource, /Přidat do portfolia/);
   assert.match(privacy, /Discord ID/);
