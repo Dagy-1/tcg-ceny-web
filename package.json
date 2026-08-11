@@ -13,7 +13,7 @@
     "predeploy": "node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs",
     "deploy": "vite build && wrangler deploy",
     "pretest": "node scripts/generate-web-catalog.mjs && node scripts/generate-web-portfolio.mjs",
-    "test": "next build --webpack && node --test tests/static-export.test.mjs",
+    "test": "next build --webpack && node --experimental-strip-types --test tests/static-export.test.mjs",
     "lint": "eslint . --ignore-pattern out --ignore-pattern .next"
   },
   "dependencies": {
