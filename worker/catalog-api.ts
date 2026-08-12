@@ -5,7 +5,10 @@ interface CatalogApiEnv {
 
 const CATALOG_PREFIX = "/api/catalog";
 const UPSTREAM_PREFIX = "/api/v1/catalog";
-const REQUEST_TIMEOUT_MS = 5_000;
+// Render can need several seconds to wake a cold instance. Keep this above the
+// observed cold-start window so the central catalog does not flap to 502 while
+// the static client fallback remains available.
+const REQUEST_TIMEOUT_MS = 12_000;
 
 function jsonError(status: number, error: string): Response {
   return Response.json(

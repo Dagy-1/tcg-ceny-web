@@ -167,9 +167,9 @@ test("catalog prefers the central API and keeps the build snapshot as fallback",
   assert.match(client, /fetch\(`\/api\/catalog\/products\?limit=100/);
   assert.match(client, /items\.length !== total/);
   assert.match(client, /embedded build snapshot is the deliberate availability fallback/);
+  assert.match(proxy, /REQUEST_TIMEOUT_MS = 12_000/);
   assert.match(client, /api\/catalog\/products\/\$\{encodeURIComponent\(product\.id\)\}/);
   assert.match(proxy, /CENTRAL_API_BASE_URL/);
-  assert.match(proxy, /REQUEST_TIMEOUT_MS = 5_000/);
   assert.match(proxy, /X-TCG-Proxy-Token/);
   assert.match(proxy, /X-TCG-Client-Key/);
   assert.doesNotMatch(proxy, /Authorization|Cookie/);
