@@ -1,6 +1,7 @@
 const routes = [
   ["/", "weekly", "1.0"],
   ["/katalog/", "daily", "0.9"],
+  ["/porovnani/", "daily", "0.9"],
   ["/portfolio/", "weekly", "0.8"],
   ["/pro-eshopy/", "monthly", "0.8"],
   ["/podminky-pouziti/", "yearly", "0.3"],

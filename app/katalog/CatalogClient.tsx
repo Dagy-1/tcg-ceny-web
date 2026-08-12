@@ -339,12 +339,15 @@ function ProductDetail({
 
         <div className="catalog-portfolio-action">
           <div>
-            <span>Už ho máš ve sbírce?</span>
-            <strong>Sleduj jeho hodnotu v portfoliu.</strong>
+            <span>Pracuj s jeho aktuální hodnotou</span>
+            <strong>Přidej ho do portfolia nebo porovnání.</strong>
           </div>
-          <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}>
-            <span aria-hidden="true">+</span> Přidat do portfolia
-          </Link>
+          <div className="catalog-product-actions">
+            <Link href={`/porovnani/?add=${encodeURIComponent(product.id)}`}>Porovnat</Link>
+            <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}>
+              <span aria-hidden="true">+</span> Přidat do portfolia
+            </Link>
+          </div>
         </div>
 
         <p className="catalog-detail-note">
@@ -500,6 +503,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         <div className="nav-links">
           <Link href="/">Domů</Link>
           <Link className="catalog-nav-active" href="/katalog">Katalog</Link>
+          <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio">Portfolio</Link>
           <Link href="/pro-eshopy">Pro e-shopy</Link>
         </div>

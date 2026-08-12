@@ -9,6 +9,7 @@ import {
   handlePortfolioApi,
   oauthRedirectUri,
 } from "../worker/portfolio-api.ts";
+import { comparisonSummary, selectionTotal } from "../app/porovnani/comparison.ts";
 
 const output = new URL("../out/", import.meta.url);
 
@@ -35,6 +36,7 @@ test("static export contains every public page", async () => {
   await Promise.all([
     access(new URL("index.html", output)),
     access(new URL("katalog/index.html", output)),
+    access(new URL("porovnani/index.html", output)),
     access(new URL("portfolio/index.html", output)),
     access(new URL("portfolio-products.json", output)),
     access(new URL("pro-eshopy/index.html", output)),
@@ -110,12 +112,51 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(privacy, /technicky nezbytnou zabezpečenou cookie/);
 });
 
+test("product comparison uses current market value and exact quantities", async () => {
+  const [html, source] = await Promise.all([
+    readOutput("porovnani/index.html"),
+    readFile(new URL("../app/porovnani/CompareClient.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(html, /Srovnej hodnotu/);
+  assert.match(source, /Můj výběr/);
+  assert.match(source, /Srovnávaný výběr/);
+  assert.match(source, /portfolio-products\.json/);
+  assert.match(source, /marketPrice/);
+  assert.match(source, /Doporučené dorovnání/);
+  assert.match(source, /sessionStorage/);
+  assert.doesNotMatch(source, /buyPrice|nákupní cenu|pořizovací cenu/i);
+
+  assert.equal(selectionTotal([
+    { price: 1_200, quantity: 2 },
+    { price: 450, quantity: 3 },
+    { price: null, quantity: 4 },
+  ]), 3_750);
+
+  assert.deepEqual(comparisonSummary(
+    [{ price: 1_000, quantity: 2 }],
+    [{ price: 1_900, quantity: 1 }],
+  ), {
+    mineTotal: 2_000,
+    comparedTotal: 1_900,
+    difference: 100,
+    differencePercent: 5,
+    balanced: false,
+  });
+  assert.equal(
+    comparisonSummary([{ price: 1_000, quantity: 1 }], [{ price: 980, quantity: 1 }]).balanced,
+    true,
+  );
+});
+
 test("production sitemap is served without a trailing-slash redirect", async () => {
   const response = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml"));
   assert.ok(response);
   assert.equal(response.status, 200);
   assert.match(response.headers.get("Content-Type") ?? "", /^application\/xml/);
   assert.match(await response.text(), /<loc>https:\/\/tcgceny\.cz\/katalog\/<\/loc>/);
+  const body = await handleSitemap(new Request("https://tcgceny.cz/sitemap.xml"))?.text();
+  assert.match(body ?? "", /<loc>https:\/\/tcgceny\.cz\/porovnani\/<\/loc>/);
 
   const head = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml", { method: "HEAD" }));
   assert.ok(head);
@@ -596,6 +637,7 @@ test("search and security support files are production-ready", async () => {
   assert.match(sitemap, /https:\/\/tcgceny\.cz\//);
   assert.match(sitemap, /katalog/);
   assert.match(sitemap, /portfolio/);
+  assert.match(sitemap, /porovnani/);
   assert.match(sitemap, /pro-eshopy/);
   assert.match(robots, /Sitemap: https:\/\/tcgceny\.cz\/sitemap\.xml/);
   assert.match(headers, /Content-Security-Policy/i);

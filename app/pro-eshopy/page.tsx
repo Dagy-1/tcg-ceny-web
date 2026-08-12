@@ -84,6 +84,7 @@ export default function ForShops() {
         <div className="nav-links">
           <Link href="/">Domů</Link>
           <Link href="/katalog/">Katalog</Link>
+          <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>

@@ -88,6 +88,7 @@ export default function Home() {
         </a>
         <div className="nav-links">
           <a href="/katalog">Katalog</a>
+          <a href="/porovnani">Porovnání</a>
           <a href="/portfolio">Portfolio</a>
           <a href="#funkce">Funkce</a>
           <a href="#jak-to-funguje">Jak to funguje</a>

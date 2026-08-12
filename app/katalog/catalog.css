@@ -834,7 +834,13 @@
   font-size: 15px;
 }
 
-.catalog-portfolio-action > a {
+.catalog-product-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.catalog-product-actions > a {
   min-height: 42px;
   display: inline-flex;
   align-items: center;
@@ -851,7 +857,13 @@
   white-space: nowrap;
 }
 
-.catalog-portfolio-action > a > span {
+.catalog-product-actions > a:first-child {
+  border-color: #55718e;
+  color: #d7e2ef;
+  background: transparent;
+}
+
+.catalog-product-actions > a > span {
   font-size: 20px;
   line-height: 1;
 }
@@ -862,7 +874,11 @@
     flex-direction: column;
   }
 
-  .catalog-portfolio-action > a {
+  .catalog-product-actions {
+    width: 100%;
+  }
+
+  .catalog-product-actions > a {
     width: 100%;
   }
 }
