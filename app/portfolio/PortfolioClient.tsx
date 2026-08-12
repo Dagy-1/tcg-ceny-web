@@ -77,6 +77,9 @@ const portfolioRefreshIntervalMs = 60_000;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+const productDescriptor = (product: Product) =>
+  [product.set, product.type].map((value) => value.trim()).filter(Boolean).join(" · ") || "Sealed produkt";
+
 function productImageSource(source: string) {
   try {
     const url = new URL(source, window.location.origin);
@@ -404,7 +407,7 @@ function AddItemDialog({
                   <span><ProductImage product={product} /></span>
                   <span>
                     <strong>{product.name}</strong>
-                    <small>{product.set} · {product.type}</small>
+                    <small>{productDescriptor(product)}</small>
                   </span>
                   <b>{product.marketPrice === null ? "Bez ceny" : formatCzk(product.marketPrice)}</b>
                 </button>
@@ -561,7 +564,7 @@ function EditItemDialog({
           <span><ProductImage product={item.product} /></span>
           <div>
             <strong>{item.product.name}</strong>
-            <small>{item.product.set} · {item.product.type}</small>
+            <small>{productDescriptor(item.product)}</small>
           </div>
         </div>
 
@@ -1140,7 +1143,7 @@ function PortfolioHistoryChart({
           <div className="portfolio-history-legend">
             <span className="market">Tržní hodnota sbírky</span>
             <span className="invested">Celkem investováno</span>
-            <small>{demo ? "Ilustrační demo · skutečné portfolio používá denní cenové záznamy" : `Skutečné denní záznamy od ${formatDate(points[0].date)}.`}</small>
+            <small>{demo ? "Ilustrační demo · skutečné portfolio používá denní cenové záznamy" : `Skutečné denní záznamy od ${formatDate(points[0].date)}`}</small>
           </div>
             </>
           ) : (
@@ -1462,7 +1465,7 @@ export default function PortfolioClient({
                   <article className="portfolio-item" key={item.id}>
                     <div className="portfolio-product-image"><ProductImage product={item.product} /></div>
                     <div className="portfolio-item-copy">
-                      <span>{item.product.set} · {item.product.type}</span>
+                      <span>{productDescriptor(item.product)}</span>
                       <h3>{item.product.name}</h3>
                       <p>{item.quantity} ks · nákup {formatCzk(item.buyPrice)} · {item.buyDate}</p>
                     </div>

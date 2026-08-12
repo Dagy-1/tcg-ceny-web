@@ -3,6 +3,7 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { handleCatalogApi } from "../worker/catalog-api.ts";
 import { canonicalHostRedirect } from "../worker/canonical-host.ts";
+import { handleSitemap } from "../worker/sitemap.ts";
 import {
   centralPortfolioRequest,
   handlePortfolioApi,
@@ -42,6 +43,7 @@ test("static export contains every public page", async () => {
     access(new URL("sitemap.xml", output)),
     access(new URL("robots.txt", output)),
     access(new URL("_headers", output)),
+    access(new URL("404.html", output)),
   ]);
 });
 
@@ -89,6 +91,7 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /Vývoj ukázkové sbírky/);
   assert.match(portfolioSource, /setDemoPeriod/);
   assert.match(portfolioSource, /demo\?: boolean/);
+  assert.match(portfolioSource, /productDescriptor/);
   assert.match(portfolioSource, /Ilustrační demo · skutečné portfolio používá denní cenové záznamy/);
   assert.match(portfolioSource, /api\/portfolio\/history/);
   assert.match(portfolioSource, /value: 365, label: "1 rok"/);
@@ -105,6 +108,23 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(privacy, /Discord ID/);
   assert.match(privacy, /Přihlášení přes Google/);
   assert.match(privacy, /technicky nezbytnou zabezpečenou cookie/);
+});
+
+test("production sitemap is served without a trailing-slash redirect", async () => {
+  const response = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml"));
+  assert.ok(response);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^application\/xml/);
+  assert.match(await response.text(), /<loc>https:\/\/tcgceny\.cz\/katalog\/<\/loc>/);
+
+  const head = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml", { method: "HEAD" }));
+  assert.ok(head);
+  assert.equal(await head.text(), "");
+
+  const post = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml", { method: "POST" }));
+  assert.equal(post?.status, 405);
+  assert.equal(post?.headers.get("Allow"), "GET, HEAD");
+  assert.equal(handleSitemap(new Request("https://tcgceny.cz/robots.txt")), null);
 });
 
 test("portfolio API keeps authentication and ownership checks server-side", async () => {

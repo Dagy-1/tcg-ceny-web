@@ -869,3 +869,30 @@ h1 span { display: block; color: var(--gold); }
   *, *::before, *::after { transition: none !important; }
   .auth-notice { animation: none; }
 }
+
+.not-found-page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(230, 184, 74, .12), transparent 32%),
+    var(--navy);
+}
+.not-found-card {
+  width: min(100%, 680px);
+  padding: clamp(34px, 7vw, 72px);
+  border: 1px solid rgba(230, 184, 74, .34);
+  border-radius: 24px;
+  background: rgba(7, 18, 32, .92);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .35);
+  text-align: center;
+}
+.not-found-card h1 { margin: 12px 0 18px; font-size: clamp(34px, 7vw, 64px); }
+.not-found-card > p:not(.eyebrow) { margin: 0 auto; max-width: 520px; color: var(--muted); }
+.not-found-actions { display: flex; justify-content: center; gap: 12px; margin-top: 30px; }
+.not-found-actions .button-ghost { border-color: var(--line); background: transparent; color: var(--ink); }
+@media (max-width: 520px) {
+  .not-found-actions { flex-direction: column; }
+  .not-found-actions .button { width: 100%; }
+}

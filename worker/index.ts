@@ -5,6 +5,7 @@ import { handlePortfolioApi } from "./portfolio-api";
 import { handleCatalogApi } from "./catalog-api";
 import { canonicalHostRedirect } from "./canonical-host";
 import { handleProductImage } from "./product-image";
+import { handleSitemap } from "./sitemap";
 
 interface Env {
   ASSETS: Fetcher;
@@ -88,6 +89,11 @@ const worker = {
     const productImageResponse = await handleProductImage(request);
     if (productImageResponse) {
       return withSecurityHeaders(productImageResponse, url.protocol === "https:");
+    }
+
+    const sitemapResponse = handleSitemap(request);
+    if (sitemapResponse) {
+      return withSecurityHeaders(sitemapResponse, url.protocol === "https:");
     }
 
     const catalogResponse = await handleCatalogApi(request, env);
