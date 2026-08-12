@@ -641,6 +641,7 @@ function SignedOutPreview({
   discordHref: string;
   googleHref: string;
 }) {
+  const [demoPeriod, setDemoPeriod] = useState<HistoryPeriod>(90);
   const examples = products
     .filter((product) =>
       product.marketPrice !== null &&
@@ -650,36 +651,43 @@ function SignedOutPreview({
     .slice(0, 4);
   const current = examples.reduce((sum, product) => sum + (product.marketPrice ?? 0), 0);
   const invested = Math.round(current * 0.86);
-  const demoMarketValues = [
-    Math.round(invested * 0.91),
-    Math.round(invested * 0.96),
-    Math.round(invested * 0.94),
-    Math.round(invested * 1.03),
-    Math.round(invested * 1.08),
-    Math.round(invested * 1.12),
-    current,
-  ];
-  const demoInvestedValues = [
-    Math.round(invested * 0.42),
-    Math.round(invested * 0.42),
-    Math.round(invested * 0.64),
-    Math.round(invested * 0.64),
-    Math.round(invested * 0.82),
-    invested,
-    invested,
-  ];
-  const demoMaximum = Math.max(...demoMarketValues, ...demoInvestedValues, 1) * 1.08;
-  const demoWidth = 920;
-  const demoHeight = 260;
-  const demoPlot = { left: 18, right: 18, top: 20, bottom: 28 };
-  const demoBottom = demoHeight - demoPlot.bottom;
-  const demoX = (index: number) => demoPlot.left + index * ((demoWidth - demoPlot.left - demoPlot.right) / 6);
-  const demoY = (value: number) => demoPlot.top + (1 - value / demoMaximum) * (demoBottom - demoPlot.top);
-  const demoMarketPoints = demoMarketValues.map((value, index) => ({ x: demoX(index), y: demoY(value) }));
-  const demoInvestedPoints = demoInvestedValues.map((value, index) => ({ x: demoX(index), y: demoY(value) }));
-  const demoMarketPath = smoothChartPath(demoMarketPoints);
-  const demoInvestedPath = stepChartPath(demoInvestedPoints);
-  const demoAreaPath = `${demoMarketPath} L ${demoMarketPoints.at(-1)?.x ?? 0} ${demoBottom} L ${demoMarketPoints[0]?.x ?? 0} ${demoBottom} Z`;
+  const demoHistory: PortfolioHistory = (() => {
+    const days = demoPeriod === "max" ? 730 : demoPeriod;
+    const samples = demoPeriod === 7 ? 7 : demoPeriod === 30 ? 8 : 10;
+    const marketFactors = [0.91, 0.94, 0.93, 0.99, 1.02, 1.06, 1.09, 1.12, 1.14, current / Math.max(invested, 1)];
+    const investmentFactors = [0.42, 0.42, 0.64, 0.64, 0.82, 0.82, 1, 1, 1, 1];
+    const start = new Date();
+    start.setUTCHours(12, 0, 0, 0);
+    start.setUTCDate(start.getUTCDate() - days);
+    const dateAt = (index: number) => {
+      const date = new Date(start);
+      date.setUTCDate(start.getUTCDate() + Math.round((days * index) / (samples - 1)));
+      return date.toISOString().slice(0, 10);
+    };
+    const points = Array.from({ length: samples }, (_, index) => {
+      const factorIndex = Math.round((index * (marketFactors.length - 1)) / (samples - 1));
+      const marketValue = index === samples - 1
+        ? current
+        : Math.round(invested * marketFactors[factorIndex]);
+      const investedValue = Math.round(invested * investmentFactors[factorIndex]);
+      return {
+        date: dateAt(index),
+        invested: investedValue,
+        marketValue,
+        profit: marketValue - investedValue,
+      };
+    });
+    const investmentPoints = points.filter((point, index) => (
+      index === 0 || point.invested !== points[index - 1].invested
+    )).map((point) => ({ date: point.date, invested: point.invested }));
+    return {
+      days,
+      points,
+      investmentPoints,
+      firstDate: points[0]?.date ?? null,
+      latestDate: points.at(-1)?.date ?? null,
+    };
+  })();
   return (
     <>
       <section className="portfolio-signin">
@@ -723,52 +731,13 @@ function SignedOutPreview({
           <article className="is-positive"><span>Zisk / ztráta</span><strong>+{formatCzk(current - invested)}</strong><small>{formatPercent(((current - invested) / invested) * 100)}</small></article>
           <article><span>Produktů</span><strong>{examples.length}</strong><small>{examples.length} kusy</small></article>
         </div>
-        <section className="portfolio-demo-chart" aria-label="Ukázkový vývoj hodnoty portfolia">
-          <div className="portfolio-demo-chart-header">
-            <div>
-              <p className="portfolio-kicker">Hodnota v čase</p>
-              <h3>Vývoj ukázkové sbírky</h3>
-              <span>Jak se za posledních 90 dní měnila tržní hodnota proti investované částce.</span>
-            </div>
-            <div className="portfolio-demo-chart-result">
-              <span>Změna za období</span>
-              <strong>+{formatCzk(current - invested)}</strong>
-              <small>{formatPercent(invested ? ((current - invested) / invested) * 100 : 0)}</small>
-            </div>
-          </div>
-          <div className="portfolio-demo-chart-visual">
-            <svg viewBox={`0 0 ${demoWidth} ${demoHeight}`} role="img" aria-label="Rostoucí hodnota ukázkového portfolia za 90 dní">
-              <defs>
-                <linearGradient id="portfolio-demo-area" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#42dc89" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#42dc89" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {[0.25, 0.5, 0.75, 1].map((part) => {
-                const y = demoY(demoMaximum * part);
-                return <line key={part} className="portfolio-chart-grid" x1={demoPlot.left} y1={y} x2={demoWidth - demoPlot.right} y2={y} />;
-              })}
-              <path className="portfolio-demo-chart-area" d={demoAreaPath} />
-              <path className="portfolio-chart-invested" d={demoInvestedPath} />
-              <path className="portfolio-chart-market" d={demoMarketPath} />
-              {demoMarketPoints.map((point, index) => (
-                <circle key={index} className="portfolio-chart-dot" cx={point.x} cy={point.y} r={index === demoMarketPoints.length - 1 ? 5 : 3.5} />
-              ))}
-              <text className="portfolio-chart-date" x={demoPlot.left} y={demoHeight - 6}>Před 90 dny</text>
-              <text className="portfolio-chart-date" x={demoWidth / 2} y={demoHeight - 6} textAnchor="middle">Před 45 dny</text>
-              <text className="portfolio-chart-date" x={demoWidth - demoPlot.right} y={demoHeight - 6} textAnchor="end">Dnes</text>
-            </svg>
-            <div className="portfolio-demo-chart-callout">
-              <span>Dnešní hodnota</span>
-              <strong>{formatCzk(current)}</strong>
-            </div>
-          </div>
-          <div className="portfolio-history-legend portfolio-demo-chart-legend">
-            <span className="market">Tržní hodnota sbírky</span>
-            <span className="invested">Celkem investováno</span>
-            <small>Ilustrační demo · skutečné portfolio používá denní cenové záznamy</small>
-          </div>
-        </section>
+        <PortfolioHistoryChart
+          history={demoHistory}
+          period={demoPeriod}
+          loading={false}
+          onPeriodChange={setDemoPeriod}
+          demo
+        />
         <div className="portfolio-preview-products">
           {examples.map((product, index) => (
             <article key={product.id}>
@@ -860,11 +829,13 @@ function PortfolioHistoryChart({
   period,
   loading,
   onPeriodChange,
+  demo = false,
 }: {
   history: PortfolioHistory | null;
   period: HistoryPeriod;
   loading: boolean;
   onPeriodChange: (period: HistoryPeriod) => void;
+  demo?: boolean;
 }) {
   const [activeTarget, setActiveTarget] = useState<{
     series: "market" | "invested";
@@ -933,6 +904,7 @@ function PortfolioHistoryChart({
   const change = latest && first ? latest.marketValue - first.marketValue : 0;
   const changePercent = first?.marketValue ? (change / first.marketValue) * 100 : 0;
   const periodLabel = historyPeriodOptions.find((option) => option.value === period)?.label ?? "Období";
+  const demoPeriodText = period === "max" ? "celé období" : periodLabel.toLowerCase();
   const activeMarket = activeTarget?.series === "market"
     ? points[Math.min(activeTarget.index, Math.max(points.length - 1, 0))] ?? null
     : null;
@@ -1010,13 +982,15 @@ function PortfolioHistoryChart({
   const clearActiveTarget = () => setActiveTarget(null);
 
   return (
-    <section className="portfolio-history" aria-label="Vývoj hodnoty portfolia">
+    <section className={`portfolio-history${demo ? " portfolio-history-demo" : ""}`} aria-label={demo ? "Ukázkový vývoj hodnoty portfolia" : "Vývoj hodnoty portfolia"}>
       <div className="portfolio-history-header">
         <div>
-          <p className="portfolio-kicker">Historie portfolia</p>
-          <h2>Vývoj hodnoty sbírky</h2>
+          <p className="portfolio-kicker">{demo ? "Hodnota v čase" : "Historie portfolia"}</p>
+          <h2>{demo ? "Vývoj ukázkové sbírky" : "Vývoj hodnoty sbírky"}</h2>
           <p className="portfolio-history-description">
-            Tržní hodnota v čase, porovnaná s částkou, kterou jsi skutečně investoval.
+            {demo
+              ? `Přepni období a prozkoumej, jak by se hodnota sbírky mohla vyvíjet za ${demoPeriodText}.`
+              : "Tržní hodnota v čase, porovnaná s částkou, kterou jsi skutečně investoval."}
           </p>
         </div>
         <div className="portfolio-history-controls">
@@ -1166,7 +1140,7 @@ function PortfolioHistoryChart({
           <div className="portfolio-history-legend">
             <span className="market">Tržní hodnota sbírky</span>
             <span className="invested">Celkem investováno</span>
-            <small>{`Skutečné denní záznamy od ${formatDate(points[0].date)}.`}</small>
+            <small>{demo ? "Ilustrační demo · skutečné portfolio používá denní cenové záznamy" : `Skutečné denní záznamy od ${formatDate(points[0].date)}.`}</small>
           </div>
             </>
           ) : (

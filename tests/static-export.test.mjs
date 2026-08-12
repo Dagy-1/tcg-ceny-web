@@ -87,7 +87,9 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /Upravit produkt/);
   assert.match(portfolioSource, /Vývoj hodnoty sbírky/);
   assert.match(portfolioSource, /Vývoj ukázkové sbírky/);
-  assert.match(portfolioSource, /portfolio-demo-chart-area/);
+  assert.match(portfolioSource, /setDemoPeriod/);
+  assert.match(portfolioSource, /demo\?: boolean/);
+  assert.match(portfolioSource, /Ilustrační demo · skutečné portfolio používá denní cenové záznamy/);
   assert.match(portfolioSource, /api\/portfolio\/history/);
   assert.match(portfolioSource, /value: 365, label: "1 rok"/);
   assert.match(portfolioSource, /value: "max", label: "Maximum"/);
