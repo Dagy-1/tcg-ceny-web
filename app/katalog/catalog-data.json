@@ -12,7 +12,7 @@
       "condition": "sealed",
       "availability": "online",
       "bestPrice": 899,
-      "availableOffers": 8,
+      "availableOffers": 7,
       "storeOffers": 1,
       "offers": [
         {
@@ -44,6 +44,13 @@
           "stale": false
         },
         {
+          "shop": "Najada",
+          "price": 999,
+          "url": "https://www.najada.games/produkt/pitch-black-booster-bundle-NI8KZT",
+          "status": "unavailable",
+          "stale": false
+        },
+        {
           "shop": "Vortexstore",
           "price": 1090,
           "url": "https://www.vortexstore.eu/products/pokemon-pitch-black-booster-bundle",
@@ -54,13 +61,6 @@
           "shop": "Geekhall",
           "price": 1099,
           "url": "https://geekhall.cz/produkt/pokemon-tcg-mega-evolution-pitch-black-booster-bundle",
-          "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "Najada",
-          "price": 1099,
-          "url": "https://www.najada.games/produkt/pitch-black-booster-bundle-NI8KZT",
           "status": "online",
           "stale": false
         },
@@ -79,7 +79,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475996,
+      "checkedAt": 1787139303,
       "verified": true,
       "releaseDate": "2026-07-17"
     },
@@ -188,7 +188,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786474864,
+      "checkedAt": 1787089949,
       "verified": true,
       "releaseDate": "2026-07-17"
     },
@@ -241,7 +241,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786474475,
+      "checkedAt": 1787089560,
       "verified": true,
       "releaseDate": "2026-07-17"
     },
@@ -266,7 +266,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786484237,
+      "checkedAt": 1787095450,
       "verified": false,
       "releaseDate": "2026-07-17"
     },
@@ -280,9 +280,16 @@
       "condition": "sealed",
       "availability": "online",
       "bestPrice": 899,
-      "availableOffers": 7,
+      "availableOffers": 9,
       "storeOffers": 0,
       "offers": [
+        {
+          "shop": "Bulbazard",
+          "price": 899,
+          "url": "https://www.bulbazard.cz/pokemon-tcg-chaos-rising-booster-bundle/",
+          "status": "online",
+          "stale": false
+        },
         {
           "shop": "Tolarie",
           "price": 899,
@@ -308,7 +315,7 @@
           "shop": "Alza",
           "price": 999,
           "url": "https://www.alza.cz/hracky/pokemon-tcg-me04-chaos-rising-booster-bundle-d13373964.htm?evt=ac&pos=1&sqid=Algolia_f7f4292de5bdf90a8c31c14727ca2a97",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         },
         {
@@ -323,13 +330,6 @@
           "price": 1050,
           "url": "https://www.vortexstore.eu/products/pokemon-chaos-rising-booster-bundle?_pos=1&_sid=043657e51&_ss=r",
           "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "Bulbazard",
-          "price": 1099,
-          "url": "https://www.bulbazard.cz/pokemon-tcg-chaos-rising-booster-bundle/",
-          "status": "unavailable",
           "stale": false
         },
         {
@@ -354,7 +354,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475521,
+      "checkedAt": 1787090329,
       "verified": true,
       "releaseDate": "2026-05-22"
     },
@@ -371,6 +371,13 @@
       "availableOffers": 10,
       "storeOffers": 0,
       "offers": [
+        {
+          "shop": "Alza",
+          "price": 1799,
+          "url": "https://www.alza.cz/hracky/pokemon-tcg-me04-chaos-rising-elite-trainer-box-d13373962.htm?evt=ac&pos=3&sqid=Algolia_41fd1576fe1de2d33629c99166c34d51",
+          "status": "online",
+          "stale": false
+        },
         {
           "shop": "Kitstore",
           "price": 1799,
@@ -400,13 +407,6 @@
           "stale": false
         },
         {
-          "shop": "Alza",
-          "price": 1999,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-me04-chaos-rising-elite-trainer-box-d13373962.htm?evt=ac&pos=3&sqid=Algolia_41fd1576fe1de2d33629c99166c34d51",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
           "shop": "Geekhall",
           "price": 1999,
           "url": "https://geekhall.cz/produkt/pokemon-tcg-mega-evolution-chaos-rising-elite-trainer-box/",
@@ -424,7 +424,7 @@
           "shop": "Najada",
           "price": 2199,
           "url": "https://www.najada.games/produkt/chaos-rising-elite-trainer-box-8LQNU9/",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -443,7 +443,7 @@
         },
         {
           "shop": "Pikastore",
-          "price": 2590,
+          "price": 2490,
           "url": "https://pikastore.cz/products/pokemon-2026-mega-evolution-chaos-rising-elite-trainer-box?_pos=2&_sid=c306cf72d&_ss=r",
           "status": "online",
           "stale": false
@@ -463,7 +463,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786486911,
+      "checkedAt": 1787139315,
       "verified": true,
       "releaseDate": "2026-05-22"
     },
@@ -516,7 +516,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477495,
+      "checkedAt": 1787091609,
       "verified": true,
       "releaseDate": "2026-05-22"
     },
@@ -541,7 +541,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480686,
+      "checkedAt": 1787092559,
       "verified": false,
       "releaseDate": "2026-05-22"
     },
@@ -554,8 +554,8 @@
       "image": "/catalog-products/9e11d86d48032d1b.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 899,
-      "availableOffers": 3,
+      "bestPrice": 1050,
+      "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
         {
@@ -569,7 +569,7 @@
           "shop": "Tolarie",
           "price": 899,
           "url": "https://www.tolarie.cz/koupit_produkty/katalog/pokemon-perfect-order-booster-bundle",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -601,7 +601,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786476493,
+      "checkedAt": 1787090912,
       "verified": true,
       "releaseDate": "2026-03-27"
     },
@@ -724,7 +724,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786474669,
+      "checkedAt": 1787089692,
       "verified": true,
       "releaseDate": "2026-03-27"
     },
@@ -770,7 +770,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477814,
+      "checkedAt": 1787092066,
       "verified": true,
       "releaseDate": "2026-03-27"
     },
@@ -809,7 +809,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474164,
+      "checkedAt": 1787089305,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -834,7 +834,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786474096,
+      "checkedAt": 1787089239,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -859,7 +859,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485630,
+      "checkedAt": 1787136995,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -884,7 +884,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485690,
+      "checkedAt": 1787137055,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -909,7 +909,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485750,
+      "checkedAt": 1787137115,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -922,19 +922,19 @@
       "image": "/catalog-products/f9e32c6b40db5511.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 349,
+      "bestPrice": 369,
       "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "VeselyDrak",
-          "price": 349,
+          "price": 369,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-plechovky/18448-pokemon-lumiose-city-mini-tin-salamence",
           "status": "online",
           "stale": true
         }
       ],
-      "checkedAt": 1786485871,
+      "checkedAt": 1787137175,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -973,7 +973,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480266,
+      "checkedAt": 1787094540,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1026,7 +1026,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477752,
+      "checkedAt": 1787091943,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1072,7 +1072,53 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478733,
+      "checkedAt": 1787093097,
+      "verified": true,
+      "releaseDate": "2026-01-30"
+    },
+    {
+      "id": "pm:mega-feraligatr-ex-box",
+      "name": "Mega Feraligatr ex Box",
+      "type": "Special Collection",
+      "era": "Mega Evolution Series",
+      "set": "Ascended Heroes",
+      "image": "/catalog-products/ae7a3541a338d2ab.png?v=4",
+      "condition": "sealed",
+      "availability": "online",
+      "bestPrice": 1399,
+      "availableOffers": 2,
+      "storeOffers": 1,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 1290,
+          "url": "https://www.vortexstore.eu/products/pokemon-ascended-heroes-mega-feraligatr-ex-box",
+          "status": "unavailable",
+          "stale": false
+        },
+        {
+          "shop": "Geekhall",
+          "price": 1399,
+          "url": "https://geekhall.cz/produkt/pokemon-tcg-mega-evolution-ascended-heroes-ex-box/?attribute_typ=Ferraligatr",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "Pikastore",
+          "price": 1690,
+          "url": "https://pikastore.cz/products/pokemon-2026-mega-evolution-ascended-heroes-mega-feraligatr-ex-box",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "VeselyDrak",
+          "price": 1599,
+          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/17561-pokemon-ascended-heroes-mega-feraligatr-ex-box",
+          "status": "store",
+          "stale": true
+        }
+      ],
+      "checkedAt": 1787093349,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1118,46 +1164,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478915,
-      "verified": true,
-      "releaseDate": "2026-01-30"
-    },
-    {
-      "id": "pm:mega-feraligatr-ex-box",
-      "name": "Mega Feraligatr ex Box",
-      "type": "Special Collection",
-      "era": "Mega Evolution Series",
-      "set": "Ascended Heroes",
-      "image": "/catalog-products/ae7a3541a338d2ab.png?v=4",
-      "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 1690,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Vortexstore",
-          "price": 1290,
-          "url": "https://www.vortexstore.eu/products/pokemon-ascended-heroes-mega-feraligatr-ex-box",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
-          "shop": "Pikastore",
-          "price": 1690,
-          "url": "https://pikastore.cz/products/pokemon-2026-mega-evolution-ascended-heroes-mega-feraligatr-ex-box",
-          "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "VeselyDrak",
-          "price": 1599,
-          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/17561-pokemon-ascended-heroes-mega-feraligatr-ex-box",
-          "status": "unavailable",
-          "stale": true
-        }
-      ],
-      "checkedAt": 1786479037,
+      "checkedAt": 1787093235,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1210,6 +1217,13 @@
           "stale": false
         },
         {
+          "shop": "Pompo",
+          "price": 2199,
+          "url": "https://pompo.cz/pokemon-tcg-me02-5-ascended-heroes-booster-bundle_z267621/",
+          "status": "online",
+          "stale": false
+        },
+        {
           "shop": "Tolarie",
           "price": 2199,
           "url": "https://www.tolarie.cz/koupit_produkty/katalog/pokemon-ascended-heroes-booster-bundle",
@@ -1252,21 +1266,14 @@
           "stale": false
         },
         {
-          "shop": "Pompo",
-          "price": null,
-          "url": "https://pompo.cz/pokemon-tcg-me02-5-ascended-heroes-booster-bundle_z267621/",
-          "status": "online",
-          "stale": false
-        },
-        {
           "shop": "VeselyDrak",
-          "price": 2299,
+          "price": 2399,
           "url": "https://www.vesely-drak.cz/produkty/booster-boxy/17294-pokemon-ascended-heroes-booster-bundle/",
           "status": "online",
           "stale": true
         }
       ],
-      "checkedAt": 1786475117,
+      "checkedAt": 1787090025,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1280,16 +1287,9 @@
       "condition": "sealed",
       "availability": "online",
       "bestPrice": 4199,
-      "availableOffers": 10,
+      "availableOffers": 8,
       "storeOffers": 0,
       "offers": [
-        {
-          "shop": "Alza",
-          "price": 1899,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-me02-5-ascended-heroes-elite-trainer-box-d13221719.htm",
-          "status": "unavailable",
-          "stale": false
-        },
         {
           "shop": "KnihyDobrovsky",
           "price": 2499,
@@ -1315,7 +1315,7 @@
           "shop": "Bulbazard",
           "price": 4349,
           "url": "https://www.bulbazard.cz/pokemon-tcg-ascended-heroes-elite-trainer-box/",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -1343,7 +1343,7 @@
           "shop": "Shadowball",
           "price": 4499,
           "url": "https://www.shadowball.cz/pokemon-tcg--mega-evolution-ascended-heroes-elite-trainer-box",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -1382,7 +1382,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475049,
+      "checkedAt": 1787089932,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1407,7 +1407,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786475179,
+      "checkedAt": 1787090087,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1424,13 +1424,6 @@
       "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
-        {
-          "shop": "Alza",
-          "price": 1999,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-me02-5-ascended-heroes-premium-poster-collection-d13221711.htm",
-          "status": "unavailable",
-          "stale": false
-        },
         {
           "shop": "TLAMAGames",
           "price": 3199,
@@ -1460,7 +1453,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477876,
+      "checkedAt": 1787092128,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1485,7 +1478,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786484476,
+      "checkedAt": 1787135729,
       "verified": true,
       "releaseDate": "2026-01-30"
     },
@@ -1510,7 +1503,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480204,
+      "checkedAt": 1787092439,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -1529,13 +1522,13 @@
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 12190,
+          "price": 11990,
           "url": "https://www.vortexstore.eu/products/pokemon-ascended-heroes-pokemon-center-elite-trainer-box",
           "status": "unavailable",
-          "stale": true
+          "stale": false
         }
       ],
-      "checkedAt": 1786481767,
+      "checkedAt": 1787094088,
       "verified": false,
       "releaseDate": "2026-01-30"
     },
@@ -1548,7 +1541,7 @@
       "image": "/catalog-products/5a76188a55752f0c.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 3499,
+      "bestPrice": 5490,
       "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
@@ -1574,13 +1567,6 @@
           "stale": false
         },
         {
-          "shop": "Pikastore",
-          "price": 3290,
-          "url": "https://pikastore.cz/products/pokemon-2025-mega-evolution-phantasmal-flames-elite-trainer-box?_pos=5&_sid=93027f214&_ss=r",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
           "shop": "Bulbazard",
           "price": 3299,
           "url": "https://www.bulbazard.cz/phantasmal-flames-elite-trainer-box/",
@@ -1591,7 +1577,7 @@
           "shop": "Shadowball",
           "price": 3499,
           "url": "https://www.shadowball.cz/pokemon-tcg--mega-evolution-phantasmal-flames-elite-trainer-box",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -1602,6 +1588,13 @@
           "stale": false
         },
         {
+          "shop": "Pikastore",
+          "price": 5490,
+          "url": "https://pikastore.cz/products/pokemon-2025-mega-evolution-phantasmal-flames-elite-trainer-box?_pos=5&_sid=93027f214&_ss=r",
+          "status": "online",
+          "stale": false
+        },
+        {
           "shop": "VeselyDrak",
           "price": 2299,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/16674-pokemon-mega-evolution-phantasmal-flames-elite-trainer-box/",
@@ -1609,7 +1602,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475896,
+      "checkedAt": 1787089865,
       "verified": true,
       "releaseDate": "2025-11-14"
     },
@@ -1623,13 +1616,20 @@
       "condition": "sealed",
       "availability": "online",
       "bestPrice": 690,
-      "availableOffers": 2,
+      "availableOffers": 3,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Pompo",
           "price": 690,
           "url": "https://pompo.cz/pokemon-tcg-mega-moonlit-tin_z267624",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "Geekhall",
+          "price": 749,
+          "url": "https://geekhall.cz/produkt/pokemon-tcg-mega-moonlit-tin",
           "status": "online",
           "stale": false
         },
@@ -1641,7 +1641,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474226,
+      "checkedAt": 1787089370,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1680,7 +1680,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479353,
+      "checkedAt": 1787093559,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1709,10 +1709,10 @@
           "price": 799,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-plechovky/18454-plechovka-pokemon-mega-moonlit-tin-mega-clefable-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786483238,
+      "checkedAt": 1787134883,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1786,7 +1786,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476246,
+      "checkedAt": 1787090667,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1815,10 +1815,63 @@
           "price": 899,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-plechovky/18453-plechovka-pokemon-mega-moonlit-tin-mega-gengar-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786482600,
+      "checkedAt": 1787134520,
+      "verified": false,
+      "releaseDate": "2025-09-26"
+    },
+    {
+      "id": "pm:mega-greninja-ex-premium-collection",
+      "name": "Mega Greninja ex Premium Collection",
+      "type": "Premium Collection",
+      "era": "Mega Evolution Series",
+      "set": "Mega Evolution Promos",
+      "image": "/catalog-products/ba15860d2e120162.png?v=4",
+      "condition": "sealed",
+      "availability": "online",
+      "bestPrice": 1290,
+      "availableOffers": 5,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 1290,
+          "url": "https://www.vortexstore.eu/products/pokemon-mega-greninja-ex-premium-collection",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "Sparkys",
+          "price": 1299,
+          "url": "https://www.sparkys.cz/pokemon-tcg-mega-greninja-ex-premium-collection",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "Pompo",
+          "price": 1398,
+          "url": "https://pompo.cz/pokemon-tcg-mega-greninja-ex-premium-collection_z272058",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "Geekhall",
+          "price": 1499,
+          "url": "https://geekhall.cz/produkt/pokemon-tcg-mega-greninja-ex-premium-collection",
+          "status": "online",
+          "stale": false
+        },
+        {
+          "shop": "VeselyDrak",
+          "price": 1599,
+          "url": "https://www.vesely-drak.cz/produkty/specialni-sety/19108-pokemon-mega-greninja-ex-premium-collection-box",
+          "status": "online",
+          "stale": true
+        }
+      ],
+      "checkedAt": 1787092743,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1885,7 +1938,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477310,
+      "checkedAt": 1787091485,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1910,60 +1963,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479959,
-      "verified": true,
-      "releaseDate": "2025-09-26"
-    },
-    {
-      "id": "pm:mega-greninja-ex-premium-collection",
-      "name": "Mega Greninja ex Premium Collection",
-      "type": "Premium Collection",
-      "era": "Mega Evolution Series",
-      "set": "Mega Evolution Promos",
-      "image": "/catalog-products/ba15860d2e120162.png?v=4",
-      "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 1299,
-      "availableOffers": 4,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Vortexstore",
-          "price": 1290,
-          "url": "https://www.vortexstore.eu/products/pokemon-mega-greninja-ex-premium-collection",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
-          "shop": "Sparkys",
-          "price": 1299,
-          "url": "https://www.sparkys.cz/pokemon-tcg-mega-greninja-ex-premium-collection",
-          "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "Pompo",
-          "price": 1398,
-          "url": "https://pompo.cz/pokemon-tcg-mega-greninja-ex-premium-collection_z272058",
-          "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "Geekhall",
-          "price": 1499,
-          "url": "https://geekhall.cz/produkt/pokemon-tcg-mega-greninja-ex-premium-collection",
-          "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "VeselyDrak",
-          "price": 1499,
-          "url": "https://www.vesely-drak.cz/produkty/specialni-sety/19108-pokemon-mega-greninja-ex-premium-collection-box",
-          "status": "online",
-          "stale": true
-        }
-      ],
-      "checkedAt": 1786478424,
+      "checkedAt": 1787094225,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -1988,7 +1988,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479777,
+      "checkedAt": 1787094104,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2041,7 +2041,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478121,
+      "checkedAt": 1787092424,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2073,7 +2073,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786481584,
+      "checkedAt": 1787095574,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2098,7 +2098,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479219,
+      "checkedAt": 1787093425,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2123,7 +2123,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479280,
+      "checkedAt": 1787093485,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2155,7 +2155,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786481646,
+      "checkedAt": 1787095695,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2187,7 +2187,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786481522,
+      "checkedAt": 1787095511,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2200,15 +2200,15 @@
       "image": "/catalog-products/a49f63e9dc2908b8.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 6190,
-      "availableOffers": 4,
+      "bestPrice": 6990,
+      "availableOffers": 3,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
           "price": 6190,
           "url": "https://www.vortexstore.eu/products/pokemon-mega-charizard-x-ex-ultra-premium-collection",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -2233,57 +2233,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478485,
-      "verified": true,
-      "releaseDate": "2025-09-26"
-    },
-    {
-      "id": "pm:mega-evolution-booster-box",
-      "name": "Mega Evolution Booster Box",
-      "type": "Booster Box",
-      "era": "Mega Evolution Series",
-      "set": "Mega Evolution",
-      "image": "/catalog-products/ec5e72fedfcff021.png?v=4",
-      "condition": "opening",
-      "availability": "online",
-      "bestPrice": 7490,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Vortexstore",
-          "price": 7490,
-          "url": "https://www.vortexstore.eu/products/pokemon-mega-evolution-booster-box",
-          "status": "online",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786473733,
-      "verified": true,
-      "releaseDate": "2025-09-26"
-    },
-    {
-      "id": "pm:mega-evolution-booster-box-na-otevreni-ru-n-ov-eno-vada-obalu-na-e-shopu",
-      "name": "Mega Evolution Booster Box (Na otevření - Ručně ověřeno: vada obalu na e-shopu)",
-      "type": "Booster Box",
-      "era": "Mega Evolution Series",
-      "set": "Mega Evolution",
-      "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/files/130_pokemon-brilliant-stars-booster-box-36-dopnkovych-balicku.png?v=1745161817",
-      "condition": "opening",
-      "availability": "online",
-      "bestPrice": 7490,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Vortexstore",
-          "price": 7490,
-          "url": "https://www.vortexstore.eu/products/pokemon-mega-evolution-booster-box",
-          "status": "online",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786480505,
+      "checkedAt": 1787092804,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2308,7 +2258,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479898,
+      "checkedAt": 1787094164,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2333,7 +2283,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480021,
+      "checkedAt": 1787094350,
       "verified": true,
       "releaseDate": "2025-09-26"
     },
@@ -2393,7 +2343,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475583,
+      "checkedAt": 1787137667,
       "verified": false,
       "releaseDate": "2025-09-26"
     },
@@ -2453,7 +2403,32 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786475302,
+      "checkedAt": 1787137298,
+      "verified": false,
+      "releaseDate": "2025-09-26"
+    },
+    {
+      "id": "pm:mega-evolution-booster-box",
+      "name": "Mega Evolution Booster Box",
+      "type": "Booster Box",
+      "era": "Mega Evolution Series",
+      "set": "Mega Evolution",
+      "image": "/catalog-products/ec5e72fedfcff021.png?v=4",
+      "condition": "opening",
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 7490,
+          "url": "https://www.vortexstore.eu/products/pokemon-mega-evolution-booster-box",
+          "status": "unavailable",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787076754,
       "verified": false,
       "releaseDate": "2025-09-26"
     },
@@ -2478,7 +2453,32 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479596,
+      "checkedAt": 1787092250,
+      "verified": false,
+      "releaseDate": "2025-09-26"
+    },
+    {
+      "id": "pm:mega-evolution-booster-box-na-otevreni-ru-n-ov-eno-vada-obalu-na-e-shopu",
+      "name": "Mega Evolution Booster Box (Na otevření - Ručně ověřeno: vada obalu na e-shopu)",
+      "type": "Booster Box",
+      "era": "Mega Evolution Series",
+      "set": "Mega Evolution",
+      "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/files/130_pokemon-brilliant-stars-booster-box-36-dopnkovych-balicku.png?v=1745161817",
+      "condition": "opening",
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 7490,
+          "url": "https://www.vortexstore.eu/products/pokemon-mega-evolution-booster-box",
+          "status": "unavailable",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787095634,
       "verified": false,
       "releaseDate": "2025-09-26"
     },
@@ -2503,7 +2503,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480930,
+      "checkedAt": 1787094965,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2528,7 +2528,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480808,
+      "checkedAt": 1787094905,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2567,13 +2567,6 @@
           "stale": false
         },
         {
-          "shop": "Vortexstore",
-          "price": 1990,
-          "url": "https://www.vortexstore.eu/products/pokemon-white-flare-booster-bundle",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
           "shop": "Najada",
           "price": 2199,
           "url": "https://www.najada.games/produkt/white-flare-booster-bundle-WHDLH6",
@@ -2586,9 +2579,16 @@
           "url": "https://pikastore.cz/products/pokemon-2025-scarlet-16061379150173",
           "status": "online",
           "stale": false
+        },
+        {
+          "shop": "Vortexstore",
+          "price": 1990,
+          "url": "https://www.vortexstore.eu/products/pokemon-white-flare-booster-bundle",
+          "status": "unavailable",
+          "stale": true
         }
       ],
-      "checkedAt": 1786476308,
+      "checkedAt": 1787090789,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2601,8 +2601,8 @@
       "image": "/catalog-products/0490882dc9670f3d.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 3290,
-      "availableOffers": 2,
+      "bestPrice": 2390,
+      "availableOffers": 3,
       "storeOffers": 0,
       "offers": [
         {
@@ -2623,7 +2623,7 @@
           "shop": "Vortexstore",
           "price": 2390,
           "url": "https://www.vortexstore.eu/products/pokemon-black-bolt-booster-bundle",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         },
         {
@@ -2641,7 +2641,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477618,
+      "checkedAt": 1787091808,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2654,7 +2654,7 @@
       "image": "/catalog-products/ad01728070b10361.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 3799,
+      "bestPrice": 3499,
       "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
@@ -2683,14 +2683,14 @@
           "shop": "Shadowball",
           "price": 3499,
           "url": "https://www.shadowball.cz/pokemon-tcg--scarlet-violet---white-flare-elite-trainer-box/",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         },
         {
           "shop": "Geekhall",
           "price": 3799,
           "url": "https://geekhall.cz/produkt/pokemon-tcg-scarlet-violet-white-flare-elite-trainer-box/",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -2722,7 +2722,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476121,
+      "checkedAt": 1787090604,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2735,8 +2735,8 @@
       "image": "/catalog-products/eb819fa9fbc0ead5.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 4990,
-      "availableOffers": 1,
+      "bestPrice": 3999,
+      "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
         {
@@ -2764,7 +2764,7 @@
           "shop": "Shadowball",
           "price": 3999,
           "url": "https://www.shadowball.cz/pokemon-tcg--scarlet-violet---black-bolt-elite-trainer-box/",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         },
         {
@@ -2789,7 +2789,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476942,
+      "checkedAt": 1787091179,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2814,7 +2814,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486663,
+      "checkedAt": 1787138211,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2867,7 +2867,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477937,
+      "checkedAt": 1787092189,
       "verified": true,
       "releaseDate": "2025-07-18"
     },
@@ -2886,13 +2886,13 @@
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 1190,
+          "price": 1450,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-sv10-5-unova-victini-illustration-collection",
           "status": "unavailable",
           "stale": false
         }
       ],
-      "checkedAt": 1786481950,
+      "checkedAt": 1787094290,
       "verified": false,
       "releaseDate": "2025-07-18"
     },
@@ -2917,7 +2917,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486233,
+      "checkedAt": 1787137600,
       "verified": true,
       "releaseDate": "2025-05-30"
     },
@@ -2930,7 +2930,7 @@
       "image": "/catalog-products/a7fb70208c0c6d26.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 4699,
+      "bestPrice": 4199,
       "availableOffers": 3,
       "storeOffers": 0,
       "offers": [
@@ -2950,23 +2950,23 @@
         },
         {
           "shop": "Tolarie",
-          "price": 4699,
+          "price": 4199,
           "url": "https://www.tolarie.cz/koupit_produkty/katalog/pokemon-destined-rivals-elite-trainer-box",
           "status": "online",
           "stale": false
         },
         {
-          "shop": "Geekhall",
-          "price": 4999,
-          "url": "https://geekhall.cz/produkt/pokemon-tcg-scarlet-violet-destined-rivals-elite-trainer-box/",
-          "status": "online",
+          "shop": "Shadowball",
+          "price": 4299,
+          "url": "https://www.shadowball.cz/pokemon-tcg--scarlet-violet-destined-rivals-elite-trainer-box/",
+          "status": "unavailable",
           "stale": false
         },
         {
-          "shop": "Shadowball",
-          "price": 6499,
-          "url": "https://www.shadowball.cz/pokemon-tcg--scarlet-violet-destined-rivals-elite-trainer-box/",
-          "status": "unavailable",
+          "shop": "Geekhall",
+          "price": 4599,
+          "url": "https://geekhall.cz/produkt/pokemon-tcg-scarlet-violet-destined-rivals-elite-trainer-box/",
+          "status": "online",
           "stale": false
         },
         {
@@ -2984,7 +2984,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477432,
+      "checkedAt": 1787091547,
       "verified": true,
       "releaseDate": "2025-05-30"
     },
@@ -3016,7 +3016,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480991,
+      "checkedAt": 1787095026,
       "verified": true,
       "releaseDate": "2025-05-30"
     },
@@ -3041,7 +3041,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473976,
+      "checkedAt": 1787139004,
       "verified": true,
       "releaseDate": "2025-05-30"
     },
@@ -3073,7 +3073,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477247,
+      "checkedAt": 1787089754,
       "verified": false,
       "releaseDate": "2025-05-30"
     },
@@ -3119,7 +3119,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476183,
+      "checkedAt": 1787138640,
       "verified": false,
       "releaseDate": "2025-05-30"
     },
@@ -3136,7 +3136,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786482660,
+      "checkedAt": 1787094721,
       "verified": false,
       "releaseDate": "2025-05-30"
     },
@@ -3153,7 +3153,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786475910,
+      "checkedAt": 1787137848,
       "verified": false,
       "releaseDate": "2025-05-30"
     },
@@ -3178,7 +3178,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480143,
+      "checkedAt": 1787094479,
       "verified": true,
       "releaseDate": "2025-03-28"
     },
@@ -3190,9 +3190,9 @@
       "set": "Journey Together",
       "image": "/catalog-products/ed9e8cc1810acfa3.png?v=4",
       "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 2999,
-      "availableOffers": 1,
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
       "storeOffers": 0,
       "offers": [
         {
@@ -3234,12 +3234,12 @@
           "shop": "Shadowball",
           "price": 2999,
           "url": "https://www.shadowball.cz/pokemon-tcg--scarlet-violet-journey-together-elite-trainer-box",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         }
       ],
-      "checkedAt": 1786477004,
-      "verified": true,
+      "checkedAt": 1787091288,
+      "verified": false,
       "releaseDate": "2025-03-28"
     },
     {
@@ -3250,9 +3250,9 @@
       "set": "Journey Together",
       "image": "/catalog-products/ce48c1425078fd68.png?v=4",
       "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 5499,
-      "availableOffers": 1,
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
       "storeOffers": 0,
       "offers": [
         {
@@ -3266,12 +3266,12 @@
           "shop": "Tolarie",
           "price": 5499,
           "url": "https://www.tolarie.cz/koupit_produkty/katalog/journey-together-booster-box",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         }
       ],
-      "checkedAt": 1786481400,
-      "verified": true,
+      "checkedAt": 1787134399,
+      "verified": false,
       "releaseDate": "2025-03-28"
     },
     {
@@ -3302,7 +3302,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786481707,
+      "checkedAt": 1787095817,
       "verified": true,
       "releaseDate": "2025-01-17"
     },
@@ -3383,7 +3383,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475654,
+      "checkedAt": 1787090418,
       "verified": true,
       "releaseDate": "2025-01-17"
     },
@@ -3396,7 +3396,7 @@
       "image": "/catalog-products/7463e8b07c47fe3c.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 4900,
+      "bestPrice": 4990,
       "availableOffers": 5,
       "storeOffers": 0,
       "offers": [
@@ -3423,7 +3423,7 @@
         },
         {
           "shop": "Pikastore",
-          "price": 4900,
+          "price": 4990,
           "url": "https://pikastore.cz/products/pokemon-scarlet-violet-prismatic-evolutions-elite-trainer-box?_pos=16&_sid=d479a4cce&_ss=r",
           "status": "online",
           "stale": false
@@ -3457,13 +3457,6 @@
           "stale": false
         },
         {
-          "shop": "Alza",
-          "price": 3490,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-sv8-5-prismatic-evolutions-elite-trainer-box-d12737237.htm?evt=ac&pos=1&sqid=Algolia_c451f485069ff825f62c6072189ef5fc",
-          "status": "unavailable",
-          "stale": true
-        },
-        {
           "shop": "VeselyDrak",
           "price": 5299,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/14466-pokemon-prismatic-evolutions-elite-trainer-box/",
@@ -3471,7 +3464,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475380,
+      "checkedAt": 1787090204,
       "verified": true,
       "releaseDate": "2025-01-17"
     },
@@ -3500,11 +3493,11 @@
           "price": 7999,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/16208-pokemon-prismatic-evolutions-figure-collection/",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786483092,
-      "verified": true,
+      "checkedAt": 1787134822,
+      "verified": false,
       "releaseDate": "2025-01-17"
     },
     {
@@ -3528,7 +3521,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786481461,
+      "checkedAt": 1787093801,
       "verified": false,
       "releaseDate": "2025-01-17"
     },
@@ -3553,7 +3546,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486112,
+      "checkedAt": 1787137479,
       "verified": true,
       "releaseDate": "2024-11-08"
     },
@@ -3574,13 +3567,6 @@
           "shop": "KnihyDobrovsky",
           "price": 1349,
           "url": "https://www.knihydobrovsky.cz/hra/pokemon-tcg-scarlet-violet-08-surging-sparks-elite-trainer-box-736194774",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
-          "shop": "Alza",
-          "price": 1929,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-sv08-surging-sparks-elite-trainer-box-d12534211.htm?o=2",
           "status": "unavailable",
           "stale": false
         },
@@ -3613,7 +3599,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786475241,
+      "checkedAt": 1787135911,
       "verified": false,
       "releaseDate": "2024-11-08"
     },
@@ -3639,13 +3625,13 @@
         },
         {
           "shop": "Vortexstore",
-          "price": 7490,
+          "price": null,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-scarlet-violet-surging-sparks-booster-box",
           "status": "unavailable",
           "stale": false
         }
       ],
-      "checkedAt": 1786476430,
+      "checkedAt": 1787139186,
       "verified": false,
       "releaseDate": "2024-11-08"
     },
@@ -3670,7 +3656,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786483299,
+      "checkedAt": 1787094842,
       "verified": false,
       "releaseDate": "2024-11-08"
     },
@@ -3730,8 +3716,33 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786486847,
+      "checkedAt": 1787139306,
       "verified": false,
+      "releaseDate": "2024-09-13"
+    },
+    {
+      "id": "pm:pokemon-151-ultra-premium-collection-na-otevreni-ru-n-ov-eno-vada-obalu-na-e-shopu",
+      "name": "Terapagos ex Ultra Premium Collection (Na otevření - Ručně ověřeno: vada obalu na e-shopu)",
+      "type": "Ultra Premium Collection",
+      "era": "Scarlet & Violet Series",
+      "set": "Stellar Crown",
+      "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/files/8526_terapagos-ultra-premium-collection.png?v=1744203940",
+      "condition": "opening",
+      "availability": "online",
+      "bestPrice": 4390,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 4390,
+          "url": "https://www.vortexstore.eu/products/pokemon-tcg-terapagos-ex-ultra-premium-collection",
+          "status": "online",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787093862,
+      "verified": true,
       "releaseDate": "2024-09-13"
     },
     {
@@ -3759,28 +3770,11 @@
           "price": 4999,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/13716-pokemon-terapagos-ex-ultra-premium-collection",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786482159,
+      "checkedAt": 1787096364,
       "verified": true,
-      "releaseDate": "2024-09-13"
-    },
-    {
-      "id": "pm:pokemon-151-ultra-premium-collection-na-otevreni-ru-n-ov-eno-vada-obalu-na-e-shopu",
-      "name": "Terapagos ex Ultra Premium Collection (Na otevření - Ručně ověřeno: vada obalu na e-shopu)",
-      "type": "Ultra Premium Collection",
-      "era": "Scarlet & Violet Series",
-      "set": "Stellar Crown",
-      "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/files/8526_terapagos-ultra-premium-collection.png?v=1744203940",
-      "condition": "opening",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
-      "storeOffers": 0,
-      "offers": [],
-      "checkedAt": 1786480626,
-      "verified": false,
       "releaseDate": "2024-09-13"
     },
     {
@@ -3804,7 +3798,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486172,
+      "checkedAt": 1787137540,
       "verified": true,
       "releaseDate": "2024-08-02"
     },
@@ -3871,7 +3865,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476623,
+      "checkedAt": 1787090989,
       "verified": true,
       "releaseDate": "2024-08-02"
     },
@@ -3900,10 +3894,10 @@
           "price": 3799,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/13133-pokemon-shrouded-fable-special-illustration-collection-kingdra-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786483382,
+      "checkedAt": 1787134943,
       "verified": true,
       "releaseDate": "2024-08-02"
     },
@@ -3928,7 +3922,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473854,
+      "checkedAt": 1787138882,
       "verified": true,
       "releaseDate": "2024-08-02"
     },
@@ -3957,10 +3951,10 @@
           "price": 4499,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/13132-pokemon-shrouded-fable-special-illustration-collection-greninja-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786482451,
+      "checkedAt": 1787134275,
       "verified": true,
       "releaseDate": "2024-08-02"
     },
@@ -4020,7 +4014,32 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476816,
+      "checkedAt": 1787091117,
+      "verified": true,
+      "releaseDate": "2024-05-24"
+    },
+    {
+      "id": "pm:scarlet-violet-tcg-twilight-masquerade-booster-box",
+      "name": "Scarlet & Violet TCG: Twilight Masquerade Booster Box",
+      "type": "Booster Box",
+      "era": "Scarlet & Violet Series",
+      "set": "Twilight Masquerade",
+      "image": "https://cdn.myshoptet.com/usr/www.shadowball.cz/user/shop/big/35866_twm-bb.jpg?ff=1&x=1024&y=768&q=85&ts=66967f51&sg=161563f2",
+      "condition": "sealed",
+      "availability": "online",
+      "bestPrice": 8499,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Shadowball",
+          "price": 8499,
+          "url": "https://www.shadowball.cz/pokemon-scarlet-violet-tcg--twilight-masquerade-booster-box",
+          "status": "online",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787095328,
       "verified": true,
       "releaseDate": "2024-05-24"
     },
@@ -4052,32 +4071,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477371,
-      "verified": false,
-      "releaseDate": "2024-05-24"
-    },
-    {
-      "id": "pm:scarlet-violet-tcg-twilight-masquerade-booster-box",
-      "name": "Scarlet & Violet TCG: Twilight Masquerade Booster Box",
-      "type": "Booster Box",
-      "era": "Scarlet & Violet Series",
-      "set": "Twilight Masquerade",
-      "image": "https://cdn.myshoptet.com/usr/www.shadowball.cz/user/shop/big/35866_twm-bb.jpg?ff=1&x=1024&y=768&q=85&ts=66967f51&sg=161563f2",
-      "condition": "sealed",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Shadowball",
-          "price": 8499,
-          "url": "https://www.shadowball.cz/pokemon-scarlet-violet-tcg--twilight-masquerade-booster-box",
-          "status": "unavailable",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786474985,
+      "checkedAt": 1787090218,
       "verified": false,
       "releaseDate": "2024-05-24"
     },
@@ -4095,6 +4089,13 @@
       "storeOffers": 0,
       "offers": [
         {
+          "shop": "Alza",
+          "price": 1859,
+          "url": "https://www.alza.cz/hracky/pokemon-tcg-sv05-temporal-forces-elite-trainer-box-iron-thorns-d10676350.htm?o=6",
+          "status": "unavailable",
+          "stale": false
+        },
+        {
           "shop": "Geekhall",
           "price": 1899,
           "url": "https://geekhall.cz/produkt/pokemon-tcg-scarlet-violet-temporal-forces-elite-trainer-box/",
@@ -4106,18 +4107,11 @@
           "price": 3499,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/12185-pokemon-temporal-forces-elite-trainer-box-iron-thorns-zeleny/",
           "status": "online",
-          "stale": false
-        },
-        {
-          "shop": "Alza",
-          "price": 1859,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-sv05-temporal-forces-elite-trainer-box-iron-thorns-d10676350.htm?o=6",
-          "status": "unavailable",
           "stale": true
         }
       ],
-      "checkedAt": 1786481339,
-      "verified": true,
+      "checkedAt": 1787095268,
+      "verified": false,
       "releaseDate": "2024-03-22"
     },
     {
@@ -4176,7 +4170,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476745,
+      "checkedAt": 1787091051,
       "verified": false,
       "releaseDate": "2024-03-22"
     },
@@ -4201,7 +4195,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474413,
+      "checkedAt": 1787135064,
       "verified": false,
       "releaseDate": "2024-03-22"
     },
@@ -4226,7 +4220,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474925,
+      "checkedAt": 1787135972,
       "verified": false,
       "releaseDate": "2024-03-22"
     },
@@ -4251,7 +4245,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786485992,
+      "checkedAt": 1787137359,
       "verified": true,
       "releaseDate": "2024-01-26"
     },
@@ -4276,7 +4270,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486474,
+      "checkedAt": 1787138029,
       "verified": true,
       "releaseDate": "2024-01-26"
     },
@@ -4301,7 +4295,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486353,
+      "checkedAt": 1787137908,
       "verified": true,
       "releaseDate": "2024-01-26"
     },
@@ -4326,7 +4320,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486414,
+      "checkedAt": 1787137968,
       "verified": true,
       "releaseDate": "2024-01-26"
     },
@@ -4386,7 +4380,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477556,
+      "checkedAt": 1787091731,
       "verified": true,
       "releaseDate": "2024-01-26"
     },
@@ -4404,22 +4398,15 @@
       "storeOffers": 0,
       "offers": [
         {
-          "shop": "Alza",
-          "price": 1689,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-sv04-paradox-rift-elite-trainer-box-iron-valiant-d7996550.htm",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
           "shop": "VeselyDrak",
           "price": 2899,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/11512-pokemon-paradox-rift-elite-trainer-box-iron-bundle-zeleny",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786482754,
-      "verified": true,
+      "checkedAt": 1787134640,
+      "verified": false,
       "releaseDate": "2023-11-03"
     },
     {
@@ -4443,7 +4430,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486535,
+      "checkedAt": 1787138089,
       "verified": true,
       "releaseDate": "2023-11-03"
     },
@@ -4460,13 +4447,6 @@
       "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
-        {
-          "shop": "Alza",
-          "price": 1079,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-sv04-paradox-rift-elite-trainer-box-roaring-moon-d7996549.htm",
-          "status": "unavailable",
-          "stale": false
-        },
         {
           "shop": "KnihyDobrovsky",
           "price": 1399,
@@ -4496,7 +4476,32 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478060,
+      "checkedAt": 1787092316,
+      "verified": true,
+      "releaseDate": "2023-11-03"
+    },
+    {
+      "id": "pm:paradox-rift-booster-box-na-otevreni-rucne-oznaceno-jako-produkt-k-otevreni",
+      "name": "Paradox Rift Booster Box (Na otevření - Ručně označeno jako produkt k otevření)",
+      "type": "Booster Box",
+      "era": "Scarlet & Violet Series",
+      "set": "Paradox Rift",
+      "image": "/catalog-products/b6100de9cc59607b.png?v=4",
+      "condition": "opening",
+      "availability": "online",
+      "bestPrice": 5990,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 5990,
+          "url": "https://www.vortexstore.eu/products/pokemon-tcg-scarlet-violet-paradox-rift-booster-box",
+          "status": "online",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787136574,
       "verified": true,
       "releaseDate": "2023-11-03"
     },
@@ -4521,7 +4526,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473310,
+      "checkedAt": 1787138452,
       "verified": true,
       "releaseDate": "2023-11-03"
     },
@@ -4546,33 +4551,8 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486595,
+      "checkedAt": 1787138150,
       "verified": true,
-      "releaseDate": "2023-11-03"
-    },
-    {
-      "id": "pm:paradox-rift-booster-box-na-otevreni-rucne-oznaceno-jako-produkt-k-otevreni",
-      "name": "Paradox Rift Booster Box (Na otevření - Ručně označeno jako produkt k otevření)",
-      "type": "Booster Box",
-      "era": "Scarlet & Violet Series",
-      "set": "Paradox Rift",
-      "image": "/catalog-products/b6100de9cc59607b.png?v=4",
-      "condition": "opening",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Vortexstore",
-          "price": 5990,
-          "url": "https://www.vortexstore.eu/products/pokemon-tcg-scarlet-violet-paradox-rift-booster-box",
-          "status": "unavailable",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786479838,
-      "verified": false,
       "releaseDate": "2023-11-03"
     },
     {
@@ -4584,17 +4564,10 @@
       "image": "/catalog-products/4c5a3be4694d627f.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 4699,
-      "availableOffers": 3,
+      "bestPrice": 5099,
+      "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
-        {
-          "shop": "Alza",
-          "price": 1699,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-scarlet-violet-151-booster-bundle-d7850578.htm",
-          "status": "unavailable",
-          "stale": false
-        },
         {
           "shop": "KnihyDobrovsky",
           "price": 1699,
@@ -4620,7 +4593,7 @@
           "shop": "Shadowball",
           "price": 4699,
           "url": "https://www.shadowball.cz/pokemon-tcg-scarlet-violet--151-booster-bundle/",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         },
         {
@@ -4652,7 +4625,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786476105,
+      "checkedAt": 1787090542,
       "verified": true,
       "releaseDate": "2023-09-22"
     },
@@ -4691,7 +4664,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479098,
+      "checkedAt": 1787093364,
       "verified": true,
       "releaseDate": "2023-09-22"
     },
@@ -4709,13 +4682,6 @@
       "storeOffers": 0,
       "offers": [
         {
-          "shop": "Alza",
-          "price": 1759,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-scarlet-violet-151-elite-trainer-box-d7850573.htm",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
           "shop": "Bulbazard",
           "price": 6399,
           "url": "https://www.bulbazard.cz/scarlet-violet-151--elite-trainer-box",
@@ -4730,7 +4696,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786478546,
+      "checkedAt": 1787092865,
       "verified": true,
       "releaseDate": "2023-09-22"
     },
@@ -4747,7 +4713,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786478182,
+      "checkedAt": 1787090728,
       "verified": false,
       "releaseDate": "2023-09-22"
     },
@@ -4779,7 +4745,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477999,
+      "checkedAt": 1787090479,
       "verified": false,
       "releaseDate": "2023-09-22"
     },
@@ -4811,7 +4777,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786476684,
+      "checkedAt": 1787139322,
       "verified": false,
       "releaseDate": "2023-09-22"
     },
@@ -4836,7 +4802,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786483947,
+      "checkedAt": 1787095207,
       "verified": false,
       "releaseDate": "2023-09-22"
     },
@@ -4855,13 +4821,13 @@
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 7990,
+          "price": null,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-scarlet-violet-obsidian-flames-booster-box",
           "status": "unavailable",
           "stale": false
         }
       ],
-      "checkedAt": 1786474790,
+      "checkedAt": 1787135790,
       "verified": false,
       "releaseDate": "2023-08-11"
     },
@@ -4886,84 +4852,9 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474292,
+      "checkedAt": 1787134701,
       "verified": false,
       "releaseDate": "2023-06-09"
-    },
-    {
-      "id": "pm:grafaiai-ex-box",
-      "name": "Grafaiai ex Box",
-      "type": "Special Collection",
-      "era": "Scarlet & Violet Series",
-      "set": "Scarlet & Violet Promos",
-      "image": "/catalog-products/92c1c9df10374f91.png?v=4",
-      "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 899,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "VeselyDrak",
-          "price": 899,
-          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/12765-pokemon-grafaiai-ex-box",
-          "status": "online",
-          "stale": true
-        }
-      ],
-      "checkedAt": 1786474535,
-      "verified": false,
-      "releaseDate": "2023-03-31"
-    },
-    {
-      "id": "pm:bloodmoon-ursaluna-ex-box",
-      "name": "Bloodmoon Ursaluna ex Box",
-      "type": "Special Collection",
-      "era": "Scarlet & Violet Series",
-      "set": "Scarlet & Violet Promos",
-      "image": "/catalog-products/38fbc42f302efeec.png?v=4",
-      "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 949,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "VeselyDrak",
-          "price": 949,
-          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/14214-pokemon-bloodmoon-ursaluna-ex-box",
-          "status": "online",
-          "stale": true
-        }
-      ],
-      "checkedAt": 1786484595,
-      "verified": false,
-      "releaseDate": "2023-03-31"
-    },
-    {
-      "id": "pm:hop-s-zacian-ex-box",
-      "name": "Hop's Zacian ex Box",
-      "type": "Special Collection",
-      "era": "Scarlet & Violet Series",
-      "set": "Scarlet & Violet Promos",
-      "image": "/catalog-products/fea6ee800e48da6f.png?v=4",
-      "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 949,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "VeselyDrak",
-          "price": 949,
-          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/14902-pokemon-hop-s-zacian-ex-box",
-          "status": "online",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786481195,
-      "verified": true,
-      "releaseDate": "2023-03-31"
     },
     {
       "id": "pm:plechovka-pokemon-azure-legends-tin-xerneas-ex-tin",
@@ -4983,11 +4874,11 @@
           "price": 949,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-plechovky/15084-plechovka-pokemon-azure-legends-tin-xerneas-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786482896,
-      "verified": true,
+      "checkedAt": 1787134761,
+      "verified": false,
       "releaseDate": "2023-03-31"
     },
     {
@@ -5011,7 +4902,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786484416,
+      "checkedAt": 1787135669,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5033,11 +4924,61 @@
           "price": 949,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-plechovky/15884-plechovka-pokemon-slashing-legends-tin-zacian-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786483826,
-      "verified": true,
+      "checkedAt": 1787135244,
+      "verified": false,
+      "releaseDate": "2023-03-31"
+    },
+    {
+      "id": "pm:grafaiai-ex-box",
+      "name": "Grafaiai ex Box",
+      "type": "Special Collection",
+      "era": "Scarlet & Violet Series",
+      "set": "Scarlet & Violet Promos",
+      "image": "/catalog-products/92c1c9df10374f91.png?v=4",
+      "condition": "sealed",
+      "availability": "online",
+      "bestPrice": 999,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "VeselyDrak",
+          "price": 999,
+          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/12765-pokemon-grafaiai-ex-box",
+          "status": "online",
+          "stale": true
+        }
+      ],
+      "checkedAt": 1787089621,
+      "verified": false,
+      "releaseDate": "2023-03-31"
+    },
+    {
+      "id": "pm:hop-s-zacian-ex-box",
+      "name": "Hop's Zacian ex Box",
+      "type": "Special Collection",
+      "era": "Scarlet & Violet Series",
+      "set": "Scarlet & Violet Promos",
+      "image": "/catalog-products/fea6ee800e48da6f.png?v=4",
+      "condition": "sealed",
+      "availability": "online",
+      "bestPrice": 999,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "VeselyDrak",
+          "price": 999,
+          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/14902-pokemon-hop-s-zacian-ex-box",
+          "status": "online",
+          "stale": true
+        }
+      ],
+      "checkedAt": 1787095146,
+      "verified": false,
       "releaseDate": "2023-03-31"
     },
     {
@@ -5061,7 +5002,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786484668,
+      "checkedAt": 1787136092,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5083,11 +5024,11 @@
           "price": 999,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/11691-pokemon-iron-valiant-ex-box",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786484116,
-      "verified": true,
+      "checkedAt": 1787135365,
+      "verified": false,
       "releaseDate": "2023-03-31"
     },
     {
@@ -5111,7 +5052,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477679,
+      "checkedAt": 1787091869,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5133,11 +5074,36 @@
           "price": 999,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-plechovky/15082-plechovka-pokemon-azure-legends-tin-dialga-ex",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786482307,
-      "verified": true,
+      "checkedAt": 1787096424,
+      "verified": false,
+      "releaseDate": "2023-03-31"
+    },
+    {
+      "id": "pm:bloodmoon-ursaluna-ex-box",
+      "name": "Bloodmoon Ursaluna ex Box",
+      "type": "Special Collection",
+      "era": "Scarlet & Violet Series",
+      "set": "Scarlet & Violet Promos",
+      "image": "/catalog-products/38fbc42f302efeec.png?v=4",
+      "condition": "sealed",
+      "availability": "online",
+      "bestPrice": 1099,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "VeselyDrak",
+          "price": 1099,
+          "url": "https://www.vesely-drak.cz/produkty/pokemon-gx-box/14214-pokemon-bloodmoon-ursaluna-ex-box",
+          "status": "online",
+          "stale": true
+        }
+      ],
+      "checkedAt": 1787136032,
+      "verified": false,
       "releaseDate": "2023-03-31"
     },
     {
@@ -5161,7 +5127,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477065,
+      "checkedAt": 1787091363,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5186,7 +5152,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786484969,
+      "checkedAt": 1787136454,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5211,7 +5177,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485089,
+      "checkedAt": 1787136514,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5233,11 +5199,11 @@
           "price": 1299,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/15445-pokemon-iono-s-bellibolt-ex-premium-collection-box",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786483534,
-      "verified": true,
+      "checkedAt": 1787135003,
+      "verified": false,
       "releaseDate": "2023-03-31"
     },
     {
@@ -5249,19 +5215,19 @@
       "image": "/catalog-products/042c47929b9fe2dc.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 1499,
+      "bestPrice": 1699,
       "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "VeselyDrak",
-          "price": 1499,
+          "price": 1699,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/12785-pokemon-armarouge-ex-premium-collection-box",
           "status": "online",
           "stale": true
         }
       ],
-      "checkedAt": 1786485330,
+      "checkedAt": 1787136755,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5307,7 +5273,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478794,
+      "checkedAt": 1787093113,
       "verified": true,
       "releaseDate": "2023-03-31"
     },
@@ -5329,11 +5295,11 @@
           "price": 2499,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/12209-pokemon-combined-powers-premium-collection-lugia",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786483680,
-      "verified": true,
+      "checkedAt": 1787135124,
+      "verified": false,
       "releaseDate": "2023-03-31"
     },
     {
@@ -5364,7 +5330,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786481828,
+      "checkedAt": 1787095937,
       "verified": true,
       "releaseDate": "2023-03-31"
     },
@@ -5389,7 +5355,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474036,
+      "checkedAt": 1787139125,
       "verified": true,
       "releaseDate": "2023-03-31"
     },
@@ -5414,7 +5380,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486790,
+      "checkedAt": 1787138332,
       "verified": true,
       "releaseDate": "2023-03-31"
     },
@@ -5439,7 +5405,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486724,
+      "checkedAt": 1787138271,
       "verified": true,
       "releaseDate": "2023-03-31"
     },
@@ -5464,7 +5430,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480082,
+      "checkedAt": 1787094418,
       "verified": true,
       "releaseDate": "2023-03-31"
     },
@@ -5481,7 +5447,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786486052,
+      "checkedAt": 1787096243,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5520,13 +5486,6 @@
           "stale": false
         },
         {
-          "shop": "Alza",
-          "price": 2139,
-          "url": "https://www.alza.cz/hracky/pokemon-tcg-scarlet-violet-elite-trainer-box-koraidon-d7641019.htm?evt=ac&pos=1&sqid=Algolia_aeda92fabee8c9f4d358d5ab3ff7548b",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
           "shop": "Shadowball",
           "price": 2999,
           "url": "https://www.shadowball.cz/pokemon-tcg-scarlet-violet-elite-trainer-box-koraidon/",
@@ -5541,7 +5500,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786473915,
+      "checkedAt": 1787135427,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5566,7 +5525,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485029,
+      "checkedAt": 1787095877,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5591,7 +5550,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480870,
+      "checkedAt": 1787092621,
       "verified": false,
       "releaseDate": "2023-03-31"
     },
@@ -5604,15 +5563,15 @@
       "image": "/catalog-products/c1f3b8cddb123e06.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 3299,
-      "availableOffers": 1,
+      "bestPrice": 2990,
+      "availableOffers": 2,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
           "price": 2990,
           "url": "https://www.vortexstore.eu/products/pokemon-crown-zenith-galarian-moltres-tin",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         },
         {
@@ -5623,8 +5582,8 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786474353,
-      "verified": false,
+      "checkedAt": 1787089437,
+      "verified": true,
       "releaseDate": "2023-01-20"
     },
     {
@@ -5648,7 +5607,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485149,
+      "checkedAt": 1787136634,
       "verified": false,
       "releaseDate": "2023-01-20"
     },
@@ -5673,7 +5632,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479656,
+      "checkedAt": 1787093922,
       "verified": true,
       "releaseDate": "2023-01-20"
     },
@@ -5698,7 +5657,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786480566,
+      "checkedAt": 1787092499,
       "verified": false,
       "releaseDate": "2023-01-20"
     },
@@ -5734,11 +5693,11 @@
           "price": 4299,
           "url": "https://www.vesely-drak.cz/produkty/pokemon-karty/9751-pokemon-sword-and-shield-silver-tempest-elite-trainer-box-alolan-vulpix-vstar",
           "status": "online",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786481889,
-      "verified": true,
+      "checkedAt": 1787096061,
+      "verified": false,
       "releaseDate": "2022-11-11"
     },
     {
@@ -5762,7 +5721,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480327,
+      "checkedAt": 1787094601,
       "verified": true,
       "releaseDate": "2022-11-11"
     },
@@ -5787,7 +5746,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473431,
+      "checkedAt": 1787138513,
       "verified": true,
       "releaseDate": "2022-11-11"
     },
@@ -5812,7 +5771,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786485570,
+      "checkedAt": 1787136935,
       "verified": true,
       "releaseDate": "2022-09-09"
     },
@@ -5837,7 +5796,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786484177,
+      "checkedAt": 1787135548,
       "verified": true,
       "releaseDate": "2022-09-09"
     },
@@ -5862,7 +5821,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786484849,
+      "checkedAt": 1787136213,
       "verified": false,
       "releaseDate": "2022-07-01"
     },
@@ -5887,7 +5846,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786484789,
+      "checkedAt": 1787136152,
       "verified": false,
       "releaseDate": "2022-07-01"
     },
@@ -5912,7 +5871,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485269,
+      "checkedAt": 1787136695,
       "verified": false,
       "releaseDate": "2022-07-01"
     },
@@ -5937,41 +5896,9 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478976,
+      "checkedAt": 1787091669,
       "verified": false,
       "releaseDate": "2022-07-01"
-    },
-    {
-      "id": "pm:sword-shield-tcg-brilliant-stars-etb",
-      "name": "Sword & Shield TCG: Brilliant Stars ETB",
-      "type": "ETB",
-      "era": "Sword & Shield Series",
-      "set": "Brilliant Stars",
-      "image": "/catalog-products/f25b5abc2496a3c1.png?v=4",
-      "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 5390,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Shadowball",
-          "price": 4999,
-          "url": "https://www.shadowball.cz/pokemon-sword-shield-tcg--brilliant-stars-elite-trainer-box",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
-          "shop": "Vortexstore",
-          "price": 5390,
-          "url": "https://www.vortexstore.eu/products/pokemon-tcg-brilliant-stars-elite-trainer-box",
-          "status": "online",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786476922,
-      "verified": true,
-      "releaseDate": "2022-02-25"
     },
     {
       "id": "pm:brilliant-stars-booster-box",
@@ -5994,8 +5921,40 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479414,
+      "checkedAt": 1787093620,
       "verified": true,
+      "releaseDate": "2022-02-25"
+    },
+    {
+      "id": "pm:sword-shield-tcg-brilliant-stars-etb",
+      "name": "Sword & Shield TCG: Brilliant Stars ETB",
+      "type": "ETB",
+      "era": "Sword & Shield Series",
+      "set": "Brilliant Stars",
+      "image": "/catalog-products/f25b5abc2496a3c1.png?v=4",
+      "condition": "sealed",
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Shadowball",
+          "price": 4999,
+          "url": "https://www.shadowball.cz/pokemon-sword-shield-tcg--brilliant-stars-elite-trainer-box",
+          "status": "unavailable",
+          "stale": false
+        },
+        {
+          "shop": "Vortexstore",
+          "price": 5390,
+          "url": "https://www.vortexstore.eu/products/pokemon-tcg-brilliant-stars-elite-trainer-box",
+          "status": "unavailable",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787136273,
+      "verified": false,
       "releaseDate": "2022-02-25"
     },
     {
@@ -6019,7 +5978,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786484297,
+      "checkedAt": 1787135609,
       "verified": true,
       "releaseDate": "2021-11-12"
     },
@@ -6044,34 +6003,9 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474595,
+      "checkedAt": 1787135184,
       "verified": false,
       "releaseDate": "2021-11-12"
-    },
-    {
-      "id": "pm:celebrations-ultra-premium-collection-akryl-zdarma",
-      "name": "Celebrations Ultra-Premium Collection + akryl zdarma",
-      "type": "Ultra Premium Collection",
-      "era": "Sword & Shield Series",
-      "set": "Celebrations",
-      "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/files/DC0774-501_8_a82bfaf2-d17d-41d0-a9ea-3b1c9eee65dc.png?v=1753114249",
-      "condition": "opening",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Vortexstore",
-          "price": 26990,
-          "url": "https://www.vortexstore.eu/products/pokemon-celebrations-ultra-premium-collection",
-          "status": "unavailable",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786473793,
-      "verified": false,
-      "releaseDate": "2021-10-08"
     },
     {
       "id": "pm:25th-anniversary-celebrations-etb",
@@ -6081,22 +6015,79 @@
       "set": "Celebrations",
       "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/products/Pokemon-TCG-25th-Anniversary-Celebrations-Elite-Trainer-Box.png?v=1676127195",
       "condition": "opening",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
+      "availability": "online",
+      "bestPrice": 9490,
+      "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 9690,
+          "price": 9490,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-25th-anniversary-celebrations-elite-trainer-box",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         }
       ],
-      "checkedAt": 1786485811,
+      "checkedAt": 1787139064,
+      "verified": true,
+      "releaseDate": "2021-10-08"
+    },
+    {
+      "id": "pm:celebrations-ultra-premium-collection-akryl-zdarma",
+      "name": "Celebrations Ultra-Premium Collection + akryl zdarma",
+      "type": "Ultra Premium Collection",
+      "era": "Sword & Shield Series",
+      "set": "Celebrations",
+      "image": "https://cdn.shopify.com/s/files/1/0155/2734/6276/files/DC0774-501_8_a82bfaf2-d17d-41d0-a9ea-3b1c9eee65dc.png?v=1753114249",
+      "condition": "opening",
+      "availability": "online",
+      "bestPrice": 25990,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Vortexstore",
+          "price": 25990,
+          "url": "https://www.vortexstore.eu/products/pokemon-celebrations-ultra-premium-collection",
+          "status": "online",
+          "stale": true
+        }
+      ],
+      "checkedAt": 1787090850,
       "verified": false,
       "releaseDate": "2021-10-08"
+    },
+    {
+      "id": "pm:sword-shield-evolving-skies-etb-segv",
+      "name": "Sword & Shield: Evolving Skies ETB(SEGV)",
+      "type": "ETB",
+      "era": "Sword & Shield Series",
+      "set": "Evolving Skies",
+      "image": "/catalog-products/81f41d7b236125ff.png?v=4",
+      "condition": "opening",
+      "availability": "online",
+      "bestPrice": 15490,
+      "availableOffers": 1,
+      "storeOffers": 0,
+      "offers": [
+        {
+          "shop": "Bulbazard",
+          "price": 6499,
+          "url": "https://www.bulbazard.cz/pokemon-tcg-evolving-skies-elite-trainer-box",
+          "status": "unavailable",
+          "stale": false
+        },
+        {
+          "shop": "Vortexstore",
+          "price": 15490,
+          "url": "https://www.vortexstore.eu/products/pokemon-tcg-sword-shield-evolving-skies-elite-trainer-boxsegv",
+          "status": "online",
+          "stale": false
+        }
+      ],
+      "checkedAt": 1787095086,
+      "verified": true,
+      "releaseDate": "2021-08-27"
     },
     {
       "id": "pm:sword-shield-evolving-skies-etb-segv-vada-obalu-rucne-overeno-vada-obalu-na-e-shopu",
@@ -6119,39 +6110,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786477232,
-      "verified": true,
-      "releaseDate": "2021-08-27"
-    },
-    {
-      "id": "pm:sword-shield-evolving-skies-etb-segv",
-      "name": "Sword & Shield: Evolving Skies ETB(SEGV)",
-      "type": "ETB",
-      "era": "Sword & Shield Series",
-      "set": "Evolving Skies",
-      "image": "/catalog-products/81f41d7b236125ff.png?v=4",
-      "condition": "opening",
-      "availability": "online",
-      "bestPrice": 15990,
-      "availableOffers": 1,
-      "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Bulbazard",
-          "price": 6499,
-          "url": "https://www.bulbazard.cz/pokemon-tcg-evolving-skies-elite-trainer-box",
-          "status": "unavailable",
-          "stale": false
-        },
-        {
-          "shop": "Vortexstore",
-          "price": 15990,
-          "url": "https://www.vortexstore.eu/products/pokemon-tcg-sword-shield-evolving-skies-elite-trainer-boxsegv",
-          "status": "online",
-          "stale": false
-        }
-      ],
-      "checkedAt": 1786481051,
+      "checkedAt": 1787091423,
       "verified": true,
       "releaseDate": "2021-08-27"
     },
@@ -6164,19 +6123,19 @@
       "image": "/catalog-products/22479c6af01d695d.png?v=4",
       "condition": "opening",
       "availability": "online",
-      "bestPrice": 60990,
+      "bestPrice": 59990,
       "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 60990,
+          "price": 59990,
           "url": "https://www.vortexstore.eu/products/pokemon-sword-shield-tcg-evolving-skies-booster-box",
           "status": "online",
           "stale": false
         }
       ],
-      "checkedAt": 1786483886,
+      "checkedAt": 1787135305,
       "verified": true,
       "releaseDate": "2021-08-27"
     },
@@ -6201,7 +6160,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473491,
+      "checkedAt": 1787138573,
       "verified": true,
       "releaseDate": "2021-06-18"
     },
@@ -6226,7 +6185,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473552,
+      "checkedAt": 1787138701,
       "verified": true,
       "releaseDate": "2021-06-18"
     },
@@ -6265,7 +6224,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786477126,
+      "checkedAt": 1787089499,
       "verified": false,
       "releaseDate": "2021-06-18"
     },
@@ -6290,7 +6249,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786478363,
+      "checkedAt": 1787091303,
       "verified": false,
       "releaseDate": "2021-06-18"
     },
@@ -6302,21 +6261,21 @@
       "set": "Shining Fates",
       "image": "/catalog-products/a085158bbe93a8dc.png?v=4",
       "condition": "sealed",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
+      "availability": "online",
+      "bestPrice": 1490,
+      "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 1390,
+          "price": 1490,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-shining-fates-pikachu-v-collection-box",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         }
       ],
-      "checkedAt": 1786475715,
-      "verified": false,
+      "checkedAt": 1787136394,
+      "verified": true,
       "releaseDate": "2021-02-19"
     },
     {
@@ -6354,7 +6313,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786476370,
+      "checkedAt": 1787138943,
       "verified": false,
       "releaseDate": "2021-02-19"
     },
@@ -6379,7 +6338,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786474730,
+      "checkedAt": 1787135487,
       "verified": false,
       "releaseDate": "2020-11-13"
     },
@@ -6425,7 +6384,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478668,
+      "checkedAt": 1787092986,
       "verified": true,
       "releaseDate": "2020-08-14"
     },
@@ -6450,7 +6409,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786484729,
+      "checkedAt": 1787095756,
       "verified": false,
       "releaseDate": "2020-05-01"
     },
@@ -6475,7 +6434,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786484909,
+      "checkedAt": 1787136333,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6500,7 +6459,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485390,
+      "checkedAt": 1787136815,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6525,7 +6484,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786485510,
+      "checkedAt": 1787136875,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6538,19 +6497,19 @@
       "image": "/catalog-products/7a7df7b459423ea9.png?v=4",
       "condition": "sealed",
       "availability": "online",
-      "bestPrice": 1799,
+      "bestPrice": 1999,
       "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "VeselyDrak",
-          "price": 1799,
+          "price": 1999,
           "url": "https://www.vesely-drak.cz/produkty/specialni-sety/8705-pokemon-morpeko-v-union-special-collection",
           "status": "online",
           "stale": true
         }
       ],
-      "checkedAt": 1786478855,
+      "checkedAt": 1787093174,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6575,7 +6534,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478302,
+      "checkedAt": 1787092681,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6600,7 +6559,7 @@
           "stale": true
         }
       ],
-      "checkedAt": 1786478607,
+      "checkedAt": 1787092925,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6625,7 +6584,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473612,
+      "checkedAt": 1787138761,
       "verified": true,
       "releaseDate": "2020-02-07"
     },
@@ -6637,21 +6596,21 @@
       "set": "Sword & Shield Promos",
       "image": "/catalog-products/0be9d02d62b63d10.png?v=4",
       "condition": "opening",
-      "availability": "unavailable",
-      "bestPrice": null,
-      "availableOffers": 0,
+      "availability": "online",
+      "bestPrice": 12990,
+      "availableOffers": 1,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
-          "price": 13490,
+          "price": 12990,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-charizard-ultra-premium-collection",
-          "status": "unavailable",
+          "status": "online",
           "stale": false
         }
       ],
-      "checkedAt": 1786478242,
-      "verified": false,
+      "checkedAt": 1787090342,
+      "verified": true,
       "releaseDate": "2020-02-07"
     },
     {
@@ -6667,7 +6626,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786473370,
+      "checkedAt": 1787134580,
       "verified": false,
       "releaseDate": "2020-02-07"
     },
@@ -6692,7 +6651,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786484537,
+      "checkedAt": 1787135850,
       "verified": true,
       "releaseDate": "2019-11-01"
     },
@@ -6704,21 +6663,21 @@
       "set": "Hidden Fates",
       "image": "/catalog-products/e6bca380969a51b7.png?v=4",
       "condition": "opening",
-      "availability": "online",
-      "bestPrice": 11990,
-      "availableOffers": 1,
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
       "storeOffers": 0,
       "offers": [
         {
           "shop": "Vortexstore",
           "price": 11990,
           "url": "https://www.vortexstore.eu/products/pokemon-tcg-hidden-fates-elite-trainer-box",
-          "status": "online",
+          "status": "unavailable",
           "stale": false
         }
       ],
-      "checkedAt": 1786480448,
-      "verified": true,
+      "checkedAt": 1787095390,
+      "verified": false,
       "releaseDate": "2019-08-23"
     },
     {
@@ -6742,7 +6701,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480747,
+      "checkedAt": 1787094782,
       "verified": true,
       "releaseDate": "2019-08-02"
     },
@@ -6774,7 +6733,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786482073,
+      "checkedAt": 1787096304,
       "verified": true,
       "releaseDate": "2019-02-01"
     },
@@ -6799,7 +6758,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479717,
+      "checkedAt": 1787093983,
       "verified": true,
       "releaseDate": "2018-11-02"
     },
@@ -6816,7 +6775,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786485450,
+      "checkedAt": 1787096122,
       "verified": false,
       "releaseDate": "2018-09-07"
     },
@@ -6848,7 +6807,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786482012,
+      "checkedAt": 1787096183,
       "verified": true,
       "releaseDate": "2018-08-03"
     },
@@ -6873,7 +6832,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486851,
+      "checkedAt": 1787138392,
       "verified": true,
       "releaseDate": "2018-05-04"
     },
@@ -6890,7 +6849,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786485209,
+      "checkedAt": 1787095998,
       "verified": false,
       "releaseDate": "2018-05-04"
     },
@@ -6915,7 +6874,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786486293,
+      "checkedAt": 1787137728,
       "verified": true,
       "releaseDate": "2017-11-03"
     },
@@ -6947,7 +6906,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786476555,
+      "checkedAt": 1787139247,
       "verified": false,
       "releaseDate": "2017-10-06"
     },
@@ -6972,7 +6931,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479535,
+      "checkedAt": 1787093741,
       "verified": true,
       "releaseDate": "2017-08-04"
     },
@@ -6989,7 +6948,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786475440,
+      "checkedAt": 1787137419,
       "verified": false,
       "releaseDate": "2017-08-04"
     },
@@ -7014,7 +6973,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786482512,
+      "checkedAt": 1787134335,
       "verified": true,
       "releaseDate": "2017-02-03"
     },
@@ -7039,7 +6998,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786485931,
+      "checkedAt": 1787137236,
       "verified": true,
       "releaseDate": "2017-02-03"
     },
@@ -7064,7 +7023,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786473672,
+      "checkedAt": 1787138822,
       "verified": true,
       "releaseDate": "2017-02-03"
     },
@@ -7081,7 +7040,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786475775,
+      "checkedAt": 1787137788,
       "verified": false,
       "releaseDate": "2017-02-03"
     },
@@ -7098,7 +7057,7 @@
       "availableOffers": 0,
       "storeOffers": 0,
       "offers": [],
-      "checkedAt": 1786486911,
+      "checkedAt": 1787134460,
       "verified": false,
       "releaseDate": "2017-02-03"
     },
@@ -7120,10 +7079,10 @@
           "price": 25990,
           "url": "https://www.vortexstore.eu/products/pokemon-tag-team-tins-eevee-snorlax-gx-tin",
           "status": "unavailable",
-          "stale": false
+          "stale": true
         }
       ],
-      "checkedAt": 1786479159,
+      "checkedAt": 1787092005,
       "verified": false,
       "releaseDate": "2017-02-03"
     },
@@ -7148,7 +7107,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786480388,
+      "checkedAt": 1787094661,
       "verified": true,
       "releaseDate": "2016-08-03"
     },
@@ -7173,7 +7132,7 @@
           "stale": false
         }
       ],
-      "checkedAt": 1786479474,
+      "checkedAt": 1787093680,
       "verified": true,
       "releaseDate": "2015-08-12"
     }

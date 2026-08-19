@@ -6,18 +6,8 @@ import { ArrowLeftRight, Check, Minus, Plus, RotateCcw, Search, Trash2 } from "l
 import { useEffect, useMemo, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
+import { loadPortfolioProducts, type PortfolioProduct as Product } from "../portfolio/central-products";
 import { comparisonSummary } from "./comparison";
-
-type Product = {
-  id: string;
-  name: string;
-  type: string;
-  era: string;
-  set: string;
-  image: string;
-  marketPrice: number | null;
-  priceUpdatedAt: string;
-};
 
 type Selection = { productId: string; quantity: number };
 type Side = "mine" | "compared";
@@ -199,10 +189,10 @@ export default function CompareClient({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    fetch("/portfolio-products.json", { cache: "force-cache", headers: { Accept: "application/json" } })
-      .then(async (response) => response.ok ? response.json() : null)
-      .then((payload: { products?: Product[] } | null) => {
-        if (payload?.products?.length) setProducts(payload.products);
+    const controller = new AbortController();
+    loadPortfolioProducts(initialProducts, controller.signal)
+      .then((loadedProducts) => {
+        if (loadedProducts.length) setProducts(loadedProducts);
       })
       .catch(() => undefined);
     const hydrationTimer = window.setTimeout(() => {
@@ -220,8 +210,11 @@ export default function CompareClient({
       }
       setReady(true);
     }, 0);
-    return () => window.clearTimeout(hydrationTimer);
-  }, []);
+    return () => {
+      controller.abort();
+      window.clearTimeout(hydrationTimer);
+    };
+  }, [initialProducts]);
 
   useEffect(() => {
     if (!ready) return;
@@ -229,6 +222,10 @@ export default function CompareClient({
   }, [mine, compared, ready]);
 
   const byId = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
+  const displayedSourceUpdatedAt = products.reduce(
+    (latest, product) => product.priceUpdatedAt > latest ? product.priceUpdatedAt : latest,
+    "",
+  ) || sourceUpdatedAt;
   const summary = comparisonSummary(
     mine.map((item) => ({ price: byId.get(item.productId)?.marketPrice ?? null, quantity: item.quantity })),
     compared.map((item) => ({ price: byId.get(item.productId)?.marketPrice ?? null, quantity: item.quantity })),
@@ -272,9 +269,9 @@ export default function CompareClient({
           <p>Postav proti sobě libovolné kombinace sealed produktů. Používáme pouze jejich aktuální tržní hodnotu – bez nákupních cen a zbytečných údajů.</p>
         </div>
         <aside>
-          <strong>{new Intl.NumberFormat("cs-CZ").format(productCount)}</strong>
+          <strong>{new Intl.NumberFormat("cs-CZ").format(Math.max(productCount, products.length))}</strong>
           <span>produktů k porovnání</span>
-          <small>Tržní data obnovena {sourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}</small>
+          <small>Tržní data obnovena {displayedSourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}</small>
         </aside>
       </header>
 

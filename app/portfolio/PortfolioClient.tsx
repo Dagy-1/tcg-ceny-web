@@ -5,17 +5,7 @@ import { CalendarDays, Check, ChevronDown, Pencil, Plus, Trash2, X } from "lucid
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
-
-type Product = {
-  id: string;
-  name: string;
-  type: string;
-  era: string;
-  set: string;
-  image: string;
-  marketPrice: number | null;
-  priceUpdatedAt: string;
-};
+import { loadPortfolioProducts, type PortfolioProduct as Product } from "./central-products";
 
 type SessionUser = {
   id: string;
@@ -1193,23 +1183,24 @@ export default function PortfolioClient({
   const [availableProducts, setAvailableProducts] = useState(products);
   const portfolioRefreshInFlight = useRef(false);
   const productDatabaseInFlight = useRef<Promise<Product[]> | null>(null);
+  const productDatabaseIsLoaded = availableProducts.length >= productCount;
+  const displayedProductCount = productDatabaseIsLoaded ? availableProducts.length : productCount;
+  const displayedSourceUpdatedAt = productDatabaseIsLoaded
+    ? availableProducts.reduce(
+        (latest, product) => product.priceUpdatedAt > latest ? product.priceUpdatedAt : latest,
+        "",
+      ) || sourceUpdatedAt
+    : sourceUpdatedAt;
 
   const loadProductDatabase = useCallback(async () => {
     if (availableProducts.length >= productCount) return availableProducts;
     if (productDatabaseInFlight.current) return productDatabaseInFlight.current;
 
-    productDatabaseInFlight.current = fetch("/portfolio-products.json", {
-      cache: "force-cache",
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Product database unavailable");
-        const snapshot = await response.json() as { products?: Product[] };
-        if (!Array.isArray(snapshot.products) || snapshot.products.length < productCount) {
-          throw new Error("Product database is incomplete");
-        }
-        setAvailableProducts(snapshot.products);
-        return snapshot.products;
+    productDatabaseInFlight.current = loadPortfolioProducts(availableProducts)
+      .then((loadedProducts) => {
+        if (loadedProducts.length < productCount) throw new Error("Product database is incomplete");
+        setAvailableProducts(loadedProducts);
+        return loadedProducts;
       })
       .finally(() => {
         productDatabaseInFlight.current = null;
@@ -1401,9 +1392,9 @@ export default function PortfolioClient({
           </p>
         </div>
         <div className="portfolio-header-proof">
-          <span>{new Intl.NumberFormat("cs-CZ").format(productCount)}</span>
+          <span>{new Intl.NumberFormat("cs-CZ").format(displayedProductCount)}</span>
           <p>sealed produktů v portfolio databázi</p>
-          <small>Tržní data obnovena {sourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}</small>
+          <small>Tržní data obnovena {displayedSourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}</small>
         </div>
       </header>
 

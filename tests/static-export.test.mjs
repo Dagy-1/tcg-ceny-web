@@ -6,6 +6,7 @@ import { canonicalHostRedirect } from "../worker/canonical-host.ts";
 import { handleSitemap } from "../worker/sitemap.ts";
 import {
   centralPortfolioRequest,
+  centralPortfolioProductsRequest,
   handlePortfolioApi,
   oauthRedirectUri,
 } from "../worker/portfolio-api.ts";
@@ -50,11 +51,12 @@ test("static export contains every public page", async () => {
 });
 
 test("portfolio uses the dedicated investment database", async () => {
-  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, catalog, catalogSource, privacy, authMenuSource] = await Promise.all([
+  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, centralProductsSource, catalog, catalogSource, privacy, authMenuSource] = await Promise.all([
     readOutput("portfolio/index.html"),
     readFile(new URL("../app/portfolio/portfolio-data.json", import.meta.url), "utf8"),
     readOutput("portfolio-products.json"),
     readFile(new URL("../app/portfolio/PortfolioClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/portfolio/central-products.ts", import.meta.url), "utf8"),
     readOutput("katalog/index.html"),
     readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
     readOutput("soukromi-a-cookies/index.html"),
@@ -87,6 +89,11 @@ test("portfolio uses the dedicated investment database", async () => {
   }
   assert.match(portfolioSource, /useState<LoadState>\("loading"\)/);
   assert.match(portfolioSource, /credentials: "include"/);
+  assert.match(portfolioSource, /loadPortfolioProducts/);
+  assert.match(centralProductsSource, /api\/portfolio\/products\?limit=500/);
+  assert.match(centralProductsSource, /portfolio-products\.json/);
+  assert.match(centralProductsSource, /price\?\.price_czk \?\? null/);
+  assert.match(centralProductsSource, /total < fallback\.length/);
   assert.match(portfolioSource, /method: "PATCH"/);
   assert.match(portfolioSource, /Upravit produkt/);
   assert.match(portfolioSource, /Vývoj hodnoty sbírky/);
@@ -121,7 +128,7 @@ test("product comparison uses current market value and exact quantities", async 
   assert.match(html, /Srovnej hodnotu/);
   assert.match(source, /Můj výběr/);
   assert.match(source, /Srovnávaný výběr/);
-  assert.match(source, /portfolio-products\.json/);
+  assert.match(source, /loadPortfolioProducts/);
   assert.match(source, /marketPrice/);
   assert.match(source, /Doporučené dorovnání/);
   assert.match(source, /sessionStorage/);
@@ -338,6 +345,45 @@ test("central portfolio proxy uses only its service identity", async () => {
     assert.equal(payload.items[0].id, "central-item-1");
     assert.equal(payload.items[0].buyPrice, 1000);
     assert.equal(payload.items[0].product.marketPrice, 1500);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("public portfolio product proxy prefers central data without browser credentials", async () => {
+  const originalFetch = globalThis.fetch;
+  let forwardedUrl = "";
+  let forwardedInit;
+  globalThis.fetch = async (input, init) => {
+    forwardedUrl = String(input);
+    forwardedInit = init;
+    return Response.json({ items: [], total: 0, limit: 500, offset: 0 });
+  };
+  try {
+    const response = await centralPortfolioProductsRequest(
+      new Request("https://tcgceny.cz/api/portfolio/products?limit=500&offset=0", {
+        headers: {
+          Authorization: "Bearer browser-token-must-not-leak",
+          Cookie: "browser-cookie-must-not-leak",
+          "CF-Connecting-IP": "203.0.113.11",
+        },
+      }),
+      {
+        CENTRAL_API_BASE_URL: "https://backend.example",
+        CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+      },
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(
+      forwardedUrl,
+      "https://backend.example/api/v1/portfolio/products?limit=500&offset=0",
+    );
+    assert.equal(forwardedInit.headers.get("Authorization"), null);
+    assert.equal(forwardedInit.headers.get("Cookie"), null);
+    assert.equal(forwardedInit.headers.get("X-TCG-Proxy-Token"), "s".repeat(48));
+    assert.match(forwardedInit.headers.get("X-TCG-Client-Key"), /^[a-f0-9]{64}$/);
+    assert.equal(response.headers.get("X-TCG-Portfolio-Product-Source"), "central-api");
   } finally {
     globalThis.fetch = originalFetch;
   }

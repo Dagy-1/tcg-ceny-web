@@ -20,7 +20,7 @@ function jsonError(status: number, error: string): Response {
   );
 }
 
-async function anonymousClientKey(request: Request, token: string) {
+export async function anonymousClientKey(request: Request, token: string) {
   const address = request.headers.get("CF-Connecting-IP")?.trim();
   if (!address || token.length < 32) return null;
   const encoder = new TextEncoder();

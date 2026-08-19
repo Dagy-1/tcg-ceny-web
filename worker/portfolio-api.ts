@@ -1,4 +1,5 @@
 import portfolioData from "../app/portfolio/portfolio-data.json" with { type: "json" };
+import { anonymousClientKey } from "./catalog-api.ts";
 
 type Env = {
   DB: D1Database;
@@ -48,6 +49,7 @@ const SESSION_COOKIE = "tcg_session";
 const OAUTH_COOKIE = "tcg_oauth";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const CENTRAL_REQUEST_TIMEOUT_MS = 5_000;
+const CENTRAL_PRODUCT_REQUEST_TIMEOUT_MS = 12_000;
 const encoder = new TextEncoder();
 const OAUTH_CALLBACK_HOSTS = new Set([
   "tcgceny.cz",
@@ -393,6 +395,54 @@ export async function centralPortfolioRequest(
     );
   } catch {
     return json({ error: "Centrální portfolio je dočasně nedostupné." }, 502);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export async function centralPortfolioProductsRequest(request: Request, env: Env) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return json({ error: "Metoda není podporovaná." }, 405);
+  }
+  const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
+  const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim() || "";
+  if (!baseUrl) return json({ error: "Centrální katalog portfolia není nakonfigurovaný." }, 503);
+
+  let upstreamUrl: URL;
+  try {
+    upstreamUrl = new URL("/api/v1/portfolio/products", baseUrl);
+  } catch {
+    return json({ error: "Centrální katalog portfolia má neplatnou konfiguraci." }, 503);
+  }
+  const sourceUrl = new URL(request.url);
+  upstreamUrl.search = sourceUrl.search;
+  const headers = new Headers({ Accept: "application/json", "X-Request-ID": crypto.randomUUID() });
+  const clientKey = await anonymousClientKey(request, serviceToken);
+  if (clientKey) {
+    headers.set("X-TCG-Proxy-Token", serviceToken);
+    headers.set("X-TCG-Client-Key", clientKey);
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CENTRAL_PRODUCT_REQUEST_TIMEOUT_MS);
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: request.method,
+      headers,
+      signal: controller.signal,
+    });
+    const responseHeaders = new Headers({
+      "Content-Type": upstream.headers.get("Content-Type") || "application/json; charset=utf-8",
+      "Cache-Control": upstream.headers.get("Cache-Control") || "public, max-age=300, stale-while-revalidate=900",
+      "X-TCG-Portfolio-Product-Source": "central-api",
+    });
+    return new Response(upstream.body, {
+      status: upstream.status,
+      statusText: upstream.statusText,
+      headers: responseHeaders,
+    });
+  } catch {
+    return json({ error: "Centrální katalog portfolia je dočasně nedostupný." }, 502);
   } finally {
     clearTimeout(timeout);
   }
@@ -907,6 +957,9 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
     return json({ ok: true }, 200, {
       "Set-Cookie": setCookie(request, SESSION_COOKIE, "", 0),
     });
+  }
+  if (url.pathname === "/api/portfolio/products") {
+    return centralPortfolioProductsRequest(request, env);
   }
 
   const user = await session(request, env);
