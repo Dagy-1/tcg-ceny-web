@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import CatalogClient, { type CatalogData } from "./CatalogClient";
+import CatalogClient from "./CatalogClient";
+import type { CatalogData } from "./catalog-model";
 import catalogData from "./catalog-data.json";
 import "./catalog.css";
 
 export const metadata: Metadata = {
   title: "Katalog Pokémon TCG",
   description:
-    "Porovnej ceny a skladovost 178 zapečetěných Pokémon TCG produktů v českých e-shopech.",
+    "Porovnej aktuální ceny a skladovost Pokémon TCG produktů v českých e-shopech.",
   alternates: {
     canonical: "/katalog/",
   },

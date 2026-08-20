@@ -11,6 +11,8 @@ import {
   oauthRedirectUri,
 } from "../worker/portfolio-api.ts";
 import { comparisonSummary, selectionTotal } from "../app/porovnani/comparison.ts";
+import catalogData from "../app/katalog/catalog-data.json" with { type: "json" };
+import { productPath, productSlug } from "../app/katalog/catalog-model.ts";
 
 const output = new URL("../out/", import.meta.url);
 
@@ -704,4 +706,26 @@ test("search and security support files are production-ready", async () => {
   assert.ok(rioluTin);
   assert.equal(rioluTin.shops.Pikastore, "");
   assert.doesNotMatch(rioluTin.aliases.join(" "), /mini tin box/i);
+});
+
+test("every catalog product has a stable, indexable detail page", async () => {
+  const slugs = catalogData.products.map((product) => productSlug(product));
+  assert.equal(new Set(slugs).size, catalogData.products.length, "product slugs must be unique");
+
+  await Promise.all(catalogData.products.map(async (product) => {
+    const path = productPath(product);
+    assert.match(path, /^\/produkt\/[a-z0-9-]+\/$/);
+    const html = await readOutput(`${path.slice(1)}index.html`);
+    assert.match(html, new RegExp(product.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(html, /application\/ld\+json/);
+    assert.match(html, new RegExp(`https://tcgceny\\.cz${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+  }));
+
+  const catalogHtml = await readOutput("katalog/index.html");
+  assert.match(catalogHtml, new RegExp(productPath(catalogData.products[0]).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+
+  const response = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml"));
+  const sitemap = await response.text();
+  assert.equal((sitemap.match(/<url>/g) || []).length, catalogData.products.length + 7);
+  assert.match(sitemap, new RegExp(productPath(catalogData.products.at(-1)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });

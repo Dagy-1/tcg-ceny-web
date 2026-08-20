@@ -5,65 +5,20 @@ import Link from "next/link";
 import { ArrowUpRight, PackageCheck, PackageX, X } from "lucide-react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
+import {
+  productFromApi,
+  productPath,
+  type ApiProduct,
+  type Availability,
+  type CatalogData,
+  type Product,
+} from "./catalog-model";
+
+export type { CatalogData } from "./catalog-model";
 
 const PAGE_SIZE = 24;
 
-type Availability = "online" | "store" | "unavailable";
 type OfferStatus = Availability;
-
-type Offer = {
-  shop: string;
-  price: number | null;
-  url: string;
-  status: OfferStatus;
-  stale: boolean;
-};
-
-type Product = {
-  id: string;
-  name: string;
-  type: string;
-  era: string;
-  set: string;
-  image: string;
-  condition: "sealed" | "opening";
-  availability: Availability;
-  bestPrice: number | null;
-  availableOffers: number;
-  storeOffers: number;
-  offers: Offer[];
-  checkedAt: number | null;
-  verified: boolean;
-  releaseDate: string | null;
-};
-
-type ApiOffer = {
-  shop: string;
-  price_czk: number | null;
-  url: string;
-  availability: string;
-  checked_at: string;
-  stale: boolean;
-  verified: boolean;
-};
-
-type ApiProduct = {
-  id: string;
-  name: string;
-  image_url: string | null;
-  condition_group: string;
-  product_type: string | null;
-  era: string | null;
-  set_name: string | null;
-  release_date: string | null;
-  availability: string;
-  best_price_czk: number | null;
-  available_offers: number;
-  store_offers: number;
-  checked_at: string | null;
-  data_stale: boolean;
-  offers?: ApiOffer[];
-};
 
 type ApiCatalogPage = {
   items: ApiProduct[];
@@ -71,54 +26,6 @@ type ApiCatalogPage = {
   limit: number;
   offset: number;
 };
-
-export type CatalogData = {
-  generatedAt: string | number;
-  productCount: number;
-  products: Product[];
-};
-
-function apiAvailability(value: string): Availability {
-  if (value === "online" || value === "store") return value;
-  return "unavailable";
-}
-
-function apiTimestamp(value: string | null): number | null {
-  if (!value) return null;
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : null;
-}
-
-function productFromApi(product: ApiProduct, fallback?: Product): Product {
-  const offers = product.offers
-    ? product.offers.map((offer) => ({
-        shop: offer.shop,
-        price: offer.price_czk,
-        url: offer.url,
-        status: apiAvailability(offer.availability),
-        stale: offer.stale,
-      }))
-    : fallback?.offers || [];
-  return {
-    id: product.id,
-    name: product.name,
-    type: product.product_type || fallback?.type || "Produkt",
-    era: product.era || fallback?.era || "Nezařazeno",
-    set: product.set_name || fallback?.set || "Nezařazeno",
-    image: fallback?.image || product.image_url || "",
-    condition: product.condition_group === "sealed" ? "sealed" : "opening",
-    availability: apiAvailability(product.availability),
-    bestPrice: product.best_price_czk,
-    availableOffers: product.available_offers,
-    storeOffers: product.store_offers,
-    offers,
-    checkedAt: apiTimestamp(product.checked_at),
-    verified: product.offers
-      ? product.offers.some((offer) => offer.verified && !offer.stale)
-      : Boolean(fallback?.verified && !product.data_stale),
-    releaseDate: product.release_date,
-  };
-}
 
 type SortMode = "recommended" | "price-asc" | "price-desc" | "name" | "newest";
 type ConditionMode = Product["condition"];
@@ -719,48 +626,50 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         {visibleProducts.length ? (
           <div className="catalog-grid">
             {visibleProducts.map((product) => (
-              <button
-                type="button"
+              <article
                 className={`catalog-card catalog-card-${product.availability}`}
                 key={product.id}
-                onClick={() => void openProduct(product)}
-                aria-label={`Otevřít detail produktu ${product.name}`}
               >
-                <div className="catalog-card-image">
-                  <ProductImage product={product} />
-                  <span className="catalog-card-open" aria-hidden="true">
-                    <ArrowUpRight />
-                  </span>
-                </div>
-                <div className="catalog-card-body">
-                  <div className="catalog-card-meta">
-                    <span>{product.set}</span>
-                    <b>{product.type}</b>
+                <Link className="catalog-card-link" href={productPath(product)} aria-label={`Detail produktu ${product.name}`}>
+                  <div className="catalog-card-image">
+                    <ProductImage product={product} />
+                    <span className="catalog-card-open" aria-hidden="true">
+                      <ArrowUpRight />
+                    </span>
                   </div>
-                  <h2>{product.name}</h2>
-                  <p>
-                    {product.era}
-                    {formatReleaseDate(product.releaseDate) && (
-                      <> · Vydání <time dateTime={product.releaseDate || undefined}>{formatReleaseDate(product.releaseDate)}</time></>
-                    )}
-                  </p>
-                  <div className="catalog-card-bottom">
-                    <div>
-                      <span className={`catalog-status catalog-status-${product.availability}`}>
-                        <i aria-hidden="true" />{statusLabel(product.availability)}
-                      </span>
-                      <small>
-                        {product.availableOffers
-                          ? offerCountLabel(product.availableOffers)
-                          : product.storeOffers
-                            ? offerCountLabel(product.storeOffers, true)
-                            : "Čeká na naskladnění"}
-                      </small>
+                  <div className="catalog-card-body">
+                    <div className="catalog-card-meta">
+                      <span>{product.set}</span>
+                      <b>{product.type}</b>
                     </div>
-                    <strong>{formatPrice(product.bestPrice)}</strong>
+                    <h2>{product.name}</h2>
+                    <p>
+                      {product.era}
+                      {formatReleaseDate(product.releaseDate) && (
+                        <> · Vydání <time dateTime={product.releaseDate || undefined}>{formatReleaseDate(product.releaseDate)}</time></>
+                      )}
+                    </p>
+                    <div className="catalog-card-bottom">
+                      <div>
+                        <span className={`catalog-status catalog-status-${product.availability}`}>
+                          <i aria-hidden="true" />{statusLabel(product.availability)}
+                        </span>
+                        <small>
+                          {product.availableOffers
+                            ? offerCountLabel(product.availableOffers)
+                            : product.storeOffers
+                              ? offerCountLabel(product.storeOffers, true)
+                              : "Čeká na naskladnění"}
+                        </small>
+                      </div>
+                      <strong>{formatPrice(product.bestPrice)}</strong>
+                    </div>
                   </div>
-                </div>
-              </button>
+                </Link>
+                <button className="catalog-card-preview" type="button" onClick={() => void openProduct(product)}>
+                  Rychlý náhled
+                </button>
+              </article>
             ))}
           </div>
         ) : (

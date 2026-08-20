@@ -1,3 +1,6 @@
+import catalogData from "../app/katalog/catalog-data.json" with { type: "json" };
+import { productPath, type CatalogData } from "../app/katalog/catalog-model.ts";
+
 const routes = [
   ["/", "weekly", "1.0"],
   ["/katalog/", "daily", "0.9"],
@@ -8,12 +11,19 @@ const routes = [
   ["/soukromi-a-cookies/", "yearly", "0.3"],
 ] as const;
 
+const productRoutes = (catalogData as unknown as CatalogData).products.map((product) => productPath(product));
+
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${routes.map(([path, changeFrequency, priority]) => `  <url>
     <loc>https://tcgceny.cz${path}</loc>
     <changefreq>${changeFrequency}</changefreq>
     <priority>${priority}</priority>
+  </url>`).join("\n")}
+${productRoutes.map((path) => `  <url>
+    <loc>https://tcgceny.cz${path}</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
   </url>`).join("\n")}
 </urlset>\n`;
 

@@ -271,14 +271,12 @@
   min-height: 450px;
   padding: 0;
   overflow: hidden;
-  display: grid;
-  grid-template-rows: 250px 1fr;
+  display: block;
   border: 1px solid rgba(255, 255, 255, .11);
   border-radius: 8px;
   background: #091525;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .16);
   color: inherit;
-  cursor: pointer;
   text-align: left;
   transition:
     border-color .2s ease,
@@ -286,6 +284,38 @@
     background-color .2s ease,
     box-shadow .2s ease;
 }
+.catalog-card-link {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 250px 1fr;
+  color: inherit;
+  text-decoration: none;
+}
+.catalog-card-preview {
+  position: absolute;
+  z-index: 5;
+  right: 14px;
+  bottom: 84px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(230, 184, 74, .38);
+  border-radius: 5px;
+  color: #dce5ef;
+  background: rgba(5, 14, 26, .92);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .2s ease, transform .2s ease, border-color .2s ease;
+}
+.catalog-card:hover .catalog-card-preview,
+.catalog-card:focus-within .catalog-card-preview {
+  opacity: 1;
+  transform: none;
+}
+.catalog-card-preview:hover,
+.catalog-card-preview:focus-visible { border-color: var(--gold); color: var(--gold-soft); }
 .catalog-card-store { --card-accent-rgb: 241, 189, 76; }
 .catalog-card-unavailable { --card-accent-rgb: 125, 137, 155; }
 .catalog-card::before {
@@ -324,6 +354,7 @@
   outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
+.catalog-card-link:focus-visible { outline: 2px solid var(--gold); outline-offset: -3px; }
 .catalog-card-image {
   position: relative;
   padding: 24px;
@@ -930,7 +961,9 @@
   .catalog-result-bar > div { width: 100%; justify-content: space-between; }
   .catalog-sort { grid-template-columns: auto minmax(135px, 1fr); }
   .catalog-grid { grid-template-columns: 1fr; }
-  .catalog-card { min-height: 410px; grid-template-rows: 225px 1fr; }
+  .catalog-card { min-height: 410px; }
+  .catalog-card-link { grid-template-rows: 225px 1fr; }
+  .catalog-card-preview { opacity: .86; transform: none; }
   .catalog-card-open {
     width: 30px;
     height: 30px;
