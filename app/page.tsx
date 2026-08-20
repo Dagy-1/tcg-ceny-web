@@ -121,7 +121,7 @@ export default function Home() {
           <div className="hero-proof" aria-label="Hlavní přednosti">
             <span><b>🛒České</b> e-shopy na jednom místě</span>
             <span><b>📈Historie</b> cen a skladovosti</span>
-            <span><b>⚡24/7</b> automatické alerty</span>
+            <span><b>⚡ Automatické</b> alerty cen a skladovosti</span>
           </div>
         </div>
 

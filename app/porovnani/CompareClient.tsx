@@ -6,7 +6,11 @@ import { ArrowLeftRight, Check, Minus, Plus, RotateCcw, Search, Trash2 } from "l
 import { useEffect, useMemo, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
-import { loadPortfolioProducts, type PortfolioProduct as Product } from "../portfolio/central-products";
+import {
+  loadPortfolioProducts,
+  type PortfolioProduct as Product,
+  type PortfolioProductLoadStatus,
+} from "../portfolio/central-products";
 import { comparisonSummary } from "./comparison";
 
 type Selection = { productId: string; quantity: number };
@@ -187,10 +191,11 @@ export default function CompareClient({
   const [mine, setMine] = useState<Selection[]>([]);
   const [compared, setCompared] = useState<Selection[]>([]);
   const [ready, setReady] = useState(false);
+  const [productLoadStatus, setProductLoadStatus] = useState<PortfolioProductLoadStatus | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    loadPortfolioProducts(initialProducts, controller.signal)
+    loadPortfolioProducts(initialProducts, controller.signal, setProductLoadStatus)
       .then((loadedProducts) => {
         if (loadedProducts.length) setProducts(loadedProducts);
       })
@@ -274,6 +279,15 @@ export default function CompareClient({
           <small>Tržní data obnovena {displayedSourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}</small>
         </aside>
       </header>
+
+      {productLoadStatus?.source === "fallback" && (
+        <p className="compare-data-warning shell" role="status">
+          Centrální ceny jsou dočasně nedostupné. Zobrazuje se poslední bezpečný snapshot
+          {productLoadStatus.sourceUpdatedAt
+            ? ` z ${productLoadStatus.sourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}`
+            : ""}. Před rozhodnutím cenu ověř.
+        </p>
+      )}
 
       <section className="compare-workspace shell" aria-label="Porovnání aktuální hodnoty produktů">
         <div className="compare-toolbar">

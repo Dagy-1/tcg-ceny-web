@@ -32,6 +32,16 @@ type CentralPortfolioProductPage = {
   offset: number;
 };
 
+export type PortfolioProductLoadStatus = {
+  source: "central" | "fallback";
+  sourceUpdatedAt: string;
+};
+
+type StaticPortfolioSnapshot = {
+  products?: PortfolioProduct[];
+  sourceUpdatedAt?: string;
+};
+
 function fromCentral(product: CentralPortfolioProduct, fallback?: PortfolioProduct): PortfolioProduct {
   const price = product.latest_market_price;
   return {
@@ -53,17 +63,25 @@ async function staticFallbackProducts(initial: PortfolioProduct[], signal?: Abor
       headers: { Accept: "application/json" },
       signal,
     });
-    if (!response.ok) return initial;
-    const snapshot = await response.json() as { products?: PortfolioProduct[] };
-    return Array.isArray(snapshot.products) && snapshot.products.length ? snapshot.products : initial;
+    if (!response.ok) return { products: initial, sourceUpdatedAt: "" };
+    const snapshot = await response.json() as StaticPortfolioSnapshot;
+    return {
+      products: Array.isArray(snapshot.products) && snapshot.products.length ? snapshot.products : initial,
+      sourceUpdatedAt: typeof snapshot.sourceUpdatedAt === "string" ? snapshot.sourceUpdatedAt : "",
+    };
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") throw error;
-    return initial;
+    return { products: initial, sourceUpdatedAt: "" };
   }
 }
 
-export async function loadPortfolioProducts(initial: PortfolioProduct[], signal?: AbortSignal) {
-  const fallback = await staticFallbackProducts(initial, signal);
+export async function loadPortfolioProducts(
+  initial: PortfolioProduct[],
+  signal?: AbortSignal,
+  onStatus?: (status: PortfolioProductLoadStatus) => void,
+) {
+  const fallbackSnapshot = await staticFallbackProducts(initial, signal);
+  const fallback = fallbackSnapshot.products;
   const fallbackById = new Map(fallback.map((product) => [product.id, product]));
   try {
     const items: CentralPortfolioProduct[] = [];
@@ -84,9 +102,24 @@ export async function loadPortfolioProducts(initial: PortfolioProduct[], signal?
     if (items.length !== total || (fallback.length > 0 && total < fallback.length)) {
       throw new Error("Central portfolio products response is incomplete");
     }
-    return items.map((product) => fromCentral(product, fallbackById.get(product.id)));
+    const products = items.map((product) => fromCentral(product, fallbackById.get(product.id)));
+    onStatus?.({
+      source: "central",
+      sourceUpdatedAt: products.reduce(
+        (latest, product) => product.priceUpdatedAt > latest ? product.priceUpdatedAt : latest,
+        "",
+      ),
+    });
+    return products;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") throw error;
+    onStatus?.({
+      source: "fallback",
+      sourceUpdatedAt: fallbackSnapshot.sourceUpdatedAt || fallback.reduce(
+        (latest, product) => product.priceUpdatedAt > latest ? product.priceUpdatedAt : latest,
+        "",
+      ),
+    });
     return fallback;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, PackageCheck, PackageX, X } from "lucide-react";
 import AuthMenu from "../AuthMenu";
@@ -211,16 +211,44 @@ function ProductDetail({
   product: Product;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     document.body.style.overflow = "hidden";
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
+    closeButtonRef.current?.focus();
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
     };
   }, [onClose]);
 
@@ -238,13 +266,14 @@ function ProductDetail({
   return (
     <div className="catalog-modal-layer" role="presentation" onMouseDown={onClose}>
       <section
+        ref={dialogRef}
         className="catalog-detail"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-detail-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button className="catalog-detail-close" type="button" onClick={onClose} aria-label="Zavřít detail">
+        <button ref={closeButtonRef} className="catalog-detail-close" type="button" onClick={onClose} aria-label="Zavřít detail">
           <X size={18} strokeWidth={2} aria-hidden="true" />
         </button>
 

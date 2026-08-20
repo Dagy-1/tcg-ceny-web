@@ -28,6 +28,7 @@
 }
 
 .portfolio-header,
+.portfolio-data-warning,
 .portfolio-auth-error,
 .portfolio-signin,
 .portfolio-preview,
@@ -1050,6 +1051,35 @@
   color: var(--pf-text);
   background: rgba(66, 220, 137, 0.08);
 }
+
+.portfolio-data-warning {
+  margin-top: 24px;
+  margin-bottom: 0;
+  padding: 13px 16px;
+  border: 1px solid rgba(230, 184, 74, .42);
+  border-radius: 9px;
+  color: #f1cf78;
+  background: rgba(87, 58, 10, .28);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.portfolio-unavailable {
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  color: var(--pf-text);
+  background: rgba(10, 28, 47, .76);
+}
+
+.portfolio-unavailable.is-error {
+  border-color: rgba(230, 184, 74, .42);
+  background: rgba(87, 58, 10, .2);
+}
+
+.portfolio-unavailable strong { display: block; font-size: 18px; }
+.portfolio-unavailable p { max-width: 650px; margin: 8px 0 18px; color: var(--pf-muted); line-height: 1.6; }
 
 .portfolio-loading {
   min-height: 420px;

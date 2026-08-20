@@ -94,6 +94,9 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(centralProductsSource, /portfolio-products\.json/);
   assert.match(centralProductsSource, /price\?\.price_czk \?\? null/);
   assert.match(centralProductsSource, /total < fallback\.length/);
+  assert.match(centralProductsSource, /source: "fallback"/);
+  assert.match(portfolioSource, /Zobrazené nuly by nebyly spolehlivé/);
+  assert.match(portfolioSource, /portfolioLoadState === "error"/);
   assert.match(portfolioSource, /method: "PATCH"/);
   assert.match(portfolioSource, /Upravit produkt/);
   assert.match(portfolioSource, /Vývoj hodnoty sbírky/);
@@ -132,6 +135,8 @@ test("product comparison uses current market value and exact quantities", async 
   assert.match(source, /marketPrice/);
   assert.match(source, /Doporučené dorovnání/);
   assert.match(source, /sessionStorage/);
+  assert.match(source, /Centrální ceny jsou dočasně nedostupné/);
+  assert.match(source, /productLoadStatus\?\.source === "fallback"/);
   assert.doesNotMatch(source, /buyPrice|nákupní cenu|pořizovací cenu/i);
 
   assert.equal(selectionTotal([
@@ -674,11 +679,14 @@ test("OAuth callbacks follow the approved current host", () => {
 });
 
 test("search and security support files are production-ready", async () => {
-  const [sitemap, robots, headers] = await Promise.all([
+  const [sitemap, robots, headers, catalogSource, rootProductsText] = await Promise.all([
     readOutput("sitemap.xml"),
     readOutput("robots.txt"),
     readOutput("_headers"),
+    readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../../products.json", import.meta.url), "utf8"),
   ]);
+  const rootProducts = JSON.parse(rootProductsText);
 
   assert.match(sitemap, /https:\/\/tcgceny\.cz\//);
   assert.match(sitemap, /katalog/);
@@ -689,4 +697,11 @@ test("search and security support files are production-ready", async () => {
   assert.match(headers, /Content-Security-Policy/i);
   assert.match(headers, /Strict-Transport-Security/i);
   assert.match(headers, /X-Frame-Options:\s*DENY/i);
+  assert.match(headers, /\/assets\/\*[\s\S]*max-age=31536000, immutable/i);
+  assert.match(catalogSource, /closeButtonRef\.current\?\.focus\(\)/);
+  assert.match(catalogSource, /event\.key !== "Tab"/);
+  const rioluTin = rootProducts.find((product) => product.id === "pm:ascended-heroes-mini-tin-riolu-darumaka");
+  assert.ok(rioluTin);
+  assert.equal(rioluTin.shops.Pikastore, "");
+  assert.doesNotMatch(rioluTin.aliases.join(" "), /mini tin box/i);
 });

@@ -51,6 +51,16 @@
 .compare-hero aside small { margin-top: 8px; color: #74869f; font-size: 11px; }
 
 .compare-workspace { padding-block: 44px 72px; }
+.compare-data-warning {
+  margin-top: 24px;
+  padding: 13px 16px;
+  border: 1px solid rgba(230, 184, 74, .42);
+  border-radius: 9px;
+  color: #f1cf78;
+  background: rgba(87, 58, 10, .28);
+  font-size: 12px;
+  line-height: 1.55;
+}
 .compare-toolbar {
   margin-bottom: 14px;
   display: flex;

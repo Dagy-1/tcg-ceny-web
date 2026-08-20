@@ -1465,21 +1465,13 @@
       "set": "Ascended Heroes",
       "image": "/catalog-products/70298f49d7bfc3e3.png?v=4",
       "condition": "sealed",
-      "availability": "online",
-      "bestPrice": 8990,
-      "availableOffers": 1,
+      "availability": "unavailable",
+      "bestPrice": null,
+      "availableOffers": 0,
       "storeOffers": 0,
-      "offers": [
-        {
-          "shop": "Pikastore",
-          "price": 8990,
-          "url": "https://pikastore.cz/products/pokemon-2026-mega-evolution-ascended-heroes-mini-tin-box",
-          "status": "online",
-          "stale": false
-        }
-      ],
+      "offers": [],
       "checkedAt": 1787135729,
-      "verified": true,
+      "verified": false,
       "releaseDate": "2026-01-30"
     },
     {

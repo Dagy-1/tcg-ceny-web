@@ -5,7 +5,11 @@ import { CalendarDays, Check, ChevronDown, Pencil, Plus, Trash2, X } from "lucid
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
-import { loadPortfolioProducts, type PortfolioProduct as Product } from "./central-products";
+import {
+  loadPortfolioProducts,
+  type PortfolioProduct as Product,
+  type PortfolioProductLoadStatus,
+} from "./central-products";
 
 type SessionUser = {
   id: string;
@@ -46,6 +50,7 @@ type PortfolioHistory = {
 };
 
 type LoadState = "loading" | "signed-out" | "signed-in";
+type PortfolioLoadState = "loading" | "ready" | "error";
 
 const formatCzk = (value: number) =>
   `${new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 0 }).format(value)} Kč`;
@@ -1181,6 +1186,8 @@ export default function PortfolioClient({
   const [history, setHistory] = useState<PortfolioHistory | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [availableProducts, setAvailableProducts] = useState(products);
+  const [portfolioLoadState, setPortfolioLoadState] = useState<PortfolioLoadState>("loading");
+  const [productLoadStatus, setProductLoadStatus] = useState<PortfolioProductLoadStatus | null>(null);
   const portfolioRefreshInFlight = useRef(false);
   const productDatabaseInFlight = useRef<Promise<Product[]> | null>(null);
   const productDatabaseIsLoaded = availableProducts.length >= productCount;
@@ -1196,7 +1203,11 @@ export default function PortfolioClient({
     if (availableProducts.length >= productCount) return availableProducts;
     if (productDatabaseInFlight.current) return productDatabaseInFlight.current;
 
-    productDatabaseInFlight.current = loadPortfolioProducts(availableProducts)
+    productDatabaseInFlight.current = loadPortfolioProducts(
+      availableProducts,
+      undefined,
+      setProductLoadStatus,
+    )
       .then((loadedProducts) => {
         if (loadedProducts.length < productCount) throw new Error("Product database is incomplete");
         setAvailableProducts(loadedProducts);
@@ -1254,6 +1265,25 @@ export default function PortfolioClient({
     }
   }, []);
 
+  const loadSignedInPortfolio = useCallback(async () => {
+    setPortfolioLoadState("loading");
+    try {
+      const portfolioItems = await loadPortfolio();
+      if (portfolioItems === null) return false;
+      setPortfolioLoadState("ready");
+      setNotice("");
+      if (portfolioItems.length) void loadHistory(90);
+      else setHistory(null);
+      return true;
+    } catch {
+      setPortfolioLoadState("error");
+      setNotice(
+        "Centrální portfolio je dočasně nedostupné. Zobrazené nuly by nebyly spolehlivé, proto jsme je skryli. Tvoje uložená data zůstala beze změny.",
+      );
+      return false;
+    }
+  }, [loadHistory, loadPortfolio]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const add = params.get("add");
@@ -1275,23 +1305,18 @@ export default function PortfolioClient({
           return;
         }
         setState("signed-in");
-        try {
-          const portfolioItems = await loadPortfolio();
-          if (portfolioItems?.length) void loadHistory(90);
-          if (add) void openAddDialog();
-        } catch {
-          setNotice("Jsi přihlášený, ale portfolio se teď nepodařilo načíst. Obnov stránku a zkus to znovu.");
-        }
+        const portfolioLoaded = await loadSignedInPortfolio();
+        if (add && portfolioLoaded) void openAddDialog();
       })
       .catch(() => setState("signed-out"));
-  }, [loadHistory, loadPortfolio, openAddDialog]);
+  }, [loadSignedInPortfolio, openAddDialog]);
 
   useEffect(() => {
     if (state === "signed-in") void loadProductDatabase().catch(() => undefined);
   }, [loadProductDatabase, state]);
 
   useEffect(() => {
-    if (state !== "signed-in") return;
+    if (state !== "signed-in" || portfolioLoadState !== "ready") return;
 
     const refresh = async () => {
       if (document.visibilityState !== "visible") return;
@@ -1319,7 +1344,7 @@ export default function PortfolioClient({
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [historyPeriod, loadHistory, loadPortfolio, state]);
+  }, [historyPeriod, loadHistory, loadPortfolio, portfolioLoadState, state]);
 
   const totals = useMemo(() => {
     const invested = items.reduce((sum, item) => sum + item.buyPrice * item.quantity, 0);
@@ -1398,6 +1423,15 @@ export default function PortfolioClient({
         </div>
       </header>
 
+      {productLoadStatus?.source === "fallback" && (
+        <p className="portfolio-data-warning" role="status">
+          Centrální ceny jsou dočasně nedostupné. Zobrazuje se poslední bezpečný snapshot
+          {productLoadStatus.sourceUpdatedAt
+            ? ` z ${productLoadStatus.sourceUpdatedAt.slice(0, 10).split("-").reverse().join(". ")}`
+            : ""}. Tržní hodnoty si před rozhodnutím ověř.
+        </p>
+      )}
+
       {state === "signed-out" && (
         <SignedOutPreview
           products={products}
@@ -1414,12 +1448,39 @@ export default function PortfolioClient({
               <h2>Moje portfolio</h2>
               <p>{user?.username}, tady máš hodnotu své sbírky na jednom místě.</p>
             </div>
-            <button className="portfolio-button-primary" type="button" onClick={() => void openAddDialog()}>
+            <button
+              className="portfolio-button-primary"
+              type="button"
+              disabled={portfolioLoadState !== "ready"}
+              onClick={() => void openAddDialog()}
+            >
               <Plus size={18} strokeWidth={2.5} aria-hidden="true" />
               Přidat produkt
             </button>
           </div>
 
+          {portfolioLoadState === "loading" && (
+            <div className="portfolio-unavailable" role="status">
+              <strong>Načítám tvoje portfolio…</strong>
+              <p>Ověřujeme spojení s centrální databází.</p>
+            </div>
+          )}
+
+          {portfolioLoadState === "error" && (
+            <div className="portfolio-unavailable is-error" role="alert">
+              <strong>Portfolio se teď nepodařilo bezpečně načíst</strong>
+              <p>
+                Nuly nezobrazujeme, protože by mohly působit jako prázdné portfolio.
+                Tvoje uložená data zůstala beze změny.
+              </p>
+              <button className="portfolio-button-secondary" type="button" onClick={() => void loadSignedInPortfolio()}>
+                Zkusit znovu
+              </button>
+            </div>
+          )}
+
+          {portfolioLoadState === "ready" && (
+            <>
           <div className="portfolio-metrics">
             <article><span>Investováno</span><strong>{formatCzk(totals.invested)}</strong><small>součet nákupů</small></article>
             <article><span>Aktuální hodnota</span><strong>{formatCzk(totals.current)}</strong><small>podle posledních cen</small></article>
@@ -1501,6 +1562,8 @@ export default function PortfolioClient({
                 Přidat první produkt
               </button>
             </div>
+          )}
+            </>
           )}
         </section>
       )}
