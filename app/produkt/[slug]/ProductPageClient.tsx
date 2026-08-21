@@ -114,16 +114,16 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
           <span>TCG <strong>Ceny</strong></span>
         </Link>
         <div className="nav-links">
-          <Link href="/">Domů</Link>
-          <Link className="catalog-nav-active" href="/katalog/">Katalog</Link>
+          <Link className="catalog-nav-active" href="/katalog/" aria-current="page">Katalog</Link>
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
+          <Link href="/#funkce">Funkce</Link>
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions"><AuthMenu /><MobileNav /></div>
       </nav>
 
-      <article className="product-shell shell">
+      <article className="product-shell shell" data-motion>
         <Link className="product-back" href="/katalog/"><ArrowLeft size={16} /> Zpět do katalogu</Link>
 
         <header className="product-hero">

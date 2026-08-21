@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import MotionSystem from "./MotionSystem";
 import ScrollNavState from "./ScrollNavState";
 
 export const metadata: Metadata = {
@@ -75,6 +76,7 @@ export default function RootLayout({
           }}
         />
         <ScrollNavState />
+        <MotionSystem />
         {children}
       </body>
     </html>

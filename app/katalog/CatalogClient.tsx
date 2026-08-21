@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, PackageCheck, PackageX, X } from "lucide-react";
+import { PackageCheck, PackageX } from "lucide-react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
 import ProductAlertControl from "./ProductAlertControl";
@@ -19,8 +19,6 @@ export type { CatalogData } from "./catalog-model";
 
 const PAGE_SIZE = 24;
 
-type OfferStatus = Availability;
-
 type ApiCatalogPage = {
   items: ApiProduct[];
   total: number;
@@ -34,15 +32,6 @@ type ConditionMode = Product["condition"];
 function formatPrice(price: number | null) {
   if (price === null) return "Cena není dostupná";
   return `${new Intl.NumberFormat("cs-CZ").format(price)} Kč`;
-}
-
-function formatDate(timestamp: number | null) {
-  if (!timestamp) return "Čas kontroly není dostupný";
-  return new Intl.DateTimeFormat("cs-CZ", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Europe/Prague",
-  }).format(new Date(timestamp * 1000));
 }
 
 function formatReleaseDate(value: string | null) {
@@ -82,12 +71,6 @@ function offerCountLabel(count: number, storeOnly = false) {
   return `${count} nabídek ${place}`;
 }
 
-function offerStatusLabel(status: OfferStatus) {
-  if (status === "online") return "Skladem";
-  if (status === "store") return "Prodejna";
-  return "Vyprodáno";
-}
-
 function ProductImage({ product }: { product: Product }) {
   const [failed, setFailed] = useState(false);
 
@@ -112,191 +95,6 @@ function ProductImage({ product }: { product: Product }) {
   );
 }
 
-function ProductDetail({
-  product,
-  onClose,
-}: {
-  product: Product;
-  onClose: () => void;
-}) {
-  const dialogRef = useRef<HTMLElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    const previouslyFocused = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-    document.body.style.overflow = "hidden";
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-      if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = Array.from(
-        dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((element) => element.getClientRects().length > 0);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    closeButtonRef.current?.focus();
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [onClose]);
-
-  const availableOffers = product.offers
-    .filter((offer) => offer.status !== "unavailable")
-    .sort((left, right) => {
-      if (left.status !== right.status) return left.status === "online" ? -1 : 1;
-      if (left.stale !== right.stale) return Number(left.stale) - Number(right.stale);
-      return (left.price ?? Number.MAX_SAFE_INTEGER) - (right.price ?? Number.MAX_SAFE_INTEGER);
-    });
-  const unavailableOffers = product.offers.filter((offer) => offer.status === "unavailable");
-  const bestStatus: OfferStatus = product.availableOffers > 0 ? "online" : "store";
-  const verified = product.verified && availableOffers.some((offer) => !offer.stale);
-
-  return (
-    <div className="catalog-modal-layer" role="presentation" onMouseDown={onClose}>
-      <section
-        ref={dialogRef}
-        className="catalog-detail"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="product-detail-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <button ref={closeButtonRef} className="catalog-detail-close" type="button" onClick={onClose} aria-label="Zavřít detail">
-          <X size={18} strokeWidth={2} aria-hidden="true" />
-        </button>
-
-        <div className="catalog-detail-hero">
-          <div className="catalog-detail-copy">
-            <span className="catalog-kicker">TCG Ceny · {product.type}</span>
-            <h2 id="product-detail-title">{product.name}</h2>
-            <p>{product.era} · {product.set} · {product.type}</p>
-            <div className={`catalog-status catalog-status-${product.availability}`}>
-              <i aria-hidden="true" />
-              {statusLabel(product.availability)}
-            </div>
-          </div>
-          <div className="catalog-detail-image">
-            <ProductImage product={product} />
-          </div>
-        </div>
-
-        <div className={`catalog-detail-price ${verified ? "catalog-price-verified" : ""}`}>
-          <span className="catalog-price-signal" aria-hidden="true" />
-          <div className="catalog-price-copy">
-            <span>Nejlepší dostupná cena</span>
-            <strong>{formatPrice(product.bestPrice)}</strong>
-          </div>
-          <div className="catalog-price-proof">
-            <b>{verified ? "Ověřeno" : "Starší údaj"}</b>
-            <small>Kontrola {formatDate(product.checkedAt)}</small>
-          </div>
-        </div>
-
-        <div className="catalog-detail-facts" aria-label="Souhrn dostupnosti">
-          <span><b>{product.availableOffers}</b> online</span>
-          <span><b>{product.storeOffers}</b> prodejna</span>
-          <span><b>{unavailableOffers.length}</b> vyprodáno</span>
-        </div>
-
-        <div className="catalog-offers">
-          <div className="catalog-offers-heading">
-            <div>
-              <span>Porovnání obchodů</span>
-              <h3>Dostupné nabídky</h3>
-            </div>
-            <b>{availableOffers.length}</b>
-          </div>
-          {availableOffers.length ? (
-            availableOffers.map((offer) => {
-              const isBest =
-                offer.status === bestStatus &&
-                offer.price === product.bestPrice &&
-                !offer.stale;
-              return (
-                <a
-                  className={`catalog-offer-row ${isBest ? "catalog-offer-best" : ""}`}
-                  href={offer.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={`${offer.shop}-${offer.url}`}
-                >
-                  <div>
-                    <strong>{offer.shop}</strong>
-                    <span className={`catalog-offer-status catalog-offer-${offer.status}`}>
-                      {offerStatusLabel(offer.status)}{offer.stale ? " · starší údaj" : ""}
-                    </span>
-                  </div>
-                  <span
-                    className={`catalog-best-label${isBest ? "" : " catalog-best-placeholder"}`}
-                    aria-hidden={!isBest}
-                  >
-                    {isBest ? "Nejlepší" : ""}
-                  </span>
-                  <b>{formatPrice(offer.price)}</b>
-                  <span className="catalog-offer-open" aria-hidden="true">↗</span>
-                </a>
-              );
-            })
-          ) : (
-            <p className="catalog-empty-offers">Produkt teď nemá dostupnou nabídku.</p>
-          )}
-
-          {unavailableOffers.length > 0 && (
-            <details className="catalog-unavailable">
-              <summary>Vyprodané nabídky ({unavailableOffers.length})</summary>
-              {unavailableOffers.map((offer) => (
-                <a href={offer.url} target="_blank" rel="noreferrer" key={`${offer.shop}-${offer.url}`}>
-                  <span>{offer.shop}</span>
-                  <span>{formatPrice(offer.price)}</span>
-                </a>
-              ))}
-            </details>
-          )}
-        </div>
-
-        <div className="catalog-portfolio-action">
-          <div>
-            <span>Pracuj s jeho aktuální hodnotou</span>
-            <strong>Přidej ho do portfolia nebo porovnání.</strong>
-          </div>
-          <div className="catalog-product-actions">
-            <ProductAlertControl product={product} variant="compact" />
-            <Link href={`/porovnani/?add=${encodeURIComponent(product.id)}`}>Porovnat</Link>
-            <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}>
-              <span aria-hidden="true">+</span> Přidat do portfolia
-            </Link>
-          </div>
-        </div>
-
-        <p className="catalog-detail-note">
-          Nabídky řadíme podle dostupnosti a ceny. Uvedení obchodu neznamená placené pořadí
-          ani obchodní partnerství.
-        </p>
-      </section>
-    </div>
-  );
-}
-
 export default function CatalogClient({ data }: { data: CatalogData }) {
   const [catalogData, setCatalogData] = useState(data);
   const [query, setQuery] = useState("");
@@ -307,7 +105,6 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
   const [condition, setCondition] = useState<ConditionMode>("sealed");
   const [sort, setSort] = useState<SortMode>("newest");
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<Product | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -349,20 +146,6 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
       controller.abort();
     };
   }, [data]);
-
-  const openProduct = async (product: Product) => {
-    setSelected(product);
-    try {
-      const response = await fetch(`/api/catalog/products/${encodeURIComponent(product.id)}`, {
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) return;
-      const detail = productFromApi((await response.json()) as ApiProduct, product);
-      setSelected((current) => current?.id === product.id ? detail : current);
-    } catch {
-      // Keep the embedded detail if the central API cannot be reached.
-    }
-  };
 
   const eras = useMemo(
     () => [...new Set(catalogData.products.map((product) => product.era))].sort((a, b) => a.localeCompare(b, "cs")),
@@ -439,10 +222,10 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
           <span>TCG <strong>Ceny</strong></span>
         </Link>
         <div className="nav-links">
-          <Link href="/">Domů</Link>
-          <Link className="catalog-nav-active" href="/katalog">Katalog</Link>
+          <Link className="catalog-nav-active" href="/katalog" aria-current="page">Katalog</Link>
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio">Portfolio</Link>
+          <Link href="/#funkce">Funkce</Link>
           <Link href="/pro-eshopy">Pro e-shopy</Link>
         </div>
         <div className="nav-actions">
@@ -451,7 +234,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         </div>
       </nav>
 
-      <header className="catalog-header shell">
+      <header className="catalog-header shell" data-motion>
         <div>
           <p className="eyebrow"><span className="live-dot" /> Katalog TCG Ceny</p>
           <h1>Najdi produkt.<span>Porovnej český trh.</span></h1>
@@ -467,7 +250,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         </div>
       </header>
 
-      <section className="catalog-condition shell" aria-labelledby="catalog-condition-title">
+      <section className="catalog-condition shell" aria-labelledby="catalog-condition-title" data-motion>
         <div className="catalog-condition-heading">
           <p className="catalog-condition-kicker">Nejdřív vyber stav</p>
           <h2 id="catalog-condition-title">Co hledáš do své sbírky?</h2>
@@ -528,7 +311,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
       </section>
 
       <section className="catalog-workspace shell">
-        <div className="catalog-toolbar">
+        <div className="catalog-toolbar" data-motion>
           <label className="catalog-search">
             <span>Hledat produkt</span>
             <input
@@ -599,7 +382,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         </div>
 
         <div className="catalog-result-bar">
-          <p><strong>{filtered.length}</strong> {resultCountLabel(filtered.length)}</p>
+          <p className="catalog-result-count" key={`${filtered.length}-${condition}`}><strong>{filtered.length}</strong> {resultCountLabel(filtered.length)}</p>
           <div>
             {activeFilters > 0 && (
               <button type="button" className="catalog-clear" onClick={clearFilters}>
@@ -635,9 +418,6 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                 <Link className="catalog-card-link" href={productPath(product)} aria-label={`Detail produktu ${product.name}`}>
                   <div className="catalog-card-image">
                     <ProductImage product={product} />
-                    <span className="catalog-card-open" aria-hidden="true">
-                      <ArrowUpRight />
-                    </span>
                   </div>
                   <div className="catalog-card-body">
                     <div className="catalog-card-meta">
@@ -668,9 +448,6 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                     </div>
                   </div>
                 </Link>
-                <button className="catalog-card-preview" type="button" onClick={() => void openProduct(product)}>
-                  Rychlý náhled
-                </button>
                 <ProductAlertControl product={product} variant="icon" />
               </article>
             ))}
@@ -704,7 +481,6 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         </div>
       </footer>
 
-      {selected && <ProductDetail product={selected} onClose={() => setSelected(null)} />}
     </main>
   );
 }

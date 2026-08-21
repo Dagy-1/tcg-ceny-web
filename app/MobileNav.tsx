@@ -11,8 +11,6 @@ const links = [
   { href: "/porovnani/", label: "Porovnání" },
   { href: "/portfolio/", label: "Portfolio" },
   { href: "/#funkce", label: "Funkce" },
-  { href: "/#jak-to-funguje", label: "Jak to funguje" },
-  { href: "/#spolehlivost", label: "Spolehlivost" },
   { href: "/pro-eshopy/", label: "Pro e-shopy" },
 ];
 

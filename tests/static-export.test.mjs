@@ -53,14 +53,14 @@ test("static export contains every public page", async () => {
 });
 
 test("portfolio uses the dedicated investment database", async () => {
-  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, centralProductsSource, catalog, catalogSource, privacy, authMenuSource] = await Promise.all([
+  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, centralProductsSource, catalog, productDetailSource, privacy, authMenuSource] = await Promise.all([
     readOutput("portfolio/index.html"),
     readFile(new URL("../app/portfolio/portfolio-data.json", import.meta.url), "utf8"),
     readOutput("portfolio-products.json"),
     readFile(new URL("../app/portfolio/PortfolioClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/portfolio/central-products.ts", import.meta.url), "utf8"),
     readOutput("katalog/index.html"),
-    readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/produkt/[slug]/ProductPageClient.tsx", import.meta.url), "utf8"),
     readOutput("soukromi-a-cookies/index.html"),
     readFile(new URL("../app/AuthMenu.tsx", import.meta.url), "utf8"),
   ]);
@@ -118,7 +118,7 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(authMenuSource, /isLoading \? " is-loading"/);
   assert.match(authMenuSource, /disabled=\{isLoading\}/);
   assert.match(catalog, /href="\/portfolio\/"/);
-  assert.match(catalogSource, /Přidat do portfolia/);
+  assert.match(productDetailSource, /Přidat do portfolia/);
   assert.match(privacy, /Discord ID/);
   assert.match(privacy, /Přihlášení přes Google/);
   assert.match(privacy, /technicky nezbytnou zabezpečenou cookie/);
@@ -223,7 +223,8 @@ test("catalog prefers the central API and keeps the build snapshot as fallback",
   assert.match(client, /items\.length !== total/);
   assert.match(client, /embedded build snapshot is the deliberate availability fallback/);
   assert.match(proxy, /REQUEST_TIMEOUT_MS = 12_000/);
-  assert.match(client, /api\/catalog\/products\/\$\{encodeURIComponent\(product\.id\)\}/);
+  assert.match(client, /productPath\(product\)/);
+  assert.doesNotMatch(client, /Rychlý náhled|catalog-card-preview|api\/catalog\/products\/\$\{encodeURIComponent\(product\.id\)\}/);
   assert.match(proxy, /CENTRAL_API_BASE_URL/);
   assert.match(proxy, /X-TCG-Proxy-Token/);
   assert.match(proxy, /X-TCG-Client-Key/);
@@ -681,11 +682,11 @@ test("OAuth callbacks follow the approved current host", () => {
 });
 
 test("search and security support files are production-ready", async () => {
-  const [sitemap, robots, headers, catalogSource, rootProductsText] = await Promise.all([
+  const [sitemap, robots, headers, alertControlSource, rootProductsText] = await Promise.all([
     readOutput("sitemap.xml"),
     readOutput("robots.txt"),
     readOutput("_headers"),
-    readFile(new URL("../app/katalog/CatalogClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
     readFile(new URL("../../products.json", import.meta.url), "utf8"),
   ]);
   const rootProducts = JSON.parse(rootProductsText);
@@ -700,8 +701,8 @@ test("search and security support files are production-ready", async () => {
   assert.match(headers, /Strict-Transport-Security/i);
   assert.match(headers, /X-Frame-Options:\s*DENY/i);
   assert.match(headers, /\/assets\/\*[\s\S]*max-age=31536000, immutable/i);
-  assert.match(catalogSource, /closeButtonRef\.current\?\.focus\(\)/);
-  assert.match(catalogSource, /event\.key !== "Tab"/);
+  assert.match(alertControlSource, /closeRef\.current\?\.focus\(\)/);
+  assert.match(alertControlSource, /event\.key !== "Tab"/);
   const rioluTin = rootProducts.find((product) => product.id === "pm:ascended-heroes-mini-tin-riolu-darumaka");
   assert.ok(rioluTin);
   assert.equal(rioluTin.shops.Pikastore, "");

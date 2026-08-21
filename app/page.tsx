@@ -66,7 +66,7 @@ const faqs = [
   {
     question: "Jsou ceny na webu živé?",
     answer:
-      "Tato stránka představuje funkce služby. Aktuální porovnání, skladovost a alerty jsou dostupné přímo v Discord botovi.",
+      "Katalog a produktové detaily průběžně načítají aktuální centrální ceny a skladovost. Když je API dočasně nedostupné, web viditelně označí poslední bezpečný snapshot.",
   },
   {
     question: "Podle čeho řadíte nabídky?",
@@ -91,8 +91,6 @@ export default function Home() {
           <a href="/porovnani">Porovnání</a>
           <a href="/portfolio">Portfolio</a>
           <a href="#funkce">Funkce</a>
-          <a href="#jak-to-funguje">Jak to funguje</a>
-          <a href="#spolehlivost">Spolehlivost</a>
           <a className="nav-partner" href="/pro-eshopy">Pro e-shopy</a>
         </div>
         <div className="nav-actions">
@@ -102,7 +100,7 @@ export default function Home() {
       </nav>
 
       <section id="uvod" className="hero shell">
-        <div className="hero-copy">
+        <div className="hero-copy" data-motion>
           <p className="eyebrow"><span className="live-dot" /> Český Pokémon TCG market monitor</p>
           <h1>
             Chyť nejlepší cenu.
@@ -113,10 +111,10 @@ export default function Home() {
 
           </p>
           <div className="hero-actions">
-            <a className="button" href={DISCORD_URL} target="_blank" rel="noreferrer">
-              Otevřít Discord <span aria-hidden="true">→</span>
+            <a className="button" href="/katalog/">
+              Prohlédnout katalog <span aria-hidden="true">→</span>
             </a>
-            <a className="text-link" href="#jak-to-funguje">Jak služba funguje ↓</a>
+            <a className="text-link" href={DISCORD_URL} target="_blank" rel="noreferrer">Otevřít Discord</a>
           </div>
           <div className="hero-proof" aria-label="Hlavní přednosti">
             <span><b>🛒České</b> e-shopy na jednom místě</span>
@@ -125,7 +123,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="market-card" aria-label="Ukázka porovnání nabídek">
+        <div className="market-card" aria-label="Ukázka porovnání nabídek" data-motion>
           <div className="market-card-top">
             <div>
               <p className="card-kicker">Ukázka porovnání</p>
@@ -164,12 +162,12 @@ export default function Home() {
             <span>Ukázkové zobrazení</span>
           </div>
           <p className="demo-note">
-            Aktuální nabídky a ověřenou skladovost najdeš přímo v Discord botovi.
+            Aktuální nabídky a ověřenou skladovost najdeš v katalogu i Discord botovi.
           </p>
         </div>
       </section>
 
-      <section className="shop-cloud shell" aria-label="Příklady sledovaných obchodů">
+      <section className="shop-cloud shell" aria-label="Příklady sledovaných obchodů" data-motion>
         <div className="shop-cloud-copy">
           <p className="eyebrow">Široký pohled na český trh</p>
           <h2>Nehledáme jednu cenu. Porovnáváme celý výběr.</h2>
@@ -189,7 +187,7 @@ export default function Home() {
         </p>
       </section>
 
-      <section id="funkce" className="section shell">
+      <section id="funkce" className="section shell" data-motion>
         <div className="section-heading">
           <div>
             <p className="eyebrow">Vše důležité na jednom místě</p>
@@ -205,7 +203,7 @@ export default function Home() {
             const Icon = feature.icon;
 
             return (
-              <article className="feature-card" key={feature.code}>
+              <article className="feature-card" key={feature.code} data-motion style={{ "--motion-delay": `${Math.min(index, 3) * 55}ms` } as React.CSSProperties}>
                 <div className="feature-card-top">
                   <div className="feature-number">0{index + 1}</div>
                   <span className="feature-icon" aria-hidden="true">
@@ -223,7 +221,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="jak-to-funguje" className="section section-dark">
+      <section id="jak-to-funguje" className="section section-dark" data-motion>
         <div className="shell">
           <div className="section-heading compact">
             <div>
@@ -251,7 +249,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section shell insight-section">
+      <section className="section shell insight-section" data-motion>
           <div className="insight-copy">
             <p className="eyebrow">Portfolio v jednom přehledu</p>
             <h2>Sleduj, jak se vyvíjí hodnota tvé sbírky.</h2>
@@ -268,7 +266,7 @@ export default function Home() {
         <PriceHistoryDemo />
       </section>
 
-      <section id="spolehlivost" className="section shell reliability">
+      <section id="spolehlivost" className="section shell reliability" data-motion>
         <div className="reliability-panel">
           <div>
             <p className="eyebrow">Jak hlídáme kvalitu dat</p>
@@ -294,7 +292,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="partner-teaser shell">
+      <section className="partner-teaser shell" data-motion>
         <div>
           <p className="eyebrow">Pro e-shopy a datové partnery</p>
           <h2>Vaše nabídka může vést přímo k zákazníkovi.</h2>
@@ -308,7 +306,7 @@ export default function Home() {
         </a>
       </section>
 
-      <section className="section shell faq-section">
+      <section className="section shell faq-section" data-motion>
         <div className="faq-heading">
           <p className="eyebrow">Stručně a transparentně</p>
           <h2>Nejčastější otázky</h2>
@@ -323,7 +321,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="cta-section shell">
+      <section className="cta-section shell" data-motion>
         <div>
           <p className="eyebrow">TCG Ceny · veřejná beta</p>
           <h2>

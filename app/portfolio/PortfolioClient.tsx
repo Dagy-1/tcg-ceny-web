@@ -1395,10 +1395,10 @@ export default function PortfolioClient({
           <span>TCG <strong>Ceny</strong></span>
         </Link>
         <div className="nav-links">
-          <Link href="/">Domů</Link>
           <Link href="/katalog/">Katalog</Link>
           <Link href="/porovnani/">Porovnání</Link>
-          <Link className="portfolio-nav-active" href="/portfolio/">Portfolio</Link>
+          <Link className="portfolio-nav-active" href="/portfolio/" aria-current="page">Portfolio</Link>
+          <Link href="/#funkce">Funkce</Link>
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions">
@@ -1407,7 +1407,7 @@ export default function PortfolioClient({
         </div>
       </nav>
 
-      <header className="portfolio-header">
+      <header className={`portfolio-header${state === "signed-in" ? " is-dashboard" : ""}`} data-motion>
         <div>
           <p className="portfolio-eyebrow"><span /> TCG Ceny Portfolio</p>
           <h1>Hodnota tvé sbírky.<span>Bez tabulek a dohadů.</span></h1>
@@ -1481,7 +1481,7 @@ export default function PortfolioClient({
 
           {portfolioLoadState === "ready" && (
             <>
-          <div className="portfolio-metrics">
+          <div className="portfolio-metrics" data-motion>
             <article><span>Investováno</span><strong>{formatCzk(totals.invested)}</strong><small>součet nákupů</small></article>
             <article><span>Aktuální hodnota</span><strong>{formatCzk(totals.current)}</strong><small>podle posledních cen</small></article>
             <article className={totals.profit >= 0 ? "is-positive" : "is-negative"}>
@@ -1515,7 +1515,7 @@ export default function PortfolioClient({
                 const profit = current - invested;
                 const change = invested ? ((current - invested) / invested) * 100 : 0;
                 return (
-                  <article className="portfolio-item" key={item.id}>
+                  <article className="portfolio-item" key={item.id} data-motion>
                     <div className="portfolio-product-image"><ProductImage product={item.product} /></div>
                     <div className="portfolio-item-copy">
                       <span>{productDescriptor(item.product)}</span>

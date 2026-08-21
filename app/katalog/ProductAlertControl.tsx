@@ -248,7 +248,7 @@ export default function ProductAlertControl({ product, variant = "compact" }: { 
   const [open, setOpen] = useState(false);
   return <>
     <button
-      className={`product-alert-trigger product-alert-${variant}`}
+      className={`product-alert-trigger product-alert-${variant}${open ? " is-activated" : ""}`}
       type="button"
       onClick={() => setOpen(true)}
       aria-label={`Nastavit hlídání produktu ${product.name}`}

@@ -138,7 +138,7 @@ function SelectionPanel({
         {rows.length ? rows.map(({ item, product }) => {
           const age = priceAgeDays(product.priceUpdatedAt);
           return (
-            <article key={product.id} className={product.marketPrice === null ? "has-no-price" : undefined}>
+            <article key={product.id} className={product.marketPrice === null ? "has-no-price" : undefined} data-motion>
               <div className="compare-product-image">
                 {product.image && <Image src={product.image} alt="" width={76} height={76} unoptimized />}
               </div>
@@ -263,11 +263,11 @@ export default function CompareClient({
     <main className="compare-page">
       <nav className="nav compare-nav" aria-label="Hlavní navigace">
         <Link className="brand" href="/" aria-label="TCG Ceny – úvod"><span className="brand-mark" aria-hidden="true"><span /><span /></span><span>TCG <strong>Ceny</strong></span></Link>
-        <div className="nav-links"><Link href="/">Domů</Link><Link href="/katalog/">Katalog</Link><Link className="compare-nav-active" href="/porovnani/">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><Link href="/pro-eshopy/">Pro e-shopy</Link></div>
+        <div className="nav-links"><Link href="/katalog/">Katalog</Link><Link className="compare-nav-active" href="/porovnani/" aria-current="page">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><Link href="/#funkce">Funkce</Link><Link href="/pro-eshopy/">Pro e-shopy</Link></div>
         <div className="nav-actions"><AuthMenu /><MobileNav /></div>
       </nav>
 
-      <header className="compare-hero shell">
+      <header className="compare-hero shell" data-motion>
         <div>
           <p className="eyebrow"><span className="live-dot" /> Porovnání produktů</p>
           <h1>Srovnej hodnotu.<span>Rozhodni se s přehledem.</span></h1>
@@ -298,13 +298,13 @@ export default function CompareClient({
           </div>
         </div>
 
-        <div className="compare-columns">
+        <div className="compare-columns" data-motion>
           <SelectionPanel title="Můj výběr" eyebrow="Co nabízím nebo zvažuji" side="mine" selection={mine} products={products} onAdd={(id) => add("mine", id)} onQuantity={(id, delta) => quantity("mine", id, delta)} onRemove={(id) => remove("mine", id)} />
-          <div className="compare-versus" aria-hidden="true"><span>VS</span></div>
+          <div className={`compare-versus${hasBoth ? " is-ready" : ""}`} aria-hidden="true"><span>VS</span></div>
           <SelectionPanel title="Srovnávaný výběr" eyebrow="S čím hodnotu porovnávám" side="compared" selection={compared} products={products} onAdd={(id) => add("compared", id)} onQuantity={(id, delta) => quantity("compared", id, delta)} onRemove={(id) => remove("compared", id)} />
         </div>
 
-        <section className={`compare-result is-${verdictTone}`} aria-live="polite">
+        <section className={`compare-result is-${verdictTone}`} aria-live="polite" data-motion>
           <div className="compare-result-label"><span>Výsledek porovnání</span><h2>{verdict}</h2><p>{hasBoth ? `Rozdíl představuje ${new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 1 }).format(differencePercent)} % hodnotnějšího výběru.` : "Jakmile přidáš produkty na obě strany, spočítáme rozdíl i doporučené dorovnání."}</p></div>
           <div className="compare-result-values">
             <article><span>Můj výběr</span><strong>{formatCzk(mineTotal)}</strong></article>
