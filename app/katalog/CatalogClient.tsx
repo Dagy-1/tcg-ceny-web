@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, PackageCheck, PackageX, X } from "lucide-react";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
+import ProductAlertControl from "./ProductAlertControl";
 import {
   productFromApi,
   productPath,
@@ -279,6 +280,7 @@ function ProductDetail({
             <strong>Přidej ho do portfolia nebo porovnání.</strong>
           </div>
           <div className="catalog-product-actions">
+            <ProductAlertControl product={product} variant="compact" />
             <Link href={`/porovnani/?add=${encodeURIComponent(product.id)}`}>Porovnat</Link>
             <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}>
               <span aria-hidden="true">+</span> Přidat do portfolia
@@ -669,6 +671,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                 <button className="catalog-card-preview" type="button" onClick={() => void openProduct(product)}>
                   Rychlý náhled
                 </button>
+                <ProductAlertControl product={product} variant="icon" />
               </article>
             ))}
           </div>

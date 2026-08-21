@@ -718,6 +718,7 @@ test("every catalog product has a stable, indexable detail page", async () => {
     const html = await readOutput(`${path.slice(1)}index.html`);
     assert.match(html, new RegExp(product.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     assert.match(html, /application\/ld\+json/);
+    assert.match(html, /Hlídat produkt/);
     assert.match(html, new RegExp(`https://tcgceny\\.cz${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
   }));
 
@@ -728,4 +729,25 @@ test("every catalog product has a stable, indexable detail page", async () => {
   const sitemap = await response.text();
   assert.equal((sitemap.match(/<url>/g) || []).length, catalogData.products.length + 7);
   assert.match(sitemap, new RegExp(productPath(catalogData.products.at(-1)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+});
+
+test("product alert controls expose an honest, accessible configuration preview", async () => {
+  const [control, catalog, detail] = await Promise.all([
+    readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
+    readOutput("katalog/index.html"),
+    readOutput("produkt/me05-pitch-black-booster-bundle-03popd8/index.html"),
+  ]);
+
+  assert.match(catalog, /Nastavit hlídání produktu/);
+  assert.match(detail, /Hlídat produkt/);
+  assert.match(control, /role="dialog"/);
+  assert.match(control, /aria-modal="true"/);
+  assert.match(control, /event\.key === "Escape"/);
+  assert.match(control, /Naskladnění/);
+  assert.match(control, /Pokles ceny/);
+  assert.match(control, /Cílová cena/);
+  assert.match(control, /Všechny ověřené/);
+  assert.match(control, /Discord/);
+  assert.match(control, /Zatím jsme ho neuložili ani neposlali/);
+  assert.doesNotMatch(control, /fetch\(|localStorage|sessionStorage/);
 });

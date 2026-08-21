@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import AuthMenu from "../../AuthMenu";
 import MobileNav from "../../MobileNav";
 import { productFromApi, type ApiProduct, type Product } from "../../katalog/catalog-model";
+import ProductAlertControl from "../../katalog/ProductAlertControl";
 
 function formatPrice(price: number | null) {
   if (price === null) return "Cena není dostupná";
@@ -125,6 +126,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
               {liveState === "live" && "Zobrazená data pocházejí z centrálního katalogu."}
               {liveState === "snapshot" && "Centrální data nejsou dostupná; zobrazen je poslední bezpečný snapshot."}
             </p>
+            <ProductAlertControl product={product} variant="hero" />
           </div>
         </header>
 
