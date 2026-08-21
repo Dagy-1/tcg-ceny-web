@@ -102,7 +102,7 @@ export default function Home() {
 
       <section id="uvod" className="hero shell">
         <div className="hero-copy" data-motion>
-          <p className="eyebrow"><span className="live-dot" /> Český Pokémon TCG market monitor</p>
+          <p className="eyebrow"><span className="live-dot" /> Pokémon TCG na jednom místě</p>
           <h1>
             Chyť nejlepší cenu.
             <span>Nezmeškej naskladnění.</span>

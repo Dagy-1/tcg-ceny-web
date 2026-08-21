@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     locale: "cs_CZ",
     url: "https://tcgceny.cz",
     siteName: "TCG Ceny",
-    title: "TCG Ceny | Český Pokémon TCG market monitor",
+    title: "TCG Ceny | Pokémon TCG na jednom místě",
     description:
       "Porovnání cen a skladovosti, ověřené alerty, historie cen a portfolio sealed sbírky.",
     images: [

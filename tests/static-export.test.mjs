@@ -669,6 +669,8 @@ test("homepage contains production metadata and core content", async () => {
 
   assert.match(html, /<html lang="cs"(?:\s[^>]*)?>/i);
   assert.match(html, /TCG Ceny \| Ceny, skladovost a alerty Pokémon TCG/i);
+  assert.match(html, /Pokémon TCG na jednom místě/i);
+  assert.doesNotMatch(html, /Český Pokémon TCG market monitor/i);
   assert.match(html, /https:\/\/tcgceny\.cz/);
   assert.match(html, /brand-mark\.svg/);
   assert.match(html, /favicon\.png/);
