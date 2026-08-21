@@ -804,7 +804,7 @@ test("every catalog product has a stable, indexable detail page", async () => {
     const html = await readOutput(`${path.slice(1)}index.html`);
     assert.match(html, new RegExp(product.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     assert.match(html, /application\/ld\+json/);
-    assert.match(html, /Hlídat produkt/);
+    assert.match(html, /Nastavit upozornění/);
     assert.match(html, new RegExp(`https://tcgceny\\.cz${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
   }));
 
@@ -818,14 +818,18 @@ test("every catalog product has a stable, indexable detail page", async () => {
 });
 
 test("product alert controls expose an honest, accessible configuration preview", async () => {
-  const [control, catalog, detail] = await Promise.all([
+  const [control, catalogCss, catalog, detail] = await Promise.all([
     readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/katalog/catalog.css", import.meta.url), "utf8"),
     readOutput("katalog/index.html"),
     readOutput("produkt/me05-pitch-black-booster-bundle-03popd8/index.html"),
   ]);
 
-  assert.match(catalog, /Nastavit hlídání produktu/);
-  assert.match(detail, /Hlídat produkt/);
+  assert.match(catalog, /Nastavit upozornění produktu/);
+  assert.match(detail, /Nastavit upozornění/);
+  assert.match(control, /<span>Sledování<\/span>/);
+  assert.match(control, /Nastavit upozornění/);
+  assert.match(catalogCss, /\.alert-dialog\s*\{[^}]*overflow:\s*clip/);
   assert.match(control, /role="dialog"/);
   assert.match(control, /aria-modal="true"/);
   assert.match(control, /event\.key === "Escape"/);
@@ -837,7 +841,7 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /Zatím jsme ho neuložili ani neposlali/);
   assert.match(control, /fetch\("\/api\/session"/);
   assert.match(control, /credentials: "include"/);
-  assert.match(control, /Hlídání je dostupné po přihlášení/);
+  assert.match(control, /Upozornění jsou dostupná po přihlášení/);
   assert.match(control, /Pouze pro přihlášené uživatele/);
   assert.match(control, /showLoginChoices/);
   assert.match(control, /Přihlásit se/);

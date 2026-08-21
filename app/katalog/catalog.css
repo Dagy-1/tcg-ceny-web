@@ -958,7 +958,7 @@
 .alert-dialog {
   width: min(820px, 100%);
   margin-block: auto;
-  overflow: visible;
+  overflow: clip;
   border: 1px solid rgba(230, 184, 74, .58);
   border-radius: 16px;
   background: #06111f;

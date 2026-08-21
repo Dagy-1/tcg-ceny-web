@@ -148,17 +148,17 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
         <header className="alert-header">
           <div className="alert-header-icon" aria-hidden="true"><BellRing /></div>
           <div>
-            <span>Ukázka nové funkce</span>
-            <h2 id={`alert-title-${product.id}`}>Nastavit hlídání</h2>
+            <span>Sledování</span>
+            <h2 id={`alert-title-${product.id}`}>Nastavit upozornění</h2>
             <p>{product.name}</p>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="Zavřít nastavení hlídání"><X /></button>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Zavřít nastavení upozornění"><X /></button>
         </header>
 
         {sessionState === "anonymous" && (
-          <aside className="alert-auth-note" aria-label="Přihlášení potřebné pro hlídání">
+          <aside className="alert-auth-note" aria-label="Přihlášení potřebné pro upozornění">
             <span aria-hidden="true"><LockKeyhole /></span>
-            <span><strong>Hlídání je dostupné po přihlášení</strong><small>Nastavení si můžeš prohlédnout. Pro jeho budoucí uložení a doručování potřebujeme bezpečně poznat tvůj účet.</small></span>
+            <span><strong>Upozornění jsou dostupná po přihlášení</strong><small>Nastavení si můžeš prohlédnout. Pro jeho budoucí uložení a doručování potřebujeme bezpečně poznat tvůj účet.</small></span>
           </aside>
         )}
 
@@ -197,7 +197,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
 
           <section className="alert-section" aria-labelledby="alert-shops-title">
             <div className="alert-section-heading">
-              <div><span>03</span><div><h3 id="alert-shops-title">Které obchody?</h3><p>Hlídání může běžet nad celým trhem nebo jen vybranými e-shopy.</p></div></div>
+              <div><span>03</span><div><h3 id="alert-shops-title">Které obchody?</h3><p>Sledování může běžet nad celým trhem nebo jen vybranými e-shopy.</p></div></div>
             </div>
             <div className="alert-shop-list">
               <button className={allShops ? "is-selected" : ""} type="button" aria-pressed={allShops} onClick={() => { setAllShops(true); setSelectedShops(new Set()); setPreviewNotice(false); }}><span>Všechny ověřené</span><small>{shops.length || product.availableOffers + product.storeOffers} obchodů</small>{allShops && <Check />}</button>
@@ -207,7 +207,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
 
           <section className="alert-section" aria-labelledby="alert-channel-title">
             <div className="alert-section-heading">
-              <div><span>04</span><div><h3 id="alert-channel-title">Kam upozornění poslat?</h3><p>Kanál půjde později změnit u každého hlídání.</p></div></div>
+              <div><span>04</span><div><h3 id="alert-channel-title">Kam upozornění poslat?</h3><p>Kanál půjde později změnit u každého sledování.</p></div></div>
             </div>
             <div className="alert-channel-grid">
               <button className={channel === "discord" ? "is-selected" : ""} type="button" aria-pressed={channel === "discord"} onClick={() => { setChannel("discord"); setPreviewNotice(false); }}><MessageCircle /><span><strong>Discord</strong><small>Soukromá zpráva od TCG Ceny</small></span>{channel === "discord" && <Check />}</button>
@@ -221,7 +221,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
             <span className={sessionState === "anonymous" ? "alert-lock-dot" : "alert-preview-dot"} aria-hidden="true">{sessionState === "anonymous" && <LockKeyhole />}</span>
             <span>
               <strong>{sessionState === "anonymous" ? "Pouze pro přihlášené uživatele" : sessionState === "loading" ? "Ověřujeme přihlášení" : "Rozhraní je připravené jako náhled"}</strong>
-              <small>{sessionState === "anonymous" ? "Přihlas se přes Discord nebo Google a hlídání spojíme s tvým účtem." : sessionState === "loading" ? "Za okamžik bude možné pokračovat." : "Uložení a odesílání zapojíme v další etapě."}</small>
+              <small>{sessionState === "anonymous" ? "Přihlas se přes Discord nebo Google a upozornění spojíme s tvým účtem." : sessionState === "loading" ? "Za okamžik bude možné pokračovat." : "Uložení a odesílání zapojíme v další etapě."}</small>
             </span>
           </div>
           {sessionState === "anonymous" ? (
@@ -234,7 +234,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
               <button className="alert-login-reveal" type="button" aria-expanded={false} aria-controls={`alert-login-options-${product.id}`} onClick={() => setShowLoginChoices(true)}><LogIn /> Přihlásit se <span aria-hidden="true">›</span></button>
             )
           ) : (
-            <button type="button" disabled={sessionState === "loading" || modes.size === 0 || (!allShops && selectedShops.size === 0)} onClick={() => setPreviewNotice(true)}>{sessionState === "loading" ? <LockKeyhole /> : <Send />} {sessionState === "loading" ? "Ověřuji účet" : "Vyzkoušet nastavení"}</button>
+            <button type="button" disabled={sessionState === "loading" || modes.size === 0 || (!allShops && selectedShops.size === 0)} onClick={() => setPreviewNotice(true)}>{sessionState === "loading" ? <LockKeyhole /> : <Send />} {sessionState === "loading" ? "Ověřuji účet" : "Vyzkoušet upozornění"}</button>
           )}
         </footer>
         {previewNotice && <p className="alert-preview-notice" role="status"><Check /> Nastavení vypadá dobře. Zatím jsme ho neuložili ani neposlali.</p>}
@@ -251,11 +251,11 @@ export default function ProductAlertControl({ product, variant = "compact" }: { 
       className={`product-alert-trigger product-alert-${variant}${open ? " is-activated" : ""}`}
       type="button"
       onClick={() => setOpen(true)}
-      aria-label={`Nastavit hlídání produktu ${product.name}`}
-      title={variant === "icon" ? "Nastavit hlídání" : undefined}
+      aria-label={`Nastavit upozornění produktu ${product.name}`}
+      title={variant === "icon" ? "Nastavit upozornění" : undefined}
     >
       <span className="product-alert-bell" aria-hidden="true"><Bell /></span>
-      {variant !== "icon" && <span><strong>Hlídat produkt</strong><small>Cenu i naskladnění</small></span>}
+      {variant !== "icon" && <span><strong>Nastavit upozornění</strong><small>Cenu i naskladnění</small></span>}
       {variant === "hero" && <span className="product-alert-arrow" aria-hidden="true">›</span>}
     </button>
     {open && <AlertSetupDialog product={product} onClose={() => setOpen(false)} />}
