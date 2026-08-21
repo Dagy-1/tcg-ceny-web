@@ -278,7 +278,7 @@ export default function SledovaniClient() {
                           <div className="watching-card-footer">
                             <span><PackageCheck size={15} aria-hidden="true" /> {item.shops.length ? item.shops.join(", ") : "Všechny ověřené obchody"}</span>
                             <div>
-                              <Link href={path}>Upravit nastavení</Link>
+                              <Link href={`${path}?upozorneni=upravit`}>Upravit nastavení</Link>
                               {confirmId === item.product.id ? (
                                 <span className="watching-confirm">
                                   <button type="button" onClick={() => void removeAlert(item.product.id)} disabled={removingId === item.product.id}>

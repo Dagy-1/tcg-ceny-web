@@ -313,8 +313,25 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
   );
 }
 
-export default function ProductAlertControl({ product, variant = "compact" }: { product: Product; variant?: AlertVariant }) {
+export default function ProductAlertControl({
+  product,
+  variant = "compact",
+  openFromQuery = false,
+}: {
+  product: Product;
+  variant?: AlertVariant;
+  openFromQuery?: boolean;
+}) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!openFromQuery) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upozorneni") !== "upravit") return;
+    const openTimer = window.setTimeout(() => setOpen(true), 0);
+    return () => window.clearTimeout(openTimer);
+  }, [openFromQuery]);
+
   return <>
     <button
       className={`product-alert-trigger product-alert-${variant}${open ? " is-activated" : ""}`}

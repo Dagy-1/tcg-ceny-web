@@ -980,11 +980,13 @@ test("product alert controls save an authenticated accessible configuration", as
 });
 
 test("watching dashboard is private, useful and linked from navigation", async () => {
-  const [html, source, mobileNav, authMenu] = await Promise.all([
+  const [html, source, mobileNav, authMenu, alertControl, detailClient] = await Promise.all([
     readOutput("sledovani/index.html"),
     readFile(new URL("../app/sledovani/SledovaniClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/MobileNav.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/AuthMenu.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/produkt/[slug]/ProductPageClient.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(html, /Co sleduješ/);
@@ -995,6 +997,9 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(source, /Všechny ověřené obchody/);
   assert.match(source, /WatchingProductImage/);
   assert.match(source, /onError=\{\(\) => setFailedSource\(source\)\}/);
+  assert.match(source, /\?upozorneni=upravit/);
+  assert.match(detailClient, /openFromQuery/);
+  assert.match(alertControl, /params\.get\("upozorneni"\).*"upravit"/);
   assert.match(source, /method: "DELETE"/);
   assert.match(source, /Každý uživatel vidí jen své produkty/);
   assert.doesNotMatch(source, /localStorage|sessionStorage/);

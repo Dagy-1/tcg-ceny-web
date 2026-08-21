@@ -167,7 +167,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
               {liveState === "live" && "Zobrazená data pocházejí z centrálního katalogu."}
               {liveState === "snapshot" && "Centrální data nejsou dostupná; zobrazen je poslední bezpečný snapshot."}
             </p>
-            <ProductAlertControl product={product} variant="hero" />
+            <ProductAlertControl product={product} variant="hero" openFromQuery />
           </div>
         </header>
 
