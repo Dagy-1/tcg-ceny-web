@@ -6,6 +6,7 @@ import {
   Check,
   CircleDollarSign,
   LockKeyhole,
+  LogIn,
   MessageCircle,
   PackageCheck,
   Send,
@@ -40,6 +41,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
   const [channel, setChannel] = useState<DeliveryChannel>("discord");
   const [previewNotice, setPreviewNotice] = useState(false);
   const [sessionState, setSessionState] = useState<SessionState>("loading");
+  const [showLoginChoices, setShowLoginChoices] = useState(false);
   const [returnTo] = useState(() => {
     if (typeof window === "undefined") return "/";
     const currentPath = `${window.location.pathname}${window.location.search}`;
@@ -47,6 +49,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
   });
   const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const firstLoginRef = useRef<HTMLAnchorElement>(null);
 
   const shops = useMemo(
     () => [...new Set(product.offers.filter((offer) => offer.url).map((offer) => offer.shop))].sort((a, b) => a.localeCompare(b, "cs")),
@@ -69,6 +72,10 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
       });
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (showLoginChoices) firstLoginRef.current?.focus();
+  }, [showLoginChoices]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -218,10 +225,14 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
             </span>
           </div>
           {sessionState === "anonymous" ? (
-            <div className="alert-login-actions">
-              <a className="alert-login-discord" href={loginHref("discord")}><span aria-hidden="true">D</span> Přihlásit přes Discord</a>
-              <a href={loginHref("google")}><span aria-hidden="true">G</span> Google</a>
-            </div>
+            showLoginChoices ? (
+              <div className="alert-login-actions" id={`alert-login-options-${product.id}`} aria-label="Vyber způsob přihlášení">
+                <a ref={firstLoginRef} className="alert-login-discord" href={loginHref("discord")}><span aria-hidden="true">D</span> Discord</a>
+                <a href={loginHref("google")}><span aria-hidden="true">G</span> Google</a>
+              </div>
+            ) : (
+              <button className="alert-login-reveal" type="button" aria-expanded={false} aria-controls={`alert-login-options-${product.id}`} onClick={() => setShowLoginChoices(true)}><LogIn /> Přihlásit se <span aria-hidden="true">›</span></button>
+            )
           ) : (
             <button type="button" disabled={sessionState === "loading" || modes.size === 0 || (!allShops && selectedShops.size === 0)} onClick={() => setPreviewNotice(true)}>{sessionState === "loading" ? <LockKeyhole /> : <Send />} {sessionState === "loading" ? "Ověřuji účet" : "Vyzkoušet nastavení"}</button>
           )}

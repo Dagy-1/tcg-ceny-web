@@ -1138,6 +1138,9 @@
 .alert-footer > button:disabled { cursor: not-allowed; opacity: .4; }
 .alert-footer > button svg { width: 15px; height: 15px; }
 .alert-footer-locked { border-top: 1px solid rgba(158, 171, 188, .11); background: #09131f; }
+.alert-footer > button.alert-login-reveal { min-width: 142px; justify-content: center; border: 1px solid rgba(151, 165, 184, .23); color: #e3e9f1; background: #172434; }
+.alert-footer > button.alert-login-reveal:hover { border-color: rgba(230, 184, 74, .5); color: #fff; background: #1d2c3e; }
+.alert-login-reveal > span { color: var(--gold-soft); font-size: 19px; line-height: 1; }
 .alert-login-actions { display: flex; align-items: center; gap: 7px; }
 .alert-login-actions > a { min-height: 42px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid rgba(151, 165, 184, .19); border-radius: 7px; color: #aeb9c8; background: #111d2b; text-decoration: none; font-size: 9px; font-weight: 850; }
 .alert-login-actions > a:hover { border-color: rgba(230, 184, 74, .5); color: #eef2f7; }

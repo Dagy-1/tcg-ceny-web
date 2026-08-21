@@ -753,7 +753,10 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /credentials: "include"/);
   assert.match(control, /Hlídání je dostupné po přihlášení/);
   assert.match(control, /Pouze pro přihlášené uživatele/);
-  assert.match(control, /Přihlásit přes Discord/);
+  assert.match(control, /showLoginChoices/);
+  assert.match(control, /Přihlásit se/);
+  assert.match(control, /Vyber způsob přihlášení/);
+  assert.match(control, /firstLoginRef\.current\?\.focus\(\)/);
   assert.match(control, /\/api\/auth\/\$\{provider\}/);
   assert.match(control, /a\[href\], button:not\(\[disabled\]\)/);
   assert.doesNotMatch(control, /localStorage|sessionStorage/);
