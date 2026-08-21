@@ -701,6 +701,25 @@
 }
 .catalog-price-copy { display: grid; gap: 2px; }
 .catalog-price-copy > span { color: #a2b9aa; font-size: 10px; }
+.catalog-price-copy > small { color: #9fc8ad; font-size: 9px; font-weight: 700; }
+.catalog-detail-price-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.catalog-detail-price-link:hover {
+  border-color: rgba(78, 225, 126, .68);
+  background:
+    linear-gradient(90deg, rgba(21, 128, 66, .29), transparent 72%),
+    #082019;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .2), inset 0 0 0 1px rgba(78, 225, 126, .08);
+  transform: translateY(-1px);
+}
+.catalog-detail-price-link:focus-visible {
+  outline: 3px solid rgba(239, 190, 70, .72);
+  outline-offset: 3px;
+}
 .catalog-detail-price strong {
   color: #54df84;
   font-family: var(--font-display);
@@ -716,6 +735,16 @@
   font-size: 9px;
 }
 .catalog-price-proof small { color: #779082; font-size: 8px; text-align: right; }
+.catalog-price-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  color: #79e59d;
+  font-size: 9px;
+  font-weight: 800;
+}
+.catalog-detail-price-link:hover .catalog-price-open { color: #a0f2ba; }
 .catalog-detail-price:not(.catalog-price-verified) .catalog-price-signal {
   background: #e8b64e;
   box-shadow: 0 0 0 6px rgba(232, 182, 78, .08);

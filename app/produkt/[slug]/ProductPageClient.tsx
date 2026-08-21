@@ -34,6 +34,15 @@ function offerStatusLabel(status: Product["availability"]) {
   return "Vyprodáno";
 }
 
+function safeOfferUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && Boolean(url.hostname) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ProductPageClient({ initialProduct }: { initialProduct: Product }) {
   const [product, setProduct] = useState(initialProduct);
   const [imageFailed, setImageFailed] = useState(false);
@@ -76,6 +85,26 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
 
   const bestStatus = product.availableOffers > 0 ? "online" : "store";
   const verified = product.verified && availableOffers.some((offer) => !offer.stale);
+  const bestOffer = availableOffers.find((offer) => (
+    offer.status === bestStatus
+    && offer.price === product.bestPrice
+    && !offer.stale
+    && safeOfferUrl(offer.url)
+  ));
+  const bestOfferUrl = bestOffer ? safeOfferUrl(bestOffer.url) : null;
+  const priceCardContent = <>
+    <span className="catalog-price-signal" aria-hidden="true" />
+    <div className="catalog-price-copy">
+      <span>Nejlepší dostupná cena</span>
+      <strong>{formatPrice(product.bestPrice)}</strong>
+      {bestOffer && <small>Nejlevněji u {bestOffer.shop}</small>}
+    </div>
+    <div className="catalog-price-proof">
+      <b>{verified ? "Ověřeno" : "Starší údaj"}</b>
+      <small>Kontrola {formatDate(product.checkedAt)}</small>
+      {bestOfferUrl && <span className="catalog-price-open">Otevřít nabídku <ArrowUpRight size={15} aria-hidden="true" /></span>}
+    </div>
+  </>;
 
   return (
     <main className="catalog-page product-page">
@@ -113,14 +142,21 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
             <div className={`catalog-status catalog-status-${product.availability}`}>
               <i aria-hidden="true" /> {statusLabel(product.availability)}
             </div>
-            <div className={`catalog-detail-price ${verified ? "catalog-price-verified" : ""}`}>
-              <span className="catalog-price-signal" aria-hidden="true" />
-              <div className="catalog-price-copy"><span>Nejlepší dostupná cena</span><strong>{formatPrice(product.bestPrice)}</strong></div>
-              <div className="catalog-price-proof">
-                <b>{verified ? "Ověřeno" : "Starší údaj"}</b>
-                <small>Kontrola {formatDate(product.checkedAt)}</small>
+            {bestOfferUrl && bestOffer ? (
+              <a
+                className={`catalog-detail-price catalog-detail-price-link ${verified ? "catalog-price-verified" : ""}`}
+                href={bestOfferUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Otevřít nejlevnější nabídku produktu ${product.name} v obchodě ${bestOffer.shop} za ${formatPrice(bestOffer.price)}`}
+              >
+                {priceCardContent}
+              </a>
+            ) : (
+              <div className={`catalog-detail-price ${verified ? "catalog-price-verified" : ""}`}>
+                {priceCardContent}
               </div>
-            </div>
+            )}
             <p className={`product-live-state product-live-${liveState}`} aria-live="polite">
               {liveState === "loading" && "Ověřujeme aktuální data…"}
               {liveState === "live" && "Zobrazená data pocházejí z centrálního katalogu."}

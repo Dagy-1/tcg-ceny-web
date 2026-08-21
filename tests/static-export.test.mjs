@@ -751,3 +751,17 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /Zatím jsme ho neuložili ani neposlali/);
   assert.doesNotMatch(control, /fetch\(|localStorage|sessionStorage/);
 });
+
+test("product detail links the best current price directly to its verified shop", async () => {
+  const [source, detail] = await Promise.all([
+    readFile(new URL("../app/produkt/[slug]/ProductPageClient.tsx", import.meta.url), "utf8"),
+    readOutput("produkt/me05-pitch-black-booster-bundle-03popd8/index.html"),
+  ]);
+
+  assert.match(source, /url\.protocol === "https:"/);
+  assert.match(source, /rel="noopener noreferrer"/);
+  assert.match(source, /Otevřít nejlevnější nabídku produktu/);
+  assert.match(detail, /Nejlevněji u/);
+  assert.match(detail, /Otevřít nabídku/);
+  assert.match(detail, /target="_blank"/);
+});
