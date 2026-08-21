@@ -510,36 +510,36 @@ h1 span { display: block; color: var(--gold); }
 .card-companion {
   width: fit-content;
   max-width: 430px;
-  margin-top: 24px;
-  padding: 10px 16px 10px 9px;
+  margin-top: 28px;
+  padding: 13px 20px 13px 11px;
   display: grid;
-  grid-template-columns: 66px minmax(0, 1fr);
+  grid-template-columns: 82px minmax(0, 1fr);
   align-items: center;
-  gap: 11px;
-  border: 1px solid rgba(230, 184, 74, .2);
-  border-radius: 17px;
-  background: linear-gradient(135deg, rgba(14, 30, 50, .72), rgba(7, 18, 34, .48));
-  box-shadow: inset 0 1px rgba(255, 255, 255, .035);
+  gap: 15px;
+  border: 1px solid rgba(230, 184, 74, .28);
+  border-radius: 19px;
+  background: linear-gradient(135deg, rgba(17, 35, 57, .82), rgba(7, 18, 34, .56));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .045), 0 14px 42px rgba(0, 0, 0, .12);
 }
-.card-companion-figure { width: 66px; height: 66px; display: grid; place-items: center; }
+.card-companion-figure { width: 82px; height: 82px; display: grid; place-items: center; }
 .card-companion-figure svg {
-  width: 72px;
-  height: 72px;
+  width: 92px;
+  height: 92px;
   overflow: visible;
   transform-origin: 50% 62%;
   animation: companion-float 5.2s var(--motion-ease) infinite;
 }
 .card-companion-copy { min-width: 0; display: grid; line-height: 1.25; text-align: left; }
 .card-companion-copy > span {
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   color: var(--gold);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 850;
   letter-spacing: .13em;
   text-transform: uppercase;
 }
-.card-companion-copy strong { color: #edf2fa; font-family: var(--font-display); font-size: 14px; letter-spacing: -.015em; }
-.card-companion-copy small { margin-top: 4px; color: #8493a7; font-size: 10px; }
+.card-companion-copy strong { color: #edf2fa; font-family: var(--font-display); font-size: 17px; letter-spacing: -.015em; }
+.card-companion-copy small { margin-top: 5px; color: #91a0b4; font-size: 11px; }
 .companion-eye { transform-box: fill-box; transform-origin: center; animation: companion-blink 6.4s ease-in-out infinite; }
 .companion-eye-right { animation-delay: 45ms; }
 .companion-status { filter: drop-shadow(0 0 4px rgba(54, 198, 107, .72)); }
@@ -921,9 +921,11 @@ h1 span { display: block; color: var(--gold); }
   .hero-actions .button { width: 100%; }
   .hero-proof { gap: 6px; }
   .hero-proof span { font-size: 10px; }
-  .card-companion { width: 100%; max-width: 390px; grid-template-columns: 60px minmax(0, 1fr); padding: 9px 13px 9px 8px; }
-  .card-companion-figure { width: 60px; height: 60px; }
-  .card-companion-figure svg { width: 65px; height: 65px; }
+  .card-companion { width: 100%; max-width: 390px; grid-template-columns: 80px minmax(0, 1fr); padding: 12px 14px 12px 10px; }
+  .card-companion-figure { width: 80px; height: 80px; }
+  .card-companion-figure svg { width: 90px; height: 90px; }
+  .card-companion-copy strong { font-size: 17px; }
+  .card-companion-copy small { font-size: 11px; }
   .market-card { padding: 18px; border-radius: 18px; }
   .market-card-top { min-height: 123px; }
   .product-visual { width: 125px; height: 118px; }
