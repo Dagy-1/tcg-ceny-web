@@ -63,6 +63,7 @@ test("custom cursor is lightweight and limited to precise pointing devices", asy
 
   assert.match(globalCss, /@media \(hover: hover\) and \(pointer: fine\)/);
   assert.match(globalCss, /cursor:\s*url\("\/tcg-cursor\.svg"\) 3 3, auto/);
+  assert.match(globalCss, /button:not\(:disabled\)[\s\S]*cursor:\s*url\("\/tcg-cursor\.svg"\) 3 3, auto !important/);
   assert.match(globalCss, /\[contenteditable="true"\][\s\S]*cursor:\s*text/);
   assert.match(cursorSvg, /stroke="#e6b84a"/i);
   assert.ok(Buffer.byteLength(cursorSvg) < 2_000);
