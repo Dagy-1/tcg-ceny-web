@@ -6,6 +6,7 @@ import {
   ChartNoAxesCombined,
 } from "lucide-react";
 import AuthMenu from "./AuthMenu";
+import CardCompanion from "./CardCompanion";
 import MobileNav from "./MobileNav";
 import PriceHistoryDemo from "./PriceHistoryDemo";
 
@@ -123,6 +124,7 @@ export default function Home() {
             <span><b>📈Historie</b> cen a skladovosti</span>
             <span><b>⚡ Automatické</b> alerty cen a skladovosti</span>
           </div>
+          <CardCompanion />
         </div>
 
         <div className="market-card" aria-label="Ukázka porovnání nabídek" data-motion>

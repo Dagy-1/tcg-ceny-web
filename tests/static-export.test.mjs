@@ -732,12 +732,21 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /Nezmeškej naskladnění/);
   assert.match(html, /Historie cen/);
   assert.match(html, /Portfolio sbírky/);
+  assert.match(html, /card-companion/);
+  assert.match(html, /Tvůj TCG průvodce/);
+  assert.match(html, /Hlídám ceny s tebou/);
+  assert.match(html, /Když se něco pohne, dáme ti vědět/);
   assert.match(html, /https:\/\/discord\.gg\/pRC8GKAKxG/);
   assert.match(html, /podpora@tcgceny\.cz/);
   assert.doesNotMatch(
     html,
     /codex-preview|chatgpt|openai|Your site is taking shape|react-loading-skeleton/i,
   );
+
+  const globalCss = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(globalCss, /@keyframes companion-float/);
+  assert.match(globalCss, /@keyframes companion-blink/);
+  assert.match(globalCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
 test("partner and legal pages contain required information", async () => {
