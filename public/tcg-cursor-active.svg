@@ -12,4 +12,5 @@
     stroke-width="2.15"
     stroke-linejoin="round"
   />
+  <circle cx="26.2" cy="7" r="3.1" fill="#e6b84a" stroke="#07101d" stroke-width="1.6" />
 </svg>

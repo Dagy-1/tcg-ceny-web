@@ -52,7 +52,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   input[type="reset"]:not(:disabled),
   input[type="checkbox"]:not(:disabled),
   input[type="radio"]:not(:disabled) {
-    cursor: url("/tcg-cursor.svg") 3 3, auto !important;
+    cursor: url("/tcg-cursor-active.svg") 3 3, auto !important;
   }
 
   input,
