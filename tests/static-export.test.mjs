@@ -49,9 +49,23 @@ test("static export contains every public page", async () => {
     access(new URL("soukromi-a-cookies/index.html", output)),
     access(new URL("sitemap.xml", output)),
     access(new URL("robots.txt", output)),
+    access(new URL("tcg-cursor.svg", output)),
     access(new URL("_headers", output)),
     access(new URL("404.html", output)),
   ]);
+});
+
+test("custom cursor is lightweight and limited to precise pointing devices", async () => {
+  const [globalCss, cursorSvg] = await Promise.all([
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readOutput("tcg-cursor.svg"),
+  ]);
+
+  assert.match(globalCss, /@media \(hover: hover\) and \(pointer: fine\)/);
+  assert.match(globalCss, /cursor:\s*url\("\/tcg-cursor\.svg"\) 3 3, auto/);
+  assert.match(globalCss, /\[contenteditable="true"\][\s\S]*cursor:\s*text/);
+  assert.match(cursorSvg, /stroke="#e6b84a"/i);
+  assert.ok(Buffer.byteLength(cursorSvg) < 2_000);
 });
 
 test("portfolio uses the dedicated investment database", async () => {

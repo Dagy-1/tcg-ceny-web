@@ -35,6 +35,19 @@ a { color: inherit; text-decoration: none; }
 button, a { -webkit-tap-highlight-color: transparent; }
 .shell { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
 
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body {
+    cursor: url("/tcg-cursor.svg") 3 3, auto;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    cursor: text;
+  }
+}
+
 .nav {
   position: sticky;
   z-index: 20;
