@@ -1,16 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="active-gold" x1="3" y1="3" x2="25" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f6d77a" />
+      <stop offset="0.48" stop-color="#e6b84a" />
+      <stop offset="1" stop-color="#bd8427" />
+    </linearGradient>
+  </defs>
   <path
     d="M3.65 2.75 27.2 20.3c1.5 1.12.9 3.49-.96 3.75l-8.2 1.17-3.54 4.91c-1.08 1.5-3.43 1.03-3.85-.77L2.06 4.97c-.55-1.57.25-3.23 1.59-2.22Z"
-    fill="#071222"
+    fill="#0b1a2b"
     stroke="#07101d"
     stroke-width="4"
     stroke-linejoin="round"
   />
   <path
     d="M3.65 2.75 27.2 20.3c1.5 1.12.9 3.49-.96 3.75l-8.2 1.17-3.54 4.91c-1.08 1.5-3.43 1.03-3.85-.77L2.06 4.97c-.55-1.57.25-3.23 1.59-2.22Z"
-    stroke="#e6b84a"
-    stroke-width="2.15"
+    stroke="url(#active-gold)"
+    stroke-width="2.35"
     stroke-linejoin="round"
   />
-  <circle cx="26.2" cy="7" r="3.1" fill="#e6b84a" stroke="#07101d" stroke-width="1.6" />
+  <path
+    d="M5.1 5.05 22.9 18.32"
+    stroke="#fff1b4"
+    stroke-opacity=".42"
+    stroke-width=".75"
+    stroke-linecap="round"
+  />
 </svg>

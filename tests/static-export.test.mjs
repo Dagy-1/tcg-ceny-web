@@ -70,7 +70,9 @@ test("custom cursor is lightweight and limited to precise pointing devices", asy
   assert.match(cursorSvg, /width="28" height="28"/i);
   assert.match(cursorSvg, /stroke="#e6b84a"/i);
   assert.match(activeCursorSvg, /width="28" height="28"/i);
-  assert.match(activeCursorSvg, /<circle[^>]+fill="#e6b84a"/i);
+  assert.match(activeCursorSvg, /linearGradient id="active-gold"/i);
+  assert.match(activeCursorSvg, /stroke="url\(#active-gold\)"/i);
+  assert.doesNotMatch(activeCursorSvg, /<circle/i);
   assert.ok(Buffer.byteLength(cursorSvg) < 2_000);
   assert.ok(Buffer.byteLength(activeCursorSvg) < 2_000);
 });
