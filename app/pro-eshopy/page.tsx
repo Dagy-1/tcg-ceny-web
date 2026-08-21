@@ -85,6 +85,7 @@ export default function ForShops() {
           <Link href="/katalog/">Katalog</Link>
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
+          <Link href="/sledovani/">Sledování</Link>
           <Link href="/#funkce">Funkce</Link>
           <Link href="/pro-eshopy/" aria-current="page">Pro e-shopy</Link>
         </div>

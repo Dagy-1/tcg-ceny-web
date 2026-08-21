@@ -6,6 +6,7 @@ const routes = [
   ["/katalog/", "daily", "0.9"],
   ["/porovnani/", "daily", "0.9"],
   ["/portfolio/", "weekly", "0.8"],
+  ["/sledovani/", "daily", "0.8"],
   ["/pro-eshopy/", "monthly", "0.8"],
   ["/podminky-pouziti/", "yearly", "0.3"],
   ["/soukromi-a-cookies/", "yearly", "0.3"],

@@ -400,6 +400,81 @@ export async function centralPortfolioRequest(
   }
 }
 
+async function centralAlertRequest(
+  request: Request,
+  user: SessionUser,
+  env: Env,
+  productId?: string,
+) {
+  const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
+  const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim();
+  if (!baseUrl || !serviceToken || serviceToken.length < 32) {
+    return json({ error: "Sledování zatím není nakonfigurované." }, 503);
+  }
+  if (request.method !== "GET" && !validMutationOrigin(request)) {
+    return json({ error: "Neplatný původ požadavku." }, 403);
+  }
+
+  let upstreamUrl: URL;
+  try {
+    upstreamUrl = new URL(
+      `/api/v1/alerts${productId ? `/${encodeURIComponent(productId)}` : ""}`,
+      baseUrl,
+    );
+  } catch {
+    return json({ error: "Sledování má neplatnou konfiguraci." }, 503);
+  }
+  const headers = new Headers({
+    Accept: "application/json",
+    Authorization: `Bearer ${serviceToken}`,
+    "X-TCG-Identity-Provider": user.provider,
+    "X-TCG-Identity-Subject": centralIdentitySubject(user),
+    "X-TCG-Identity-Name": user.username.slice(0, 120),
+    "X-Request-ID": crypto.randomUUID(),
+  });
+  if (user.avatar) headers.set("X-TCG-Identity-Avatar", user.avatar);
+
+  let body: string | undefined;
+  if (request.method === "PUT") {
+    let input: Record<string, unknown>;
+    try {
+      input = await request.json<Record<string, unknown>>();
+    } catch {
+      return json({ error: "Nastavení nemá platný formát." }, 400);
+    }
+    body = JSON.stringify({
+      kinds: input.kinds,
+      threshold_czk: input.thresholdCzk,
+      channel: input.channel,
+      shops: input.shops,
+    });
+    headers.set("Content-Type", "application/json");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CENTRAL_REQUEST_TIMEOUT_MS);
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: request.method,
+      headers,
+      body,
+      signal: controller.signal,
+    });
+    if (upstream.status === 204) {
+      return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+    }
+    const payload = await upstream.json<Record<string, unknown>>();
+    if (!upstream.ok) {
+      return json({ error: String(payload.detail || "Nastavení sledování se nepodařilo uložit.") }, upstream.status);
+    }
+    return json(payload, upstream.status);
+  } catch {
+    return json({ error: "Sledování je dočasně nedostupné." }, 502);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function handleCatalogReportApi(
   request: Request,
   env: Env,
@@ -1077,6 +1152,19 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
     });
   }
   if (!user) return json({ error: "Pro tuto akci se nejdříve přihlas." }, 401);
+  if (request.method === "GET" && url.pathname === "/api/alerts") {
+    return centralAlertRequest(request, user, env);
+  }
+  const alertMatch = url.pathname.match(/^\/api\/alerts\/([^/]+)$/);
+  if (alertMatch && ["PUT", "DELETE"].includes(request.method)) {
+    let productId: string;
+    try {
+      productId = decodeURIComponent(alertMatch[1]);
+    } catch {
+      return json({ error: "Neplatný produkt." }, 400);
+    }
+    return centralAlertRequest(request, user, env, productId);
+  }
   const source = portfolioDataSource(env);
   if (!["legacy", "central-readonly", "central"].includes(source)) {
     return json({ error: "Neplatný režim portfolio dat." }, 503);

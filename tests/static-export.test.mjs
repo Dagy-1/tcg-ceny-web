@@ -42,6 +42,7 @@ test("static export contains every public page", async () => {
     access(new URL("katalog/index.html", output)),
     access(new URL("porovnani/index.html", output)),
     access(new URL("portfolio/index.html", output)),
+    access(new URL("sledovani/index.html", output)),
     access(new URL("portfolio-products.json", output)),
     access(new URL("pro-eshopy/index.html", output)),
     access(new URL("podminky-pouziti/index.html", output)),
@@ -779,6 +780,7 @@ test("search and security support files are production-ready", async () => {
   assert.match(sitemap, /https:\/\/tcgceny\.cz\//);
   assert.match(sitemap, /katalog/);
   assert.match(sitemap, /portfolio/);
+  assert.match(sitemap, /sledovani/);
   assert.match(sitemap, /porovnani/);
   assert.match(sitemap, /pro-eshopy/);
   assert.match(robots, /Sitemap: https:\/\/tcgceny\.cz\/sitemap\.xml/);
@@ -792,6 +794,67 @@ test("search and security support files are production-ready", async () => {
   assert.ok(rioluTin);
   assert.equal(rioluTin.shops.Pikastore, "");
   assert.doesNotMatch(rioluTin.aliases.join(" "), /mini tin box/i);
+});
+
+test("alert proxy keeps ownership server-side and whitelists mutation fields", async () => {
+  const secret = "alert-session-secret-for-tests";
+  const cookie = await webSessionCookie(
+    {
+      sub: "discord:987654321",
+      username: "Watcher",
+      avatar: null,
+      provider: "discord",
+      exp: Math.floor(Date.now() / 1000) + 60,
+    },
+    secret,
+  );
+  const env = {
+    SESSION_SECRET: secret,
+    CENTRAL_API_BASE_URL: "https://backend.example",
+    CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+  };
+
+  const originalFetch = globalThis.fetch;
+  let forwardedUrl = "";
+  let forwardedInit;
+  globalThis.fetch = async (input, init) => {
+    forwardedUrl = String(input);
+    forwardedInit = init;
+    return Response.json({ items: [], total: 0, price_count: 0, restock_count: 0, target_reached_count: 0 });
+  };
+  try {
+    const response = await handlePortfolioApi(
+      new Request("https://tcgceny.cz/api/alerts/test%3Aproduct", {
+        method: "PUT",
+        headers: {
+          Cookie: cookie,
+          Origin: "https://tcgceny.cz",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          kinds: ["price_below", "restock"],
+          thresholdCzk: 899,
+          channel: "discord",
+          shops: ["Tolarie"],
+          user_id: "attacker-controlled",
+        }),
+      }),
+      env,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(forwardedUrl, "https://backend.example/api/v1/alerts/test%3Aproduct");
+    assert.equal(forwardedInit.headers.get("X-TCG-Identity-Subject"), "987654321");
+    assert.equal(forwardedInit.headers.get("Cookie"), null);
+    assert.deepEqual(JSON.parse(forwardedInit.body), {
+      kinds: ["price_below", "restock"],
+      threshold_czk: 899,
+      channel: "discord",
+      shops: ["Tolarie"],
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("every catalog product has a stable, indexable detail page", async () => {
@@ -813,11 +876,11 @@ test("every catalog product has a stable, indexable detail page", async () => {
 
   const response = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml"));
   const sitemap = await response.text();
-  assert.equal((sitemap.match(/<url>/g) || []).length, catalogData.products.length + 7);
+  assert.equal((sitemap.match(/<url>/g) || []).length, catalogData.products.length + 8);
   assert.match(sitemap, new RegExp(productPath(catalogData.products.at(-1)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
 
-test("product alert controls expose an honest, accessible configuration preview", async () => {
+test("product alert controls save an authenticated accessible configuration", async () => {
   const [control, catalogCss, catalog, detail] = await Promise.all([
     readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/katalog/catalog.css", import.meta.url), "utf8"),
@@ -838,7 +901,10 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /Cílová cena/);
   assert.match(control, /Všechny ověřené/);
   assert.match(control, /Discord/);
-  assert.match(control, /Zatím jsme ho neuložili ani neposlali/);
+  assert.match(control, /Uložit upozornění/);
+  assert.match(control, /fetch\(`\/api\/alerts\/\$\{encodeURIComponent\(product\.id\)\}`/);
+  assert.match(control, /method: "PUT"/);
+  assert.match(control, /Sledování je bezpečně uložené v tvém účtu/);
   assert.match(control, /fetch\("\/api\/session"/);
   assert.match(control, /credentials: "include"/);
   assert.match(control, /Upozornění jsou dostupná po přihlášení/);
@@ -850,6 +916,27 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /\/api\/auth\/\$\{provider\}/);
   assert.match(control, /a\[href\], button:not\(\[disabled\]\)/);
   assert.doesNotMatch(control, /localStorage|sessionStorage/);
+});
+
+test("watching dashboard is private, useful and linked from navigation", async () => {
+  const [html, source, mobileNav, authMenu] = await Promise.all([
+    readOutput("sledovani/index.html"),
+    readFile(new URL("../app/sledovani/SledovaniClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/MobileNav.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/AuthMenu.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(html, /Co sleduješ/);
+  assert.match(source, /fetch\("\/api\/alerts"/);
+  assert.match(source, /Aktuální cena/);
+  assert.match(source, /Tvůj limit/);
+  assert.match(source, /Do limitu/);
+  assert.match(source, /Všechny ověřené obchody/);
+  assert.match(source, /method: "DELETE"/);
+  assert.match(source, /Každý uživatel vidí jen své produkty/);
+  assert.doesNotMatch(source, /localStorage|sessionStorage/);
+  assert.match(mobileNav, /\/sledovani\//);
+  assert.match(authMenu, /Moje sledování/);
 });
 
 test("catalog issue reports require a verified signed-in user", async () => {

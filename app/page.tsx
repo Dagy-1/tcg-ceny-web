@@ -90,6 +90,7 @@ export default function Home() {
           <a href="/katalog">Katalog</a>
           <a href="/porovnani">Porovnání</a>
           <a href="/portfolio">Portfolio</a>
+          <a href="/sledovani">Sledování</a>
           <a href="#funkce">Funkce</a>
           <a className="nav-partner" href="/pro-eshopy">Pro e-shopy</a>
         </div>

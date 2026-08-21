@@ -20,6 +20,15 @@ type AlertVariant = "icon" | "compact" | "hero";
 type AlertMode = "restock" | "price";
 type DeliveryChannel = "discord" | "web";
 type SessionState = "loading" | "authenticated" | "anonymous";
+type SaveState = "idle" | "saving" | "saved" | "error";
+
+type StoredAlert = {
+  product: { id: string };
+  kinds: Array<"price_below" | "restock">;
+  threshold_czk: number | null;
+  channel: DeliveryChannel;
+  shops: string[];
+};
 
 function suggestedPrice(price: number | null) {
   if (price === null) return "";
@@ -41,6 +50,9 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
   const [channel, setChannel] = useState<DeliveryChannel>("discord");
   const [previewNotice, setPreviewNotice] = useState(false);
   const [sessionState, setSessionState] = useState<SessionState>("loading");
+  const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveMessage, setSaveMessage] = useState("");
   const [showLoginChoices, setShowLoginChoices] = useState(false);
   const [returnTo] = useState(() => {
     if (typeof window === "undefined") return "/";
@@ -64,14 +76,43 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
       headers: { Accept: "application/json" },
       signal: controller.signal,
     })
-      .then(async (response) => response.ok ? response.json() as Promise<{ user: { id: string } | null }> : { user: null })
-      .then((data) => setSessionState(data.user ? "authenticated" : "anonymous"))
+      .then(async (response) => response.ok ? response.json() as Promise<{ user: { id: string; linkedProviders?: string[] } | null }> : { user: null })
+      .then(async (data) => {
+        if (!data.user) {
+          setSessionState("anonymous");
+          return;
+        }
+        const providers = Array.isArray(data.user.linkedProviders) ? data.user.linkedProviders : [];
+        setLinkedProviders(providers);
+        setChannel(providers.includes("discord") ? "discord" : "web");
+        setSessionState("authenticated");
+        try {
+          const response = await fetch("/api/alerts", {
+            cache: "no-store",
+            credentials: "include",
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          });
+          if (!response.ok) return;
+          const payload = await response.json() as { items?: StoredAlert[] };
+          const existing = payload.items?.find((item) => item.product.id === product.id);
+          if (!existing) return;
+          setModes(new Set(existing.kinds.map((kind) => kind === "price_below" ? "price" : "restock")));
+          setTargetPrice(existing.threshold_czk === null ? "" : String(existing.threshold_czk));
+          setChannel(existing.channel);
+          setAllShops(existing.shops.length === 0);
+          setSelectedShops(new Set(existing.shops));
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setSaveMessage("Uložené nastavení se teď nepodařilo načíst.");
+        }
+      })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setSessionState("anonymous");
       });
     return () => controller.abort();
-  }, []);
+  }, [product.id]);
 
   useEffect(() => {
     if (showLoginChoices) firstLoginRef.current?.focus();
@@ -134,6 +175,34 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
 
   const loginHref = (provider: "discord" | "google") =>
     `/api/auth/${provider}?return_to=${encodeURIComponent(returnTo)}`;
+
+  const saveAlert = async () => {
+    if (sessionState !== "authenticated" || saveState === "saving") return;
+    setPreviewNotice(false);
+    setSaveState("saving");
+    setSaveMessage("");
+    try {
+      const response = await fetch(`/api/alerts/${encodeURIComponent(product.id)}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kinds: [...modes].map((mode) => mode === "price" ? "price_below" : "restock"),
+          thresholdCzk: modes.has("price") ? Number(targetPrice) : null,
+          channel,
+          shops: allShops ? [] : [...selectedShops],
+        }),
+      });
+      const payload = response.status === 204 ? {} : await response.json() as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Upozornění se nepodařilo uložit.");
+      setSaveState("saved");
+      setPreviewNotice(true);
+      setSaveMessage("Sledování je bezpečně uložené v tvém účtu.");
+    } catch (error) {
+      setSaveState("error");
+      setSaveMessage(error instanceof Error ? error.message : "Upozornění se nepodařilo uložit.");
+    }
+  };
 
   return createPortal(
     <div className="alert-layer" role="presentation" onMouseDown={onClose}>
@@ -210,7 +279,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
               <div><span>04</span><div><h3 id="alert-channel-title">Kam upozornění poslat?</h3><p>Kanál půjde později změnit u každého sledování.</p></div></div>
             </div>
             <div className="alert-channel-grid">
-              <button className={channel === "discord" ? "is-selected" : ""} type="button" aria-pressed={channel === "discord"} onClick={() => { setChannel("discord"); setPreviewNotice(false); }}><MessageCircle /><span><strong>Discord</strong><small>Soukromá zpráva od TCG Ceny</small></span>{channel === "discord" && <Check />}</button>
+              <button className={channel === "discord" ? "is-selected" : ""} type="button" aria-pressed={channel === "discord"} disabled={sessionState === "authenticated" && !linkedProviders.includes("discord")} onClick={() => { setChannel("discord"); setPreviewNotice(false); }}><MessageCircle /><span><strong>Discord</strong><small>{sessionState === "authenticated" && !linkedProviders.includes("discord") ? "Nejdřív propoj Discord účet" : "Soukromá zpráva od TCG Ceny"}</small></span>{channel === "discord" && <Check />}</button>
               <button className={channel === "web" ? "is-selected" : ""} type="button" aria-pressed={channel === "web"} onClick={() => { setChannel("web"); setPreviewNotice(false); }}><Bell /><span><strong>Webové oznámení</strong><small>V centru upozornění na webu</small></span>{channel === "web" && <Check />}</button>
             </div>
           </section>
@@ -220,8 +289,8 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
           <div>
             <span className={sessionState === "anonymous" ? "alert-lock-dot" : "alert-preview-dot"} aria-hidden="true">{sessionState === "anonymous" && <LockKeyhole />}</span>
             <span>
-              <strong>{sessionState === "anonymous" ? "Pouze pro přihlášené uživatele" : sessionState === "loading" ? "Ověřujeme přihlášení" : "Rozhraní je připravené jako náhled"}</strong>
-              <small>{sessionState === "anonymous" ? "Přihlas se přes Discord nebo Google a upozornění spojíme s tvým účtem." : sessionState === "loading" ? "Za okamžik bude možné pokračovat." : "Uložení a odesílání zapojíme v další etapě."}</small>
+              <strong>{sessionState === "anonymous" ? "Pouze pro přihlášené uživatele" : sessionState === "loading" ? "Ověřujeme přihlášení" : "Nastavení patří pouze tvému účtu"}</strong>
+              <small>{sessionState === "anonymous" ? "Přihlas se přes Discord nebo Google a upozornění spojíme s tvým účtem." : sessionState === "loading" ? "Za okamžik bude možné pokračovat." : "Uložené produkty najdeš v horním menu pod Sledování."}</small>
             </span>
           </div>
           {sessionState === "anonymous" ? (
@@ -234,10 +303,10 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
               <button className="alert-login-reveal" type="button" aria-expanded={false} aria-controls={`alert-login-options-${product.id}`} onClick={() => setShowLoginChoices(true)}><LogIn /> Přihlásit se <span aria-hidden="true">›</span></button>
             )
           ) : (
-            <button type="button" disabled={sessionState === "loading" || modes.size === 0 || (!allShops && selectedShops.size === 0)} onClick={() => setPreviewNotice(true)}>{sessionState === "loading" ? <LockKeyhole /> : <Send />} {sessionState === "loading" ? "Ověřuji účet" : "Vyzkoušet upozornění"}</button>
+            <button type="button" disabled={sessionState === "loading" || saveState === "saving" || modes.size === 0 || (modes.has("price") && (!targetPrice || Number(targetPrice) <= 0)) || (!allShops && selectedShops.size === 0)} onClick={saveAlert}>{sessionState === "loading" ? <LockKeyhole /> : <Send />} {sessionState === "loading" ? "Ověřuji účet" : saveState === "saving" ? "Ukládám…" : "Uložit upozornění"}</button>
           )}
         </footer>
-        {previewNotice && <p className="alert-preview-notice" role="status"><Check /> Nastavení vypadá dobře. Zatím jsme ho neuložili ani neposlali.</p>}
+        {(previewNotice || saveState === "error") && <p className={`alert-preview-notice${saveState === "error" ? " is-error" : ""}`} role="status">{saveState === "error" ? <X /> : <Check />} {saveMessage}</p>}
       </section>
     </div>,
     document.body,

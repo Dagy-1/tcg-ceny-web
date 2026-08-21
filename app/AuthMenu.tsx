@@ -208,6 +208,9 @@ export default function AuthMenu() {
               <Link className="auth-menu-link" href="/portfolio/" role="menuitem">
                 Moje portfolio <span aria-hidden="true">→</span>
               </Link>
+              <Link className="auth-menu-link" href="/sledovani/" role="menuitem">
+                Moje sledování <span aria-hidden="true">→</span>
+              </Link>
               {canLinkAlternate && (
                 <a
                   className="auth-menu-link auth-link-account"

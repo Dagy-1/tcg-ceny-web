@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/katalog/`, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/porovnani/`, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/portfolio/`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/sledovani/`, changeFrequency: "daily", priority: 0.8 },
     { url: `${baseUrl}/pro-eshopy/`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/podminky-pouziti/`, changeFrequency: "yearly", priority: 0.3 },
     { url: `${baseUrl}/soukromi-a-cookies/`, changeFrequency: "yearly", priority: 0.3 },

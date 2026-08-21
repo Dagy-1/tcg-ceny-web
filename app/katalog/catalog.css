@@ -1032,6 +1032,7 @@
 }
 .alert-mode-grid button:hover,
 .alert-channel-grid button:hover { border-color: rgba(230, 184, 74, .42); }
+.alert-channel-grid button:disabled { cursor: not-allowed; opacity: .46; }
 .alert-mode-grid button.is-selected,
 .alert-channel-grid button.is-selected { border-color: rgba(67, 212, 117, .48); background: linear-gradient(120deg, rgba(48, 169, 92, .13), transparent 60%), #0a1727; }
 .alert-mode-icon,
@@ -1089,6 +1090,7 @@
 .alert-login-actions > .alert-login-discord > span { background: #5865f2; }
 .alert-preview-notice { margin: 0; padding: 12px 28px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(78, 215, 125, .2); color: #80dda0; background: rgba(35, 132, 69, .1); font-size: 10px; }
 .alert-preview-notice svg { width: 14px; height: 14px; }
+.alert-preview-notice.is-error { border-top-color: rgba(235, 91, 91, .25); color: #ff9b9b; background: rgba(154, 40, 40, .12); }
 
 @media (max-width: 560px) {
   .catalog-portfolio-action {

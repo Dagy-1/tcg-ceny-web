@@ -10,6 +10,7 @@ const links = [
   { href: "/katalog/", label: "Katalog" },
   { href: "/porovnani/", label: "Porovnání" },
   { href: "/portfolio/", label: "Portfolio" },
+  { href: "/sledovani/", label: "Sledování" },
   { href: "/#funkce", label: "Funkce" },
   { href: "/pro-eshopy/", label: "Pro e-shopy" },
 ];

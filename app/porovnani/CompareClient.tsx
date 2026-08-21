@@ -263,7 +263,7 @@ export default function CompareClient({
     <main className="compare-page">
       <nav className="nav compare-nav" aria-label="Hlavní navigace">
         <Link className="brand" href="/" aria-label="TCG Ceny – úvod"><span className="brand-mark" aria-hidden="true"><span /><span /></span><span>TCG <strong>Ceny</strong></span></Link>
-        <div className="nav-links"><Link href="/katalog/">Katalog</Link><Link className="compare-nav-active" href="/porovnani/" aria-current="page">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><Link href="/#funkce">Funkce</Link><Link href="/pro-eshopy/">Pro e-shopy</Link></div>
+        <div className="nav-links"><Link href="/katalog/">Katalog</Link><Link className="compare-nav-active" href="/porovnani/" aria-current="page">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><Link href="/sledovani/">Sledování</Link><Link href="/#funkce">Funkce</Link><Link href="/pro-eshopy/">Pro e-shopy</Link></div>
         <div className="nav-actions"><AuthMenu /><MobileNav /></div>
       </nav>
 
