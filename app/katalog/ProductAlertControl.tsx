@@ -5,6 +5,7 @@ import {
   BellRing,
   Check,
   CircleDollarSign,
+  LockKeyhole,
   MessageCircle,
   PackageCheck,
   Send,
@@ -17,6 +18,7 @@ import type { Product } from "./catalog-model";
 type AlertVariant = "icon" | "compact" | "hero";
 type AlertMode = "restock" | "price";
 type DeliveryChannel = "discord" | "web";
+type SessionState = "loading" | "authenticated" | "anonymous";
 
 function suggestedPrice(price: number | null) {
   if (price === null) return "";
@@ -37,6 +39,12 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
   const [selectedShops, setSelectedShops] = useState<Set<string>>(new Set());
   const [channel, setChannel] = useState<DeliveryChannel>("discord");
   const [previewNotice, setPreviewNotice] = useState(false);
+  const [sessionState, setSessionState] = useState<SessionState>("loading");
+  const [returnTo] = useState(() => {
+    if (typeof window === "undefined") return "/";
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    return currentPath.startsWith("//") ? "/" : currentPath;
+  });
   const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -44,6 +52,23 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
     () => [...new Set(product.offers.filter((offer) => offer.url).map((offer) => offer.shop))].sort((a, b) => a.localeCompare(b, "cs")),
     [product.offers],
   );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/session", {
+      cache: "no-store",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    })
+      .then(async (response) => response.ok ? response.json() as Promise<{ user: { id: string } | null }> : { user: null })
+      .then((data) => setSessionState(data.user ? "authenticated" : "anonymous"))
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setSessionState("anonymous");
+      });
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -58,7 +83,7 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
       }
       if (event.key !== "Tab" || !dialogRef.current) return;
       const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
       )).filter((element) => element.getClientRects().length > 0);
       if (!focusable.length) return;
       const first = focusable[0];
@@ -100,6 +125,9 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
     });
   };
 
+  const loginHref = (provider: "discord" | "google") =>
+    `/api/auth/${provider}?return_to=${encodeURIComponent(returnTo)}`;
+
   return createPortal(
     <div className="alert-layer" role="presentation" onMouseDown={onClose}>
       <section
@@ -119,6 +147,13 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Zavřít nastavení hlídání"><X /></button>
         </header>
+
+        {sessionState === "anonymous" && (
+          <aside className="alert-auth-note" aria-label="Přihlášení potřebné pro hlídání">
+            <span aria-hidden="true"><LockKeyhole /></span>
+            <span><strong>Hlídání je dostupné po přihlášení</strong><small>Nastavení si můžeš prohlédnout. Pro jeho budoucí uložení a doručování potřebujeme bezpečně poznat tvůj účet.</small></span>
+          </aside>
+        )}
 
         <div className="alert-body">
           <section className="alert-section" aria-labelledby="alert-events-title">
@@ -174,9 +209,22 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
           </section>
         </div>
 
-        <footer className="alert-footer">
-          <div><span className="alert-preview-dot" /><span><strong>Rozhraní je připravené jako náhled</strong><small>Uložení a odesílání zapojíme v další etapě.</small></span></div>
-          <button type="button" disabled={modes.size === 0 || (!allShops && selectedShops.size === 0)} onClick={() => setPreviewNotice(true)}><Send /> Vyzkoušet nastavení</button>
+        <footer className={`alert-footer${sessionState === "anonymous" ? " alert-footer-locked" : ""}`}>
+          <div>
+            <span className={sessionState === "anonymous" ? "alert-lock-dot" : "alert-preview-dot"} aria-hidden="true">{sessionState === "anonymous" && <LockKeyhole />}</span>
+            <span>
+              <strong>{sessionState === "anonymous" ? "Pouze pro přihlášené uživatele" : sessionState === "loading" ? "Ověřujeme přihlášení" : "Rozhraní je připravené jako náhled"}</strong>
+              <small>{sessionState === "anonymous" ? "Přihlas se přes Discord nebo Google a hlídání spojíme s tvým účtem." : sessionState === "loading" ? "Za okamžik bude možné pokračovat." : "Uložení a odesílání zapojíme v další etapě."}</small>
+            </span>
+          </div>
+          {sessionState === "anonymous" ? (
+            <div className="alert-login-actions">
+              <a className="alert-login-discord" href={loginHref("discord")}><span aria-hidden="true">D</span> Přihlásit přes Discord</a>
+              <a href={loginHref("google")}><span aria-hidden="true">G</span> Google</a>
+            </div>
+          ) : (
+            <button type="button" disabled={sessionState === "loading" || modes.size === 0 || (!allShops && selectedShops.size === 0)} onClick={() => setPreviewNotice(true)}>{sessionState === "loading" ? <LockKeyhole /> : <Send />} {sessionState === "loading" ? "Ověřuji účet" : "Vyzkoušet nastavení"}</button>
+          )}
         </footer>
         {previewNotice && <p className="alert-preview-notice" role="status"><Check /> Nastavení vypadá dobře. Zatím jsme ho neuložili ani neposlali.</p>}
       </section>

@@ -749,7 +749,14 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /Všechny ověřené/);
   assert.match(control, /Discord/);
   assert.match(control, /Zatím jsme ho neuložili ani neposlali/);
-  assert.doesNotMatch(control, /fetch\(|localStorage|sessionStorage/);
+  assert.match(control, /fetch\("\/api\/session"/);
+  assert.match(control, /credentials: "include"/);
+  assert.match(control, /Hlídání je dostupné po přihlášení/);
+  assert.match(control, /Pouze pro přihlášené uživatele/);
+  assert.match(control, /Přihlásit přes Discord/);
+  assert.match(control, /\/api\/auth\/\$\{provider\}/);
+  assert.match(control, /a\[href\], button:not\(\[disabled\]\)/);
+  assert.doesNotMatch(control, /localStorage|sessionStorage/);
 });
 
 test("product detail links the best current price directly to its verified shop", async () => {

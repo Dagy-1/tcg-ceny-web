@@ -1047,6 +1047,23 @@
 .alert-header > button { width: 38px; height: 38px; padding: 0; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, .14); border-radius: 50%; color: #dbe3ed; background: #0c1a2b; cursor: pointer; }
 .alert-header > button:hover { border-color: var(--gold); color: var(--gold-soft); }
 .alert-header > button svg { width: 17px; height: 17px; }
+.alert-auth-note {
+  margin: 18px 28px 0;
+  padding: 13px 15px;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(157, 171, 190, .18);
+  border-radius: 9px;
+  color: #9eabbc;
+  background: linear-gradient(90deg, rgba(131, 146, 166, .08), transparent), #091522;
+}
+.alert-auth-note > span:first-child { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: #9ca9ba; background: rgba(151, 166, 186, .09); }
+.alert-auth-note svg { width: 16px; height: 16px; }
+.alert-auth-note > span:last-child { display: grid; gap: 3px; }
+.alert-auth-note strong { color: #c7d0dc; font-size: 10px; }
+.alert-auth-note small { color: #718096; font-size: 9px; line-height: 1.45; }
 .alert-body { padding: 5px 28px 12px; }
 .alert-section { padding: 24px 0; border-bottom: 1px solid rgba(255, 255, 255, .08); transition: opacity .2s ease; }
 .alert-section.is-disabled { opacity: .42; }
@@ -1114,10 +1131,20 @@
 .alert-footer strong { color: #bac6d5; font-size: 10px; }
 .alert-footer small { color: #64758b; font-size: 8px; }
 .alert-preview-dot { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 5px rgba(230, 184, 74, .07); }
+.alert-lock-dot { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; color: #8b98aa; background: rgba(139, 152, 170, .1); }
+.alert-lock-dot svg { width: 13px; height: 13px; }
 .alert-footer > button { min-height: 44px; padding: 0 17px; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 6px; color: #151b0e; background: var(--gold); cursor: pointer; font-size: 11px; font-weight: 900; }
 .alert-footer > button:hover:not(:disabled) { background: #f5cb66; }
 .alert-footer > button:disabled { cursor: not-allowed; opacity: .4; }
 .alert-footer > button svg { width: 15px; height: 15px; }
+.alert-footer-locked { border-top: 1px solid rgba(158, 171, 188, .11); background: #09131f; }
+.alert-login-actions { display: flex; align-items: center; gap: 7px; }
+.alert-login-actions > a { min-height: 42px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid rgba(151, 165, 184, .19); border-radius: 7px; color: #aeb9c8; background: #111d2b; text-decoration: none; font-size: 9px; font-weight: 850; }
+.alert-login-actions > a:hover { border-color: rgba(230, 184, 74, .5); color: #eef2f7; }
+.alert-login-actions > a:focus-visible { outline: 3px solid rgba(239, 190, 70, .65); outline-offset: 2px; }
+.alert-login-actions > a > span { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; color: #ecf0f7; background: rgba(255, 255, 255, .08); font-size: 9px; }
+.alert-login-actions > .alert-login-discord { border-color: rgba(117, 127, 239, .32); color: #d7dafa; background: rgba(88, 101, 242, .14); }
+.alert-login-actions > .alert-login-discord > span { background: #5865f2; }
 .alert-preview-notice { margin: 0; padding: 12px 28px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(78, 215, 125, .2); color: #80dda0; background: rgba(35, 132, 69, .1); font-size: 10px; }
 .alert-preview-notice svg { width: 14px; height: 14px; }
 
@@ -1209,6 +1236,7 @@
   .alert-header { min-height: 105px; padding: 18px; grid-template-columns: 43px 1fr 36px; gap: 12px; }
   .alert-header-icon { width: 41px; height: 41px; }
   .alert-header h2 { font-size: 22px; }
+  .alert-auth-note { margin: 12px 18px 0; }
   .alert-body { padding-inline: 18px; }
   .alert-section { padding-block: 20px; }
   .alert-mode-grid,
@@ -1217,6 +1245,8 @@
   .alert-shop-list { padding-left: 0; }
   .alert-footer { padding: 16px 18px; align-items: stretch; flex-direction: column; }
   .alert-footer > button { width: 100%; justify-content: center; }
+  .alert-login-actions { width: 100%; align-items: stretch; flex-direction: column; }
+  .alert-login-actions > a { width: 100%; }
   .alert-preview-notice { padding-inline: 18px; }
 }
 
