@@ -1005,6 +1005,9 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(source, /\?upozorneni=upravit/);
   assert.match(detailClient, /openFromQuery/);
   assert.match(alertControl, /params\.get\("upozorneni"\).*"upravit"/);
+  assert.match(alertControl, /setRedirectAfterSave\("\/sledovani\/"\)/);
+  assert.match(alertControl, /window\.location\.replace\(redirectAfterSave\)/);
+  assert.match(alertControl, /setRedirectAfterSave\(null\)/);
   assert.match(source, /method: "DELETE"/);
   assert.match(source, /Každý uživatel vidí jen své produkty/);
   assert.doesNotMatch(source, /localStorage|sessionStorage/);

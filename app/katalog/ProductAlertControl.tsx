@@ -40,7 +40,15 @@ function formatPrice(price: number | null) {
   return `${new Intl.NumberFormat("cs-CZ").format(price)} Kč`;
 }
 
-function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () => void }) {
+function AlertSetupDialog({
+  product,
+  onClose,
+  redirectAfterSave,
+}: {
+  product: Product;
+  onClose: () => void;
+  redirectAfterSave: string | null;
+}) {
   const [modes, setModes] = useState<Set<AlertMode>>(
     new Set(product.availability === "unavailable" ? ["restock"] : ["restock", "price"]),
   );
@@ -195,6 +203,10 @@ function AlertSetupDialog({ product, onClose }: { product: Product; onClose: () 
       });
       const payload = response.status === 204 ? {} : await response.json() as { error?: string };
       if (!response.ok) throw new Error(payload.error || "Upozornění se nepodařilo uložit.");
+      if (redirectAfterSave) {
+        window.location.replace(redirectAfterSave);
+        return;
+      }
       setSaveState("saved");
       setPreviewNotice(true);
       setSaveMessage("Sledování je bezpečně uložené v tvém účtu.");
@@ -323,12 +335,16 @@ export default function ProductAlertControl({
   openFromQuery?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [redirectAfterSave, setRedirectAfterSave] = useState<string | null>(null);
 
   useEffect(() => {
     if (!openFromQuery) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("upozorneni") !== "upravit") return;
-    const openTimer = window.setTimeout(() => setOpen(true), 0);
+    const openTimer = window.setTimeout(() => {
+      setRedirectAfterSave("/sledovani/");
+      setOpen(true);
+    }, 0);
     return () => window.clearTimeout(openTimer);
   }, [openFromQuery]);
 
@@ -336,7 +352,10 @@ export default function ProductAlertControl({
     <button
       className={`product-alert-trigger product-alert-${variant}${open ? " is-activated" : ""}`}
       type="button"
-      onClick={() => setOpen(true)}
+      onClick={() => {
+        setRedirectAfterSave(null);
+        setOpen(true);
+      }}
       aria-label={`Nastavit upozornění produktu ${product.name}`}
       title={variant === "icon" ? "Nastavit upozornění" : undefined}
     >
@@ -344,6 +363,9 @@ export default function ProductAlertControl({
       {variant !== "icon" && <span><strong>Nastavit upozornění</strong><small>Cenu i naskladnění</small></span>}
       {variant === "hero" && <span className="product-alert-arrow" aria-hidden="true">›</span>}
     </button>
-    {open && <AlertSetupDialog product={product} onClose={() => setOpen(false)} />}
+    {open && <AlertSetupDialog product={product} redirectAfterSave={redirectAfterSave} onClose={() => {
+      setOpen(false);
+      setRedirectAfterSave(null);
+    }} />}
   </>;
 }
