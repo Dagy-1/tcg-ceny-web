@@ -835,6 +835,10 @@
   letter-spacing: 0;
 }
 
+.portfolio-item-copy {
+  min-width: 0;
+}
+
 .portfolio-preview-products article > div:nth-child(2) > span,
 .portfolio-item-copy > span {
   color: var(--pf-gold);
@@ -1502,6 +1506,16 @@
   .portfolio-item {
     position: relative;
     padding-right: 88px;
+  }
+
+  .portfolio-item .portfolio-product-image img {
+    max-width: 68px;
+    max-height: 76px;
+  }
+
+  .portfolio-item-copy h3 {
+    line-height: 1.25;
+    overflow-wrap: anywhere;
   }
 
   .portfolio-footer {

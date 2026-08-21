@@ -139,6 +139,12 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /index === activeTarget\.index \? 4 : 1\.8/);
   assert.match(portfolioCss, /\.portfolio-chart-market\s*\{[^}]*stroke-width:\s*2\.25/);
   assert.doesNotMatch(portfolioCss, /\.portfolio-chart-market\s*\{[^}]*drop-shadow/);
+  assert.match(
+    portfolioCss,
+    /@media \(max-width: 560px\)[\s\S]*?\.portfolio-item \.portfolio-product-image img\s*\{[^}]*max-width:\s*68px;[^}]*max-height:\s*76px;/,
+  );
+  assert.match(portfolioCss, /\.portfolio-item-copy\s*\{[^}]*min-width:\s*0;/);
+  assert.match(portfolioCss, /\.portfolio-item-copy h3\s*\{[^}]*overflow-wrap:\s*anywhere;/);
   assert.match(portfolioSource, /value: 365, label: "1 rok"/);
   assert.match(portfolioSource, /value: "max", label: "Maximum"/);
   assert.match(portfolioSource, /Trash2/);
