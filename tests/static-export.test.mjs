@@ -768,14 +768,12 @@ test("OAuth callbacks follow the approved current host", () => {
 });
 
 test("search and security support files are production-ready", async () => {
-  const [sitemap, robots, headers, alertControlSource, rootProductsText] = await Promise.all([
+  const [sitemap, robots, headers, alertControlSource] = await Promise.all([
     readOutput("sitemap.xml"),
     readOutput("robots.txt"),
     readOutput("_headers"),
     readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../../products.json", import.meta.url), "utf8"),
   ]);
-  const rootProducts = JSON.parse(rootProductsText);
 
   assert.match(sitemap, /https:\/\/tcgceny\.cz\//);
   assert.match(sitemap, /katalog/);
@@ -790,10 +788,13 @@ test("search and security support files are production-ready", async () => {
   assert.match(headers, /\/assets\/\*[\s\S]*max-age=31536000, immutable/i);
   assert.match(alertControlSource, /closeRef\.current\?\.focus\(\)/);
   assert.match(alertControlSource, /event\.key !== "Tab"/);
-  const rioluTin = rootProducts.find((product) => product.id === "pm:ascended-heroes-mini-tin-riolu-darumaka");
+  const rioluTin = catalogData.products.find(
+    (product) => product.id === "pm:ascended-heroes-mini-tin-riolu-darumaka",
+  );
   assert.ok(rioluTin);
-  assert.equal(rioluTin.shops.Pikastore, "");
-  assert.doesNotMatch(rioluTin.aliases.join(" "), /mini tin box/i);
+  assert.equal(rioluTin.bestPrice, null);
+  assert.equal(rioluTin.availableOffers, 0);
+  assert.doesNotMatch(rioluTin.name, /mini tin box/i);
 });
 
 test("alert proxy keeps ownership server-side and whitelists mutation fields", async () => {
