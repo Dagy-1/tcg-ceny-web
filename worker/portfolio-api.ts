@@ -400,6 +400,105 @@ export async function centralPortfolioRequest(
   }
 }
 
+export async function handleCatalogReportApi(
+  request: Request,
+  env: Env,
+): Promise<Response | null> {
+  const requestUrl = new URL(request.url);
+  if (requestUrl.pathname !== "/api/catalog/reports") return null;
+  if (request.method !== "POST") return json({ error: "Metoda není podporovaná." }, 405);
+  if (!validMutationOrigin(request)) return json({ error: "Neplatný původ požadavku." }, 403);
+
+  const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
+  const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim() || "";
+  if (!baseUrl || serviceToken.length < 32) {
+    return json({ error: "Hlášení problémů zatím není dostupné." }, 503);
+  }
+  const clientKey = await anonymousClientKey(request, serviceToken);
+  if (!clientKey) return json({ error: "Požadavek se nepodařilo bezpečně ověřit." }, 403);
+  const currentUser = await session(request, env);
+  if (!currentUser) {
+    return json({ error: "Pro odeslání hlášení se nejprve přihlas." }, 401);
+  }
+
+  let input: Record<string, unknown>;
+  try {
+    const contentLength = Number(request.headers.get("Content-Length") || 0);
+    if (contentLength > 16_384) return json({ error: "Hlášení je příliš dlouhé." }, 413);
+    input = await request.json<Record<string, unknown>>();
+  } catch {
+    return json({ error: "Hlášení nemá platný formát." }, 400);
+  }
+
+  const referer = request.headers.get("Referer");
+  let pagePath: string | null = null;
+  if (referer) {
+    try {
+      const page = new URL(referer);
+      if (page.origin === requestUrl.origin && page.pathname.startsWith("/produkt/")) {
+        pagePath = `${page.pathname}${page.search}`.slice(0, 500);
+      }
+    } catch {
+      pagePath = null;
+    }
+  }
+  const body = JSON.stringify({
+    product_id: input.product_id,
+    issue_type: input.issue_type,
+    note: input.note,
+    shop: input.shop,
+    offer_url: input.offer_url,
+    displayed_price_czk: input.displayed_price_czk,
+    displayed_availability: input.displayed_availability,
+    page_path: pagePath,
+  });
+
+  let upstreamUrl: URL;
+  try {
+    upstreamUrl = new URL("/api/v1/catalog/reports", baseUrl);
+  } catch {
+    return json({ error: "Hlášení problémů má neplatnou konfiguraci." }, 503);
+  }
+  const headers = new Headers({
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Request-ID": crypto.randomUUID(),
+    "X-TCG-Proxy-Token": serviceToken,
+    "X-TCG-Client-Key": clientKey,
+  });
+  headers.set("Authorization", `Bearer ${serviceToken}`);
+  headers.set("X-TCG-Identity-Provider", currentUser.provider);
+  headers.set("X-TCG-Identity-Subject", centralIdentitySubject(currentUser));
+  headers.set("X-TCG-Identity-Name", currentUser.username.slice(0, 120));
+  if (currentUser.avatar) headers.set("X-TCG-Identity-Avatar", currentUser.avatar);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CENTRAL_REQUEST_TIMEOUT_MS);
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: "POST",
+      headers,
+      body,
+      signal: controller.signal,
+    });
+    const payload = await upstream.json<Record<string, unknown>>().catch(() => ({}));
+    if (!upstream.ok) {
+      return json(
+        { error: String(payload.detail || "Hlášení se nepodařilo přijmout.") },
+        upstream.status,
+        upstream.headers.get("Retry-After")
+          ? { "Retry-After": upstream.headers.get("Retry-After") as string }
+          : undefined,
+      );
+    }
+    return json(payload, upstream.status);
+  } catch {
+    return json({ error: "Hlášení problémů je dočasně nedostupné." }, 502);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function centralPortfolioProductsRequest(request: Request, env: Env) {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return json({ error: "Metoda není podporovaná." }, 405);

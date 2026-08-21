@@ -7,6 +7,7 @@ import { handleSitemap } from "../worker/sitemap.ts";
 import {
   centralPortfolioRequest,
   centralPortfolioProductsRequest,
+  handleCatalogReportApi,
   handlePortfolioApi,
   oauthRedirectUri,
 } from "../worker/portfolio-api.ts";
@@ -353,6 +354,90 @@ test("central portfolio proxy uses only its service identity", async () => {
     assert.equal(payload.items[0].id, "central-item-1");
     assert.equal(payload.items[0].buyPrice, 1000);
     assert.equal(payload.items[0].product.marketPrice, 1500);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("catalog report proxy validates origin and forwards only server-derived identity", async () => {
+  const sessionSecret = "catalog-report-session-secret-1234567890";
+  const env = {
+    CENTRAL_API_BASE_URL: "https://backend.example",
+    CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+    SESSION_SECRET: sessionSecret,
+  };
+  const rejected = await handleCatalogReportApi(
+    new Request("https://tcgceny.cz/api/catalog/reports", {
+      method: "POST",
+      headers: { Origin: "https://attacker.example", "CF-Connecting-IP": "203.0.113.5" },
+      body: JSON.stringify({ product_id: "test", issue_type: "price" }),
+    }),
+    env,
+  );
+  assert.equal(rejected.status, 403);
+
+  const anonymous = await handleCatalogReportApi(
+    new Request("https://tcgceny.cz/api/catalog/reports", {
+      method: "POST",
+      headers: { Origin: "https://tcgceny.cz", "CF-Connecting-IP": "203.0.113.5" },
+      body: JSON.stringify({ product_id: "test", issue_type: "price" }),
+    }),
+    env,
+  );
+  assert.equal(anonymous.status, 401);
+
+  const cookie = await webSessionCookie({
+    sub: "google:reporter-1",
+    username: "Catalog Reporter",
+    avatar: null,
+    provider: "google",
+    exp: 9999999999,
+  }, sessionSecret);
+
+  const originalFetch = globalThis.fetch;
+  let forwardedUrl = "";
+  let forwardedInit;
+  globalThis.fetch = async (input, init) => {
+    forwardedUrl = String(input);
+    forwardedInit = init;
+    return Response.json({ id: "report-1", created: true, occurrence_count: 1, status: "new" }, { status: 201 });
+  };
+  try {
+    const response = await handleCatalogReportApi(
+      new Request("https://tcgceny.cz/api/catalog/reports", {
+        method: "POST",
+        headers: {
+          Origin: "https://tcgceny.cz",
+          Referer: "https://tcgceny.cz/produkt/test-product-123/?ignored=1",
+          "Content-Type": "application/json",
+          "CF-Connecting-IP": "203.0.113.5",
+          Cookie: cookie,
+        },
+        body: JSON.stringify({
+          product_id: "test-product",
+          issue_type: "price",
+          note: "Cena je jiná",
+          shop: "Test Shop",
+          offer_url: "https://shop.example/product",
+          displayed_price_czk: 899,
+          displayed_availability: "online",
+          page_path: "/produkt/podvrzeno/",
+          injected: "must-not-forward",
+        }),
+      }),
+      env,
+    );
+    assert.equal(response.status, 201);
+    assert.equal(forwardedUrl, "https://backend.example/api/v1/catalog/reports");
+    assert.equal(forwardedInit.method, "POST");
+    assert.equal(forwardedInit.headers.get("X-TCG-Proxy-Token"), "s".repeat(48));
+    assert.match(forwardedInit.headers.get("X-TCG-Client-Key"), /^[a-f0-9]{64}$/);
+    assert.equal(forwardedInit.headers.get("Authorization"), `Bearer ${"s".repeat(48)}`);
+    assert.equal(forwardedInit.headers.get("X-TCG-Identity-Provider"), "google");
+    assert.equal(forwardedInit.headers.get("X-TCG-Identity-Subject"), "reporter-1");
+    const forwardedBody = JSON.parse(forwardedInit.body);
+    assert.equal(forwardedBody.page_path, "/produkt/test-product-123/?ignored=1");
+    assert.equal(forwardedBody.injected, undefined);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -761,6 +846,22 @@ test("product alert controls expose an honest, accessible configuration preview"
   assert.match(control, /\/api\/auth\/\$\{provider\}/);
   assert.match(control, /a\[href\], button:not\(\[disabled\]\)/);
   assert.doesNotMatch(control, /localStorage|sessionStorage/);
+});
+
+test("catalog issue reports require a verified signed-in user", async () => {
+  const [control, detail] = await Promise.all([
+    readFile(new URL("../app/katalog/CatalogIssueReportControl.tsx", import.meta.url), "utf8"),
+    readOutput("produkt/me05-pitch-black-booster-bundle-03popd8/index.html"),
+  ]);
+
+  assert.match(detail, /Nahlásit problém/);
+  assert.match(control, /fetch\("\/api\/session"/);
+  assert.match(control, /sessionState !== "authenticated"/);
+  assert.match(control, /pouze přihlášení uživatelé/);
+  assert.match(control, /Přihlásit se/);
+  assert.match(control, /\/api\/auth\/\$\{provider\}/);
+  assert.match(control, /loginHref\("discord"\)/);
+  assert.match(control, /loginHref\("google"\)/);
 });
 
 test("product detail links the best current price directly to its verified shop", async () => {

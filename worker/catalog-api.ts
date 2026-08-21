@@ -41,6 +41,7 @@ export async function handleCatalogApi(
 ): Promise<Response | null> {
   const requestUrl = new URL(request.url);
   if (!requestUrl.pathname.startsWith(`${CATALOG_PREFIX}/`)) return null;
+  if (requestUrl.pathname === `${CATALOG_PREFIX}/reports`) return null;
 
   if (request.method !== "GET" && request.method !== "HEAD") {
     return jsonError(405, "method_not_allowed");

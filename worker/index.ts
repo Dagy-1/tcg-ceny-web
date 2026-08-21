@@ -1,7 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
-import { handlePortfolioApi } from "./portfolio-api";
+import { handleCatalogReportApi, handlePortfolioApi } from "./portfolio-api";
 import { handleCatalogApi } from "./catalog-api";
 import { canonicalHostRedirect } from "./canonical-host";
 import { handleProductImage } from "./product-image";
@@ -94,6 +94,11 @@ const worker = {
     const sitemapResponse = handleSitemap(request);
     if (sitemapResponse) {
       return withSecurityHeaders(sitemapResponse, url.protocol === "https:");
+    }
+
+    const catalogReportResponse = await handleCatalogReportApi(request, env);
+    if (catalogReportResponse) {
+      return withSecurityHeaders(catalogReportResponse, url.protocol === "https:");
     }
 
     const catalogResponse = await handleCatalogApi(request, env);

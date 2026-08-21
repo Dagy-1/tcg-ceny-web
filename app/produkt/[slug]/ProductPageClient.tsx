@@ -7,6 +7,7 @@ import AuthMenu from "../../AuthMenu";
 import MobileNav from "../../MobileNav";
 import { productFromApi, type ApiProduct, type Product } from "../../katalog/catalog-model";
 import ProductAlertControl from "../../katalog/ProductAlertControl";
+import CatalogIssueReportControl from "../../katalog/CatalogIssueReportControl";
 
 function formatPrice(price: number | null) {
   if (price === null) return "Cena není dostupná";
@@ -174,11 +175,14 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
           {availableOffers.length ? availableOffers.map((offer) => {
             const isBest = offer.status === bestStatus && offer.price === product.bestPrice && !offer.stale;
             return (
-              <a className={`catalog-offer-row ${isBest ? "catalog-offer-best" : ""}`} href={offer.url} target="_blank" rel="noopener noreferrer" key={`${offer.shop}-${offer.url}`}>
-                <div><strong>{offer.shop}</strong><span className={`catalog-offer-status catalog-offer-${offer.status}`}>{offerStatusLabel(offer.status)}{offer.stale ? " · starší údaj" : ""}</span></div>
-                <span className={`catalog-best-label${isBest ? "" : " catalog-best-placeholder"}`}>{isBest ? "Nejlepší" : ""}</span>
-                <b>{formatPrice(offer.price)}</b><ArrowUpRight className="catalog-offer-open" size={16} aria-hidden="true" />
-              </a>
+              <div className={`catalog-offer-row ${isBest ? "catalog-offer-best" : ""}`} key={`${offer.shop}-${offer.url}`}>
+                <a className="catalog-offer-link" href={offer.url} target="_blank" rel="noopener noreferrer">
+                  <div><strong>{offer.shop}</strong><span className={`catalog-offer-status catalog-offer-${offer.status}`}>{offerStatusLabel(offer.status)}{offer.stale ? " · starší údaj" : ""}</span></div>
+                  <span className={`catalog-best-label${isBest ? "" : " catalog-best-placeholder"}`}>{isBest ? "Nejlepší" : ""}</span>
+                  <b>{formatPrice(offer.price)}</b><ArrowUpRight className="catalog-offer-open" size={16} aria-hidden="true" />
+                </a>
+                <CatalogIssueReportControl product={product} offer={offer} variant="offer" />
+              </div>
             );
           }) : <p className="catalog-empty-offers">Produkt teď nemá dostupnou nabídku.</p>}
 
@@ -196,7 +200,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
             <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}><span aria-hidden="true">+</span> Přidat do portfolia</Link>
           </div>
         </div>
-        <p className="catalog-detail-note">Ceny a dostupnost se mohou v e-shopu změnit. Uvedení obchodu neznamená placené pořadí ani partnerství.</p>
+        <div className="catalog-detail-feedback"><CatalogIssueReportControl product={product} /><p className="catalog-detail-note">Ceny a dostupnost se mohou v e-shopu změnit. Uvedení obchodu neznamená placené pořadí ani partnerství.</p></div>
       </article>
     </main>
   );
