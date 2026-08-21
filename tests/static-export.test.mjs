@@ -968,6 +968,9 @@ test("product alert controls save an authenticated accessible configuration", as
   assert.match(control, /Všechny ověřené/);
   assert.match(control, /Discord/);
   assert.match(control, /Uložit upozornění/);
+  assert.match(control, /return String\(Math\.max\(1, Math\.round\(price\)\)\)/);
+  assert.doesNotMatch(control, /price \* 0\.9/);
+  assert.match(control, /setTargetPrice\(existing\.threshold_czk === null \? "" : String\(existing\.threshold_czk\)\)/);
   assert.match(control, /fetch\(`\/api\/alerts\/\$\{encodeURIComponent\(product\.id\)\}`/);
   assert.match(control, /method: "PUT"/);
   assert.match(control, /Sledování je bezpečně uložené v tvém účtu/);

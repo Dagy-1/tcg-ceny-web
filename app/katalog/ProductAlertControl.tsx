@@ -32,7 +32,7 @@ type StoredAlert = {
 
 function suggestedPrice(price: number | null) {
   if (price === null) return "";
-  return String(Math.max(1, Math.round(price * 0.9 / 10) * 10));
+  return String(Math.max(1, Math.round(price)));
 }
 
 function formatPrice(price: number | null) {
