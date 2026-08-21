@@ -606,7 +606,7 @@
 }
 
 .portfolio-chart-grid {
-  stroke: rgba(255, 255, 255, 0.075);
+  stroke: rgba(255, 255, 255, 0.06);
   stroke-width: 1;
 }
 
@@ -617,7 +617,6 @@
 }
 
 .portfolio-chart-area {
-  fill: rgba(66, 220, 137, 0.09);
   stroke: none;
 }
 
@@ -629,8 +628,9 @@
 
 .portfolio-chart-market {
   stroke: var(--pf-green);
-  stroke-width: 3;
-  filter: drop-shadow(0 0 8px rgba(66, 220, 137, 0.28));
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .portfolio-chart-invested {
@@ -653,7 +653,7 @@
 .portfolio-chart-dot {
   fill: #091a2b;
   stroke: var(--pf-green);
-  stroke-width: 2;
+  stroke-width: 1.25;
   pointer-events: none;
   vector-effect: non-scaling-stroke;
 }
@@ -661,6 +661,7 @@
 .portfolio-chart-dot.is-active {
   fill: var(--pf-green);
   stroke: #d9ffea;
+  stroke-width: 1.5;
 }
 
 .portfolio-chart-cursor {

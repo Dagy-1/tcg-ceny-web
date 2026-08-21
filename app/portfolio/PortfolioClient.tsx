@@ -894,6 +894,7 @@ function PortfolioHistoryChart({
   }));
   const marketPath = smoothChartPath(marketPoints);
   const investedPath = stepChartPath(investedPoints);
+  const areaGradientId = `portfolio-area-${demo ? "demo" : "live"}-${period}`;
   const areaPath = marketPoints.length > 1
     ? `${marketPath} L ${marketPoints.at(-1)?.x} ${bottom} L ${marketPoints[0].x} ${bottom} Z`
     : "";
@@ -1051,6 +1052,12 @@ function PortfolioHistoryChart({
               aria-label={`Tržní hodnota portfolia za období ${periodLabel}`}
               onPointerLeave={clearActiveTarget}
             >
+              <defs>
+                <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#42dc89" stopOpacity="0.16" />
+                  <stop offset="100%" stopColor="#42dc89" stopOpacity="0.015" />
+                </linearGradient>
+              </defs>
               {[...axisTicks].reverse().map((axisValue) => {
                 const y = yFor(axisValue);
                 return (
@@ -1067,7 +1074,7 @@ function PortfolioHistoryChart({
                   </g>
                 );
               })}
-              {areaPath && <path className="portfolio-chart-area" d={areaPath} />}
+              {areaPath && <path className="portfolio-chart-area" d={areaPath} fill={`url(#${areaGradientId})`} />}
               {investedPath && <path className="portfolio-chart-invested" d={investedPath} />}
               {marketPath && <path className="portfolio-chart-market" d={marketPath} />}
               {investedPath && (
@@ -1092,7 +1099,7 @@ function PortfolioHistoryChart({
                   className={activeTarget?.series === "market" && index === activeTarget.index ? "portfolio-chart-dot is-active" : "portfolio-chart-dot"}
                   cx={point.x}
                   cy={point.y}
-                  r={activeTarget?.series === "market" && index === activeTarget.index ? 5 : 3.5}
+                  r={activeTarget?.series === "market" && index === activeTarget.index ? 4 : 1.8}
                 />
               ))}
               {activeDate && (

@@ -55,11 +55,12 @@ test("static export contains every public page", async () => {
 });
 
 test("portfolio uses the dedicated investment database", async () => {
-  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, centralProductsSource, catalog, productDetailSource, privacy, authMenuSource] = await Promise.all([
+  const [portfolio, portfolioDataText, publicPortfolioDataText, portfolioSource, portfolioCss, centralProductsSource, catalog, productDetailSource, privacy, authMenuSource] = await Promise.all([
     readOutput("portfolio/index.html"),
     readFile(new URL("../app/portfolio/portfolio-data.json", import.meta.url), "utf8"),
     readOutput("portfolio-products.json"),
     readFile(new URL("../app/portfolio/PortfolioClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/portfolio/portfolio.css", import.meta.url), "utf8"),
     readFile(new URL("../app/portfolio/central-products.ts", import.meta.url), "utf8"),
     readOutput("katalog/index.html"),
     readFile(new URL("../app/produkt/[slug]/ProductPageClient.tsx", import.meta.url), "utf8"),
@@ -110,6 +111,10 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(portfolioSource, /productDescriptor/);
   assert.match(portfolioSource, /Ilustrační demo · skutečné portfolio používá denní cenové záznamy/);
   assert.match(portfolioSource, /api\/portfolio\/history/);
+  assert.match(portfolioSource, /linearGradient id=\{areaGradientId\}/);
+  assert.match(portfolioSource, /index === activeTarget\.index \? 4 : 1\.8/);
+  assert.match(portfolioCss, /\.portfolio-chart-market\s*\{[^}]*stroke-width:\s*2\.25/);
+  assert.doesNotMatch(portfolioCss, /\.portfolio-chart-market\s*\{[^}]*drop-shadow/);
   assert.match(portfolioSource, /value: 365, label: "1 rok"/);
   assert.match(portfolioSource, /value: "max", label: "Maximum"/);
   assert.match(portfolioSource, /Trash2/);
