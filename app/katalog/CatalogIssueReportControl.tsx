@@ -180,10 +180,12 @@ function IssueDialog({ product, offer, onClose }: { product: Product; offer?: Of
   );
 }
 
-export default function CatalogIssueReportControl({ product, offer, variant = "product" }: { product: Product; offer?: Offer; variant?: "product" | "offer" }) {
+export default function CatalogIssueReportControl({ product, offer, variant = "product" }: { product: Product; offer?: Offer; variant?: "product" | "offer" | "corner" }) {
   const [open, setOpen] = useState(false);
+  const buttonClass = variant === "offer" ? "catalog-offer-report" : variant === "corner" ? "catalog-product-report-corner" : "catalog-product-report";
+  const title = variant === "offer" ? "Nahlásit problém s nabídkou" : variant === "corner" ? "Nahlásit problém s produktem" : undefined;
   return <>
-    <button className={variant === "offer" ? "catalog-offer-report" : "catalog-product-report"} type="button" onClick={() => setOpen(true)} aria-label={offer ? `Nahlásit problém s nabídkou obchodu ${offer.shop}` : `Nahlásit problém s produktem ${product.name}`} title={variant === "offer" ? "Nahlásit problém s nabídkou" : undefined}><Flag aria-hidden="true" />{variant === "product" && <span>Nahlásit problém</span>}</button>
+    <button className={buttonClass} type="button" onClick={() => setOpen(true)} aria-label={offer ? `Nahlásit problém s nabídkou obchodu ${offer.shop}` : `Nahlásit problém s produktem ${product.name}`} title={title}><Flag aria-hidden="true" />{variant === "product" && <span>Nahlásit problém</span>}</button>
     {open && <IssueDialog product={product} offer={offer} onClose={() => setOpen(false)} />}
   </>;
 }

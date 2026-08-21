@@ -128,6 +128,9 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
         <Link className="product-back" href="/katalog/"><ArrowLeft size={16} /> Zpět do katalogu</Link>
 
         <header className="product-hero">
+          <div className="product-report-corner">
+            <CatalogIssueReportControl product={product} variant="corner" />
+          </div>
           <div className="product-image-wrap">
             {product.image && !imageFailed ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -200,7 +203,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
             <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}><span aria-hidden="true">+</span> Přidat do portfolia</Link>
           </div>
         </div>
-        <div className="catalog-detail-feedback"><CatalogIssueReportControl product={product} /><p className="catalog-detail-note">Ceny a dostupnost se mohou v e-shopu změnit. Uvedení obchodu neznamená placené pořadí ani partnerství.</p></div>
+        <p className="catalog-detail-note product-detail-note">Ceny a dostupnost se mohou v e-shopu změnit. Uvedení obchodu neznamená placené pořadí ani partnerství.</p>
       </article>
     </main>
   );

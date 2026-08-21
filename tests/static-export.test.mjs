@@ -849,12 +849,16 @@ test("product alert controls expose an honest, accessible configuration preview"
 });
 
 test("catalog issue reports require a verified signed-in user", async () => {
-  const [control, detail] = await Promise.all([
+  const [control, detail, detailClient] = await Promise.all([
     readFile(new URL("../app/katalog/CatalogIssueReportControl.tsx", import.meta.url), "utf8"),
     readOutput("produkt/me05-pitch-black-booster-bundle-03popd8/index.html"),
+    readFile(new URL("../app/produkt/[slug]/ProductPageClient.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(detail, /Nahlásit problém/);
+  assert.match(control, /catalog-product-report-corner/);
+  assert.match(detailClient, /variant="corner"/);
+  assert.doesNotMatch(detailClient, /catalog-detail-feedback/);
   assert.match(control, /fetch\("\/api\/session"/);
   assert.match(control, /sessionState !== "authenticated"/);
   assert.match(control, /pouze přihlášení uživatelé/);
