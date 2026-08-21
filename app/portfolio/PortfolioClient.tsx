@@ -1403,10 +1403,10 @@ export default function PortfolioClient({
         </Link>
         <div className="nav-links">
           <Link href="/katalog/">Katalog</Link>
+          <Link href="/zlevneni/">Zlevnění</Link>
           <Link href="/porovnani/">Porovnání</Link>
           <Link className="portfolio-nav-active" href="/portfolio/" aria-current="page">Portfolio</Link>
           <Link href="/sledovani/">Sledování</Link>
-          <Link href="/#funkce">Funkce</Link>
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions">

@@ -4,6 +4,7 @@ import { productPath, type CatalogData } from "../app/katalog/catalog-model.ts";
 const routes = [
   ["/", "weekly", "1.0"],
   ["/katalog/", "daily", "0.9"],
+  ["/zlevneni/", "hourly", "0.9"],
   ["/porovnani/", "daily", "0.9"],
   ["/portfolio/", "weekly", "0.8"],
   ["/sledovani/", "daily", "0.8"],

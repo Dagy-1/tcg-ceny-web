@@ -40,6 +40,7 @@ test("static export contains every public page", async () => {
   await Promise.all([
     access(new URL("index.html", output)),
     access(new URL("katalog/index.html", output)),
+    access(new URL("zlevneni/index.html", output)),
     access(new URL("porovnani/index.html", output)),
     access(new URL("portfolio/index.html", output)),
     access(new URL("sledovani/index.html", output)),
@@ -386,6 +387,29 @@ test("central portfolio proxy uses only its service identity", async () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("price drop feed mirrors only confirmed central alert events", async () => {
+  const [html, source, css, mobileNav] = await Promise.all([
+    readOutput("zlevneni/index.html"),
+    readFile(new URL("../app/zlevneni/PriceDropsClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/zlevneni/zlevneni.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/MobileNav.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(html, /Zlevnění, která/);
+  assert.match(source, /api\/catalog\/price-drops\?days=/);
+  assert.match(source, /Potvrzené zlevnění/);
+  assert.match(source, /old_price_czk/);
+  assert.match(source, /new_price_czk/);
+  assert.match(source, /Největší pokles/);
+  assert.match(source, /Otevřít nabídku/);
+  assert.match(source, /embeddedImages/);
+  assert.match(source, /pokemonproductimages\.pokedata\.io/);
+  assert.match(source, /rel="noopener noreferrer"/);
+  assert.match(css, /grid-template-columns:\s*148px minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 620px\)/);
+  assert.match(mobileNav, /\/zlevneni\//);
 });
 
 test("catalog report proxy validates origin and forwards only server-derived identity", async () => {
@@ -969,7 +993,7 @@ test("every catalog product has a stable, indexable detail page", async () => {
 
   const response = handleSitemap(new Request("https://tcgceny.cz/sitemap.xml"));
   const sitemap = await response.text();
-  assert.equal((sitemap.match(/<url>/g) || []).length, catalogData.products.length + 8);
+  assert.equal((sitemap.match(/<url>/g) || []).length, catalogData.products.length + 9);
   assert.match(sitemap, new RegExp(productPath(catalogData.products.at(-1)).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
 

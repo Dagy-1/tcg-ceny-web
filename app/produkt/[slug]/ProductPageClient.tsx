@@ -116,10 +116,10 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
         </Link>
         <div className="nav-links">
           <Link className="catalog-nav-active" href="/katalog/" aria-current="page">Katalog</Link>
+          <Link href="/zlevneni/">Zlevnění</Link>
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
           <Link href="/sledovani/">Sledování</Link>
-          <Link href="/#funkce">Funkce</Link>
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions"><AuthMenu /><MobileNav /></div>

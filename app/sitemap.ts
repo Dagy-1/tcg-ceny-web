@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: baseUrl, changeFrequency: "weekly", priority: 1 },
     { url: `${baseUrl}/katalog/`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${baseUrl}/zlevneni/`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${baseUrl}/porovnani/`, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/portfolio/`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/sledovani/`, changeFrequency: "daily", priority: 0.8 },
