@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">TCG Ceny</title>
+  <desc id="desc">Dvě překrývající se sběratelské karty ve zlatém rámečku.</desc>
+  <defs>
+    <linearGradient id="background" x1="72" y1="48" x2="442" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14243a"/>
+      <stop offset="0.52" stop-color="#091728"/>
+      <stop offset="1" stop-color="#06101d"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="92" y1="72" x2="426" y2="450" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f1c64d"/>
+      <stop offset="1" stop-color="#b98517"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#background)" stroke="url(#frame)" stroke-width="12"/>
+  <rect x="123" y="124" width="186" height="260" rx="28" fill="#0a1727" stroke="#a47b1b" stroke-width="15" opacity="0.72" transform="rotate(-9 216 254)"/>
+  <rect x="204" y="119" width="186" height="260" rx="28" fill="#091827" stroke="#f0bd35" stroke-width="15" transform="rotate(-7 297 249)"/>
+</svg>

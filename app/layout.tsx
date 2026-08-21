@@ -28,8 +28,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/favicon.png",
-        width: 1254,
-        height: 1254,
+        width: 512,
+        height: 512,
         alt: "TCG Ceny",
       },
     ],
@@ -46,7 +46,10 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/brand-mark.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+    ],
     shortcut: "/favicon.png",
   },
 };
