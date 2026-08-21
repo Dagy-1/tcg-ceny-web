@@ -746,6 +746,8 @@ test("homepage contains production metadata and core content", async () => {
   const globalCss = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(globalCss, /@keyframes companion-float/);
   assert.match(globalCss, /@keyframes companion-blink/);
+  assert.match(globalCss, /\.card-companion:hover \.companion-card-sheen/);
+  assert.match(globalCss, /\.card-companion:hover \.companion-card-front/);
   assert.match(globalCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
 

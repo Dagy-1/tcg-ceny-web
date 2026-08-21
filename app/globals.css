@@ -509,17 +509,19 @@ h1 span { display: block; color: var(--gold); }
 
 .card-companion {
   width: fit-content;
-  max-width: 440px;
-  margin-top: 24px;
+  max-width: 420px;
+  height: 104px;
+  margin-top: 9px;
+  margin-bottom: -28px;
   display: grid;
-  grid-template-columns: 158px minmax(0, 1fr);
+  grid-template-columns: 178px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 2px;
 }
-.card-companion-figure { width: 158px; height: 142px; display: grid; place-items: center; }
+.card-companion-figure { width: 178px; height: 104px; display: grid; place-items: center; }
 .card-companion-figure svg {
-  width: 164px;
-  height: 164px;
+  width: 190px;
+  height: 190px;
   overflow: visible;
   transform-origin: 50% 62%;
   animation: companion-float 5.2s var(--motion-ease) infinite;
@@ -527,13 +529,14 @@ h1 span { display: block; color: var(--gold); }
 .card-companion-copy {
   position: relative;
   min-width: 0;
-  padding: 15px 18px;
+  padding: 15px 19px;
   line-height: 1.18;
   text-align: left;
-  border: 1px solid rgba(230, 184, 74, .3);
-  border-radius: 17px;
-  background: rgba(9, 23, 40, .88);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, .16), inset 0 1px rgba(255, 255, 255, .035);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(20, 42, 66, .78), rgba(8, 23, 40, .7));
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .17), inset 0 1px rgba(255, 255, 255, .04);
+  transform: translateX(-4px);
+  transition: transform 420ms var(--motion-ease), background 420ms var(--motion-ease), box-shadow 420ms var(--motion-ease);
 }
 .card-companion-copy::before {
   content: "";
@@ -542,16 +545,30 @@ h1 span { display: block; color: var(--gold); }
   top: 50%;
   width: 14px;
   height: 14px;
-  border-left: 1px solid rgba(230, 184, 74, .3);
-  border-bottom: 1px solid rgba(230, 184, 74, .3);
-  background: #091728;
+  background: #102a43;
   transform: translateY(-50%) rotate(45deg);
 }
 .card-companion-copy strong { color: #edf2fa; font-family: var(--font-display); font-size: 22px; letter-spacing: -.02em; }
+.companion-card-back,
+.companion-card-front { transform-box: fill-box; transform-origin: center; transition: transform 560ms cubic-bezier(.2,.8,.2,1); }
+.companion-card-sheen { opacity: 0; transform: translateX(-18px); transition: opacity 180ms ease, transform 720ms cubic-bezier(.2,.8,.2,1); }
+.companion-halo { transform-box: fill-box; transform-origin: center; transition: opacity 420ms ease, transform 560ms var(--motion-ease); }
 .companion-eye { transform-box: fill-box; transform-origin: center; animation: companion-blink 6.4s ease-in-out infinite; }
 .companion-eye-right { animation-delay: 45ms; }
-.companion-status { filter: drop-shadow(0 0 4px rgba(54, 198, 107, .72)); }
+.companion-status { transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 4px rgba(54, 198, 107, .72)); transition: transform 420ms var(--motion-ease), filter 420ms ease; }
 .companion-spark { transform-box: fill-box; transform-origin: center; animation: companion-spark 4.8s ease-in-out infinite; }
+@media (hover: hover) and (pointer: fine) {
+  .card-companion:hover .companion-card-back { transform: translate(-6px, 4px) rotate(-3deg); }
+  .card-companion:hover .companion-card-front { transform: translate(7px, -5px) rotate(2deg); }
+  .card-companion:hover .companion-card-sheen { opacity: .78; transform: translateX(74px); }
+  .card-companion:hover .companion-halo { opacity: .2; transform: scaleX(1.22); }
+  .card-companion:hover .companion-status { transform: scale(1.38); filter: drop-shadow(0 0 7px rgba(54, 198, 107, .9)); }
+  .card-companion:hover .card-companion-copy {
+    background: linear-gradient(135deg, rgba(25, 52, 80, .86), rgba(9, 25, 43, .76));
+    box-shadow: 0 20px 44px rgba(0, 0, 0, .2), inset 0 1px rgba(255, 255, 255, .055);
+    transform: translate(1px, -3px);
+  }
+}
 @keyframes companion-float {
   0%, 100% { transform: translateY(0) rotate(0); }
   50% { transform: translateY(-3px) rotate(-.7deg); }
@@ -929,10 +946,10 @@ h1 span { display: block; color: var(--gold); }
   .hero-actions .button { width: 100%; }
   .hero-proof { gap: 6px; }
   .hero-proof span { font-size: 10px; }
-  .card-companion { width: min(100%, 370px); grid-template-columns: 142px minmax(0, 1fr); gap: 5px; }
-  .card-companion-figure { width: 142px; height: 132px; }
-  .card-companion-figure svg { width: 150px; height: 150px; }
-  .card-companion-copy { padding: 13px 15px; border-radius: 15px; }
+  .card-companion { width: min(100%, 380px); height: 118px; margin-top: 10px; margin-bottom: 0; grid-template-columns: 158px minmax(0, 1fr); gap: 0; }
+  .card-companion-figure { width: 158px; height: 118px; }
+  .card-companion-figure svg { width: 166px; height: 166px; }
+  .card-companion-copy { padding: 13px 16px; border-radius: 16px; }
   .card-companion-copy strong { font-size: 19px; }
   .market-card { padding: 18px; border-radius: 18px; }
   .market-card-top { min-height: 123px; }
