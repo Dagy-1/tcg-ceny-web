@@ -97,6 +97,50 @@ function centralProduct(item: CentralPortfolioItem) {
   };
 }
 
+function browserSafeProductImage(source: unknown) {
+  const value = typeof source === "string" ? source.trim() : "";
+  if (!value) return null;
+  if (value.startsWith("/catalog-products/")) return value;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "pokemonproductimages.pokedata.io"
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function alertConfigurationWithImage(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const configuration = value as Record<string, unknown>;
+  const productValue = configuration.product;
+  if (!productValue || typeof productValue !== "object" || Array.isArray(productValue)) {
+    return configuration;
+  }
+  const product = productValue as Record<string, unknown>;
+  const productId = typeof product.id === "string" ? product.id : "";
+  const embeddedImage = browserSafeProductImage(products.get(productId)?.image);
+  const centralImage = browserSafeProductImage(product.image_url);
+  return {
+    ...configuration,
+    product: {
+      ...product,
+      image_url: embeddedImage || centralImage,
+    },
+  };
+}
+
+function alertPayloadWithImages(payload: Record<string, unknown>) {
+  if (!Array.isArray(payload.items)) {
+    return alertConfigurationWithImage(payload);
+  }
+  return {
+    ...payload,
+    items: payload.items.map(alertConfigurationWithImage),
+  };
+}
+
 function webPortfolioItem(item: CentralPortfolioItem) {
   return {
     id: item.id,
@@ -467,7 +511,7 @@ async function centralAlertRequest(
     if (!upstream.ok) {
       return json({ error: String(payload.detail || "Nastavení sledování se nepodařilo uložit.") }, upstream.status);
     }
-    return json(payload, upstream.status);
+    return json(alertPayloadWithImages(payload), upstream.status);
   } catch {
     return json({ error: "Sledování je dočasně nedostupné." }, 502);
   } finally {

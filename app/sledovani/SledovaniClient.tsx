@@ -66,6 +66,26 @@ function progress(item: AlertItem) {
   return Math.max(4, Math.min(100, Math.round((item.threshold_czk / item.product.best_price_czk) * 100)));
 }
 
+function WatchingProductImage({ product }: { product: AlertItem["product"] }) {
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const source = product.image_url?.trim() || "";
+
+  if (!source || failedSource === source) {
+    return <span aria-label="Obrázek produktu není dostupný">TCG</span>;
+  }
+
+  return (
+    // The Worker replaces shop hotlinks with a cached catalog image whenever available.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={source}
+      alt={product.name}
+      loading="lazy"
+      onError={() => setFailedSource(source)}
+    />
+  );
+}
+
 export default function SledovaniClient() {
   const [state, setState] = useState<PageState>("loading");
   const [data, setData] = useState<AlertList>(emptyList);
@@ -222,10 +242,7 @@ export default function SledovaniClient() {
                     return (
                       <article className="watching-card" key={`${item.product.id}-${item.channel}`}>
                         <Link className="watching-image" href={path} aria-label={`Otevřít ${item.product.name}`}>
-                          {item.product.image_url
-                            // eslint-disable-next-line @next/next/no-img-element
-                            ? <img src={item.product.image_url} alt="" loading="lazy" />
-                            : <span>TCG</span>}
+                          <WatchingProductImage product={item.product} />
                         </Link>
                         <div className="watching-card-main">
                           <div className="watching-card-title">

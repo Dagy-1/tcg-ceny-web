@@ -858,6 +858,66 @@ test("alert proxy keeps ownership server-side and whitelists mutation fields", a
   }
 });
 
+test("watching proxy prefers the cached catalog image over blocked shop hotlinks", async () => {
+  const secret = "watching-image-session-secret-1234567890";
+  const cookie = await webSessionCookie(
+    {
+      sub: "discord:watching-image-user",
+      username: "Watcher",
+      avatar: null,
+      provider: "discord",
+      exp: Math.floor(Date.now() / 1000) + 60,
+    },
+    secret,
+  );
+  const product = catalogData.products.find((item) => item.id === "pm:me05-pitch-black-etb");
+  assert.ok(product?.image?.startsWith("/catalog-products/"));
+
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({
+    items: [{
+      product: {
+        id: product.id,
+        name: product.name,
+        image_url: "https://shop.example/blocked-hotlink.png",
+        availability: "online",
+        best_price_czk: 1799,
+        checked_at: "2026-08-21T16:40:23Z",
+        data_stale: false,
+      },
+      kinds: ["price_below"],
+      threshold_czk: 1620,
+      channel: "discord",
+      shops: [],
+      price_gap_czk: 179,
+      target_reached: false,
+      updated_at: "2026-08-21T16:40:23Z",
+    }],
+    total: 1,
+    price_count: 1,
+    restock_count: 0,
+    target_reached_count: 0,
+  });
+  try {
+    const response = await handlePortfolioApi(
+      new Request("https://tcgceny.cz/api/alerts", {
+        headers: { Cookie: cookie, Accept: "application/json" },
+      }),
+      {
+        SESSION_SECRET: secret,
+        CENTRAL_API_BASE_URL: "https://backend.example",
+        CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+      },
+    );
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.equal(payload.items[0].product.image_url, product.image);
+    assert.doesNotMatch(payload.items[0].product.image_url, /shop\.example/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("every catalog product has a stable, indexable detail page", async () => {
   const slugs = catalogData.products.map((product) => productSlug(product));
   assert.equal(new Set(slugs).size, catalogData.products.length, "product slugs must be unique");
@@ -933,6 +993,8 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(source, /Tvůj limit/);
   assert.match(source, /Do limitu/);
   assert.match(source, /Všechny ověřené obchody/);
+  assert.match(source, /WatchingProductImage/);
+  assert.match(source, /onError=\{\(\) => setFailedSource\(source\)\}/);
   assert.match(source, /method: "DELETE"/);
   assert.match(source, /Každý uživatel vidí jen své produkty/);
   assert.doesNotMatch(source, /localStorage|sessionStorage/);
