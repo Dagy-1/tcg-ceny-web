@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import MotionSystem from "./MotionSystem";
 import ScrollNavState from "./ScrollNavState";
+import SiteTour from "./SiteTour";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tcgceny.cz"),
@@ -80,6 +81,7 @@ export default function RootLayout({
         />
         <ScrollNavState />
         <MotionSystem />
+        <SiteTour />
         {children}
       </body>
     </html>

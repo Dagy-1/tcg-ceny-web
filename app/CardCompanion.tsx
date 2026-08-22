@@ -1,8 +1,16 @@
+"use client";
+
 export default function CardCompanion() {
+  const openTour = () => {
+    window.dispatchEvent(new CustomEvent("tcg-tour-open"));
+  };
+
   return (
-    <aside
+    <button
+      type="button"
       className="card-companion"
-      aria-label="Průvodce TCG Ceny: Ceny hlídám za tebe."
+      aria-label="Spustit krátkého průvodce webem TCG Ceny"
+      onClick={openTour}
     >
       <span className="card-companion-figure" aria-hidden="true">
         <svg viewBox="0 0 220 220" role="presentation">
@@ -79,8 +87,10 @@ export default function CardCompanion() {
       </span>
 
       <span className="card-companion-copy">
-        <strong>Ceny hlídám za tebe.</strong>
+        <small>Jsi tu nový?</small>
+        <strong>Provedeme tě webem.</strong>
+        <span>zabere asi 45 sekund →</span>
       </span>
-    </aside>
+    </button>
   );
 }

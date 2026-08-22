@@ -741,7 +741,8 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /Historie cen/);
   assert.match(html, /Portfolio v jednom přehledu/i);
   assert.match(html, /card-companion/);
-  assert.match(html, /Ceny hlídám za tebe\./);
+  assert.match(html, /Provedeme tě webem\./);
+  assert.match(html, /Spustit krátkého průvodce webem TCG Ceny/);
   assert.match(html, /shop-marquee-track/);
   assert.match(html, /aria-hidden="true"/);
   assert.match(html, /Otevřít e-shop Knihy Dobrovský v nové kartě/);
@@ -768,6 +769,10 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(globalCss, /@keyframes companion-blink/);
   assert.match(globalCss, /\.card-companion:hover \.companion-card-sheen/);
   assert.match(globalCss, /\.card-companion:hover \.companion-card-front/);
+  assert.match(globalCss, /\.site-tour-panel/);
+  assert.match(globalCss, /\.site-tour\s*\{[^}]*pointer-events:\s*none;/s);
+  assert.match(globalCss, /\.site-tour-panel\s*\{[^}]*pointer-events:\s*auto;/s);
+  assert.match(globalCss, /@keyframes tour-panel-in/);
   assert.match(globalCss, /@keyframes shop-marquee/);
   assert.match(globalCss, /\.shop-marquee:hover \.shop-marquee-track/);
   assert.match(globalCss, /\.shop-marquee:focus-within \.shop-marquee-track/);
