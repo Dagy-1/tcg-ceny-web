@@ -124,8 +124,9 @@ export default function Home() {
             <span><b>📈Historie</b> cen a skladovosti</span>
             <span><b>⚡ Automatické</b> alerty cen a skladovosti</span>
           </div>
-          <CardCompanion />
         </div>
+
+        <CardCompanion />
 
         <div className="market-card" aria-label="Ukázka porovnání nabídek" data-motion>
           <div className="market-card-top">
