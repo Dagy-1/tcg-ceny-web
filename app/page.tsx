@@ -4,6 +4,8 @@ import {
   BellRing,
   BriefcaseBusiness,
   ChartNoAxesCombined,
+  ShieldCheck,
+  Store,
 } from "lucide-react";
 import AuthMenu from "./AuthMenu";
 import CardCompanion from "./CardCompanion";
@@ -21,29 +23,31 @@ const offers = [
 
 const features = [
   {
-    code: "CENY",
     icon: BadgeDollarSign,
     title: "Porovnání cen",
-    text: "Na jednom místě vidíš dostupné nabídky českých e-shopů, jejich cenu i stav skladu.",
+    text: "Dostupné nabídky českých e-shopů na jednom místě.",
   },
   {
-    code: "ALERTY",
     icon: BellRing,
-    title: "Ověřené alerty",
-    text: "Upozorníme tě na naskladnění nebo změnu ceny. Výrazné změny nejdříve znovu ověříme.",
+    title: "Upozornění",
+    text: "Cena a skladovost podle tvého nastavení.",
   },
   {
-    code: "HISTORIE",
     icon: ChartNoAxesCombined,
     title: "Historie cen",
-    text: "Sleduj vývoj nejlepší české ceny, minimum, maximum i medián za zvolené období.",
+    text: "Vývoj trhu bez vlastních tabulek.",
   },
   {
-    code: "PORTFOLIO",
     icon: BriefcaseBusiness,
-    title: "Portfolio sbírky",
-    text: "Ulož nákupní ceny a sleduj orientační hodnotu, zisk nebo ztrátu celé sealed sbírky.",
+    title: "Portfolio",
+    text: "Hodnota sbírky v jednom přehledu.",
   },
+];
+
+const heroProof = [
+  { icon: Store, label: "České e-shopy" },
+  { icon: ShieldCheck, label: "Ověřené změny" },
+  { icon: BellRing, label: "Upozornění zdarma" },
 ];
 
 const monitoredShops = [
@@ -62,7 +66,7 @@ const faqs = [
   {
     question: "Je používání TCG Ceny zdarma?",
     answer:
-      "Ano. TCG Ceny je nyní ve veřejné beta verzi a základní funkce Discord bota jsou dostupné zdarma.",
+      "Ano. Katalog, porovnání, portfolio i základní funkce Discord bota jsou během veřejné bety dostupné zdarma.",
   },
   {
     question: "Jsou ceny na webu živé?",
@@ -106,23 +110,26 @@ export default function Home() {
         <div className="hero-copy" data-motion>
           <p className="eyebrow"><span className="live-dot" /> Pokémon TCG na jednom místě</p>
           <h1>
-            Chyť nejlepší cenu.
+            Neplať víc.
             <span>Nezmeškej naskladnění.</span>
           </h1>
           <p className="hero-lead">
-           Automatické hlídání cen a skladovosti Pokémon TCG v ČR. Nezmeškej žádnou slevu ani naskladnění.
-
+            Porovnáváme ověřené nabídky českých e-shopů a pomůžeme ti sledovat
+            změny cen i skladovosti.
           </p>
           <div className="hero-actions">
             <a className="button" href="/katalog/">
               Prohlédnout katalog <span aria-hidden="true">→</span>
             </a>
-            <a className="text-link" href={DISCORD_URL} target="_blank" rel="noreferrer">Otevřít Discord</a>
+            <a className="text-link" href="#jak-to-funguje">Jak to funguje</a>
           </div>
           <div className="hero-proof" aria-label="Hlavní přednosti">
-            <span><b>🛒České</b> e-shopy na jednom místě</span>
-            <span><b>📈Historie</b> cen a skladovosti</span>
-            <span><b>⚡ Automatické</b> alerty cen a skladovosti</span>
+            {heroProof.map(({ icon: Icon, label }) => (
+              <span key={label}>
+                <Icon size={15} strokeWidth={1.9} aria-hidden="true" />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -172,14 +179,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="shop-cloud shell" aria-label="Příklady sledovaných obchodů" data-motion>
-        <div className="shop-cloud-copy">
-          <p className="eyebrow">Široký pohled na český trh</p>
-          <h2>Nehledáme jednu cenu. Porovnáváme celý výběr.</h2>
-          <p>
-            TCG Ceny sleduje veřejně dostupné nabídky českých e-shopů. Názvy
-            uvádíme transparentně, aby bylo vždy jasné, odkud nabídka pochází.
-          </p>
+      <section className="market-proof shell" aria-label="Příklady sledovaných obchodů" data-motion>
+        <div className="market-proof-copy">
+          <p className="eyebrow">Český trh v jednom přehledu</p>
+          <strong>Porovnáváme veřejné nabídky napříč e-shopy.</strong>
         </div>
         <div className="shop-tags">
           {monitoredShops.map((shop) => (
@@ -187,28 +190,23 @@ export default function Home() {
           ))}
           <span className="shop-more">a další</span>
         </div>
-        <p className="shop-disclaimer">
-          Uvedení obchodu neznamená obchodní partnerství ani doporučení.
-        </p>
+        <p className="shop-disclaimer">Pořadí není placené.</p>
       </section>
 
       <section id="funkce" className="section shell" data-motion>
         <div className="section-heading">
           <div>
             <p className="eyebrow">Vše důležité na jednom místě</p>
-            <h2>Trh pod kontrolou. Bez desítek otevřených záložek.</h2>
+            <h2>Všechno pro chytřejší nákup.</h2>
           </div>
-          <p>
-            Od rychlého porovnání až po dlouhodobý přehled sbírky.
-            TCG Ceny spojuje data, která sběratel skutečně potřebuje.
-          </p>
+          <p>Porovnej nabídky, sleduj změny a měj přehled o své sbírce.</p>
         </div>
         <div className="feature-grid">
           {features.map((feature, index) => {
             const Icon = feature.icon;
 
             return (
-              <article className="feature-card" key={feature.code} data-motion style={{ "--motion-delay": `${Math.min(index, 3) * 55}ms` } as React.CSSProperties}>
+              <article className="feature-card" key={feature.title} data-motion style={{ "--motion-delay": `${Math.min(index, 3) * 55}ms` } as React.CSSProperties}>
                 <div className="feature-card-top">
                   <div className="feature-number">0{index + 1}</div>
                   <span className="feature-icon" aria-hidden="true">
@@ -216,7 +214,6 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="feature-card-copy">
-                  <span className="feature-code">{feature.code}</span>
                   <h3>{feature.title}</h3>
                   <p>{feature.text}</p>
                 </div>
@@ -231,7 +228,7 @@ export default function Home() {
           <div className="section-heading compact">
             <div>
               <p className="eyebrow">Jednoduchý start</p>
-              <h2>Od hledání k upozornění ve třech krocích.</h2>
+              <h2>Najdi produkt. Porovnej. Nastav sledování.</h2>
             </div>
           </div>
           <div className="steps">
@@ -247,8 +244,8 @@ export default function Home() {
             </article>
             <article>
               <span>03</span>
-              <h3>Zapni sledování</h3>
-              <p>Nastav cenový limit nebo hlídání naskladnění a změnu ti pošleme do soukromé zprávy na Discordu.</p>
+              <h3>Nastav sledování</h3>
+              <p>Ulož si cenový limit nebo hlídání naskladnění přehledně na jednom místě.</p>
             </article>
           </div>
         </div>
@@ -257,15 +254,13 @@ export default function Home() {
       <section className="section shell insight-section" data-motion>
           <div className="insight-copy">
             <p className="eyebrow">Portfolio v jednom přehledu</p>
-            <h2>Sleduj, jak se vyvíjí hodnota tvé sbírky.</h2>
+            <h2>Sleduj hodnotu své sbírky.</h2>
             <p>
-              Každý produkt má vlastní tržní vývoj. TCG Ceny je spojí do jednoho
-              přehledu a ukáže orientační hodnotu celého portfolia v čase.
+              Nákupy, aktuální hodnota a vývoj portfolia v jednom přehledu.
             </p>
             <ul className="check-list">
               <li>Vývoj hodnoty za 7, 30 nebo 90 dní</li>
-              <li>Investovaná částka a aktuální tržní hodnota</li>
-              <li>Celkový zisk nebo ztráta portfolia</li>
+              <li>Investice, aktuální hodnota a celkový výsledek</li>
             </ul>
           </div>
         <PriceHistoryDemo />
@@ -274,24 +269,24 @@ export default function Home() {
       <section id="spolehlivost" className="section shell reliability" data-motion>
         <div className="reliability-panel">
           <div>
-            <p className="eyebrow">Jak hlídáme kvalitu dat</p>
-            <h2>Ověřená změna. Jasný zdroj. Férové pořadí.</h2>
+            <p className="eyebrow">Transparentní data</p>
+            <h2>Data, kterým rozumíš.</h2>
           </div>
           <div className="reliability-grid">
             <article>
               <span className="reliability-index">01</span>
-              <strong>Opakované ověření</strong>
-              <p>Výraznou změnu ceny nebo naskladnění před odesláním upozornění zkontrolujeme znovu.</p>
+              <strong>Dvojí kontrola</strong>
+              <p>Výrazné změny ceny a skladovosti ověřujeme znovu.</p>
             </article>
             <article>
               <span className="reliability-index">02</span>
               <strong>Dohledatelný zdroj</strong>
-              <p>U nabídky vidíš e-shop, přímý odkaz a čas poslední kontroly.</p>
+              <p>U nabídky vidíš obchod, odkaz i čas kontroly.</p>
             </article>
             <article>
               <span className="reliability-index">03</span>
-              <strong>Nezávislé pořadí</strong>
-              <p>Nabídky řadíme podle ceny a dostupnosti, ne podle placené spolupráce.</p>
+              <strong>Férové pořadí</strong>
+              <p>Rozhoduje dostupnost a cena, ne placená spolupráce.</p>
             </article>
           </div>
         </div>
@@ -299,12 +294,9 @@ export default function Home() {
 
       <section className="partner-teaser shell" data-motion>
         <div>
-          <p className="eyebrow">Pro e-shopy a datové partnery</p>
-          <h2>Vaše nabídka může vést přímo k zákazníkovi.</h2>
-          <p>
-            Připravili jsme samostatné informace o zobrazování nabídek,
-            ověřování dat, férovém řazení a možnostech spolupráce.
-          </p>
+          <p className="eyebrow">Pro e-shopy</p>
+          <h2>Dostaňte nabídku přímo ke sběratelům.</h2>
+          <p>Zjistěte, jak nabídky zobrazujeme a ověřujeme.</p>
         </div>
         <a className="button button-secondary" href="/pro-eshopy">
           Informace pro e-shopy <span aria-hidden="true">→</span>
@@ -313,7 +305,7 @@ export default function Home() {
 
       <section className="section shell faq-section" data-motion>
         <div className="faq-heading">
-          <p className="eyebrow">Stručně a transparentně</p>
+          <p className="eyebrow">Stručně a jasně</p>
           <h2>Nejčastější otázky</h2>
         </div>
         <div className="faq-list">
@@ -329,16 +321,15 @@ export default function Home() {
       <section className="cta-section shell" data-motion>
         <div>
           <p className="eyebrow">TCG Ceny · veřejná beta</p>
-          <h2>
-            Začni sledovat český
-            <br />
-            Pokémon TCG trh.
-          </h2>
-          <p>Připoj se zdarma, vyzkoušej bota a pomoz nám doladit službu pro české sběratele.</p>
+          <h2>Začni hlídat ceny zdarma.</h2>
+          <p>Prohlédni katalog, porovnej nabídky a přidej si produkty do Sledování.</p>
         </div>
-        <a className="button" href={DISCORD_URL} target="_blank" rel="noreferrer">
-          Přidat se na Discord <span aria-hidden="true">→</span>
-        </a>
+        <div className="cta-actions">
+          <a className="button" href="/katalog/">
+            Otevřít katalog <span aria-hidden="true">→</span>
+          </a>
+          <a className="text-link" href={DISCORD_URL} target="_blank" rel="noreferrer">Discord</a>
+        </div>
       </section>
 
       <footer className="footer">
