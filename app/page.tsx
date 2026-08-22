@@ -184,11 +184,21 @@ export default function Home() {
           <p className="eyebrow">Český trh v jednom přehledu</p>
           <strong>Porovnáváme veřejné nabídky napříč e-shopy.</strong>
         </div>
-        <div className="shop-tags">
-          {monitoredShops.map((shop) => (
-            <span key={shop}>{shop}</span>
-          ))}
-          <span className="shop-more">a další</span>
+        <div className="shop-marquee" aria-label="Sledované české e-shopy">
+          <div className="shop-marquee-track">
+            {[false, true].map((isDuplicate) => (
+              <div
+                className="shop-tags"
+                aria-hidden={isDuplicate ? "true" : undefined}
+                key={isDuplicate ? "duplicate" : "primary"}
+              >
+                {monitoredShops.map((shop) => (
+                  <span key={shop}>{shop}</span>
+                ))}
+                <span className="shop-more">a další</span>
+              </div>
+            ))}
+          </div>
         </div>
         <p className="shop-disclaimer">Pořadí není placené.</p>
       </section>

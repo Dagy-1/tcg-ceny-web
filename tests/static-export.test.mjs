@@ -737,6 +737,8 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /Portfolio v jednom přehledu/i);
   assert.match(html, /card-companion/);
   assert.match(html, /Ceny hlídám za tebe\./);
+  assert.match(html, /shop-marquee-track/);
+  assert.match(html, /aria-hidden="true"/);
   assert.doesNotMatch(html, /Tvůj TCG průvodce/);
   assert.match(html, /https:\/\/discord\.gg\/pRC8GKAKxG/);
   assert.match(html, /podpora@tcgceny\.cz/);
@@ -750,6 +752,9 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(globalCss, /@keyframes companion-blink/);
   assert.match(globalCss, /\.card-companion:hover \.companion-card-sheen/);
   assert.match(globalCss, /\.card-companion:hover \.companion-card-front/);
+  assert.match(globalCss, /@keyframes shop-marquee/);
+  assert.match(globalCss, /\.shop-marquee:hover \.shop-marquee-track/);
+  assert.match(globalCss, /\.shop-tags\[aria-hidden="true"\]/);
   assert.match(globalCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
