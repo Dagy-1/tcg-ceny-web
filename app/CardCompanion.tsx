@@ -2,7 +2,7 @@ export default function CardCompanion() {
   return (
     <aside
       className="card-companion"
-      aria-label="Průvodce TCG Ceny: Ceny hlídám."
+      aria-label="Průvodce TCG Ceny: Ceny hlídám za tebe."
     >
       <span className="card-companion-figure" aria-hidden="true">
         <svg viewBox="0 0 220 220" role="presentation">
@@ -79,7 +79,7 @@ export default function CardCompanion() {
       </span>
 
       <span className="card-companion-copy">
-        <strong>Ceny hlídám.</strong>
+        <strong>Ceny hlídám za tebe.</strong>
       </span>
     </aside>
   );

@@ -78,7 +78,7 @@ const faqs = [
 
 export default function Home() {
   return (
-    <main>
+    <main className="home-page">
       <nav className="nav" aria-label="Hlavní navigace">
         <a className="brand" href="#uvod" aria-label="TCG Ceny – úvod">
           <span className="brand-mark" aria-hidden="true">

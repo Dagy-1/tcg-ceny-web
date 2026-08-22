@@ -620,7 +620,9 @@ h1 span { display: block; color: var(--gold); }
 }
 
 @media (min-width: 1240px) {
-  .hero.shell { width: min(1400px, calc(100% - 40px)); }
+  .home-page > .shell,
+  .home-page > .section-dark > .shell,
+  .home-page > .nav { width: min(1400px, calc(100% - 40px)); }
   .hero {
     min-height: 690px;
     grid-template-areas: "copy companion market";
@@ -647,7 +649,7 @@ h1 span { display: block; color: var(--gold); }
     transform: translateX(-50%);
   }
   .card-companion-figure svg { width: 360px; height: 360px; }
-  .card-companion-copy { right: -16px; bottom: 55px; }
+  .card-companion-copy { right: -12px; bottom: 55px; padding-inline: 20px; }
   .market-card-top { gap: 14px; }
   .market-card h2 { font-size: 24px; }
   .product-visual { width: 165px; height: 150px; }
