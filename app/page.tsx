@@ -52,22 +52,22 @@ const heroProof = [
 ];
 
 const monitoredShops = [
-  { name: "Alza", mark: "A", url: "https://www.alza.cz/" },
-  { name: "Bulbazard", mark: "B", url: "https://www.bulbazard.cz/" },
-  { name: "Geek Hall", mark: "GH", url: "https://geekhall.cz/" },
-  { name: "Kitstore", mark: "K", url: "https://www.kitstore.cz/" },
-  { name: "Knihy Dobrovský", mark: "KD", url: "https://www.knihydobrovsky.cz/" },
-  { name: "Najáda", mark: "N", url: "https://www.najada.games/" },
-  { name: "Pikastore", mark: "P", url: "https://pikastore.cz/" },
-  { name: "Pokešov", mark: "PŠ", url: "https://www.pokesov.cz/" },
-  { name: "Pompo", mark: "P", url: "https://pompo.cz/" },
-  { name: "Shadowball", mark: "S", url: "https://www.shadowball.cz/" },
-  { name: "Smarty", mark: "S", url: "https://www.smarty.cz/" },
-  { name: "Sparkys", mark: "S", url: "https://www.sparkys.cz/" },
-  { name: "TLAMA games", mark: "TG", url: "https://www.tlamagames.com/" },
-  { name: "Tolarie", mark: "T", url: "https://www.tolarie.cz/" },
-  { name: "Veselý Drak", mark: "VD", url: "https://www.vesely-drak.cz/" },
-  { name: "Vortexstore", mark: "V", url: "https://www.vortexstore.eu/" },
+  { name: "Alza", icon: "/shop-icons/alza.png", url: "https://www.alza.cz/" },
+  { name: "Bulbazard", icon: "/shop-icons/bulbazard.png", url: "https://www.bulbazard.cz/" },
+  { name: "Geek Hall", icon: "/shop-icons/geek-hall.png", url: "https://geekhall.cz/" },
+  { name: "Kitstore", icon: "/shop-icons/kitstore.png", url: "https://www.kitstore.cz/" },
+  { name: "Knihy Dobrovský", icon: "/shop-icons/knihy-dobrovsky.png", url: "https://www.knihydobrovsky.cz/" },
+  { name: "Najáda", icon: "/shop-icons/najada.png", url: "https://www.najada.games/" },
+  { name: "Pikastore", icon: "/shop-icons/pikastore.png", url: "https://pikastore.cz/" },
+  { name: "Pokešov", icon: "/shop-icons/pokesov.png", url: "https://www.pokesov.cz/" },
+  { name: "Pompo", icon: "/shop-icons/pompo.png", url: "https://pompo.cz/" },
+  { name: "Shadowball", icon: "/shop-icons/shadowball.png", url: "https://www.shadowball.cz/" },
+  { name: "Smarty", icon: "/shop-icons/smarty.png", url: "https://www.smarty.cz/" },
+  { name: "Sparkys", icon: "/shop-icons/sparkys.png", url: "https://www.sparkys.cz/" },
+  { name: "TLAMA games", icon: "/shop-icons/tlama-games.png", url: "https://www.tlamagames.com/" },
+  { name: "Tolarie", icon: "/shop-icons/tolarie.png", url: "https://www.tolarie.cz/" },
+  { name: "Veselý Drak", icon: "/shop-icons/vesely-drak.png", url: "https://www.vesely-drak.cz/" },
+  { name: "Vortexstore", icon: "/shop-icons/vortexstore.png", url: "https://www.vortexstore.eu/" },
 ] as const;
 
 const faqs = [
@@ -210,7 +210,16 @@ export default function Home() {
                     aria-label={`Otevřít e-shop ${shop.name} v nové kartě`}
                     key={shop.name}
                   >
-                    <span className="shop-mark" aria-hidden="true">{shop.mark}</span>
+                    <span className="shop-mark" aria-hidden="true">
+                      <Image
+                        className="shop-logo"
+                        src={shop.icon}
+                        alt=""
+                        width={64}
+                        height={64}
+                        unoptimized
+                      />
+                    </span>
                     <span className="shop-name">{shop.name}</span>
                     <ExternalLink className="shop-link-icon" size={13} strokeWidth={1.8} aria-hidden="true" />
                   </a>

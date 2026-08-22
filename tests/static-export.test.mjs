@@ -52,6 +52,11 @@ test("static export contains every public page", async () => {
     access(new URL("robots.txt", output)),
     access(new URL("tcg-cursor.svg", output)),
     access(new URL("tcg-cursor-active.svg", output)),
+    ...[
+      "alza", "bulbazard", "geek-hall", "kitstore", "knihy-dobrovsky", "najada",
+      "pikastore", "pokesov", "pompo", "shadowball", "smarty", "sparkys",
+      "tlama-games", "tolarie", "vesely-drak", "vortexstore",
+    ].map((shop) => access(new URL(`shop-icons/${shop}.png`, output))),
     access(new URL("_headers", output)),
     access(new URL("404.html", output)),
   ]);
