@@ -734,7 +734,7 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /Portfolio sbírky/);
   assert.match(html, /card-companion/);
   assert.match(html, /Ceny hlídám/);
-  assert.match(html, /za tebe/);
+  assert.doesNotMatch(html, /Ceny hlídám[\s\S]{0,30}za tebe/);
   assert.doesNotMatch(html, /Tvůj TCG průvodce/);
   assert.match(html, /https:\/\/discord\.gg\/pRC8GKAKxG/);
   assert.match(html, /podpora@tcgceny\.cz/);
