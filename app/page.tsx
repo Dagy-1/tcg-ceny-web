@@ -4,6 +4,7 @@ import {
   BellRing,
   BriefcaseBusiness,
   ChartNoAxesCombined,
+  ExternalLink,
   ShieldCheck,
   Store,
 } from "lucide-react";
@@ -51,16 +52,23 @@ const heroProof = [
 ];
 
 const monitoredShops = [
-  "Alza",
-  "Geekhall",
-  "Kitstore",
-  "Najáda",
-  "Pompo",
-  "Sparkys",
-  "Tolarie",
-  "Veselý Drak",
-  "Vortexstore",
-];
+  { name: "Alza", mark: "A", url: "https://www.alza.cz/" },
+  { name: "Bulbazard", mark: "B", url: "https://www.bulbazard.cz/" },
+  { name: "Geek Hall", mark: "GH", url: "https://geekhall.cz/" },
+  { name: "Kitstore", mark: "K", url: "https://www.kitstore.cz/" },
+  { name: "Knihy Dobrovský", mark: "KD", url: "https://www.knihydobrovsky.cz/" },
+  { name: "Najáda", mark: "N", url: "https://www.najada.games/" },
+  { name: "Pikastore", mark: "P", url: "https://pikastore.cz/" },
+  { name: "Pokešov", mark: "PŠ", url: "https://www.pokesov.cz/" },
+  { name: "Pompo", mark: "P", url: "https://pompo.cz/" },
+  { name: "Shadowball", mark: "S", url: "https://www.shadowball.cz/" },
+  { name: "Smarty", mark: "S", url: "https://www.smarty.cz/" },
+  { name: "Sparkys", mark: "S", url: "https://www.sparkys.cz/" },
+  { name: "TLAMA games", mark: "TG", url: "https://www.tlamagames.com/" },
+  { name: "Tolarie", mark: "T", url: "https://www.tolarie.cz/" },
+  { name: "Veselý Drak", mark: "VD", url: "https://www.vesely-drak.cz/" },
+  { name: "Vortexstore", mark: "V", url: "https://www.vortexstore.eu/" },
+] as const;
 
 const faqs = [
   {
@@ -193,14 +201,25 @@ export default function Home() {
                 key={isDuplicate ? "duplicate" : "primary"}
               >
                 {monitoredShops.map((shop) => (
-                  <span key={shop}>{shop}</span>
+                  <a
+                    className="shop-link"
+                    href={shop.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    tabIndex={isDuplicate ? -1 : undefined}
+                    aria-label={`Otevřít e-shop ${shop.name} v nové kartě`}
+                    key={shop.name}
+                  >
+                    <span className="shop-mark" aria-hidden="true">{shop.mark}</span>
+                    <span className="shop-name">{shop.name}</span>
+                    <ExternalLink className="shop-link-icon" size={13} strokeWidth={1.8} aria-hidden="true" />
+                  </a>
                 ))}
-                <span className="shop-more">a další</span>
               </div>
             ))}
           </div>
         </div>
-        <p className="shop-disclaimer">Pořadí není placené.</p>
+        <p className="shop-disclaimer">Pořadí není placené · odkazy vedou přímo na e-shopy.</p>
       </section>
 
       <section id="funkce" className="section shell" data-motion>

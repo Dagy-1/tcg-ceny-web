@@ -707,28 +707,67 @@ h1 span { display: block; color: var(--gold); }
   width: max-content;
   display: flex;
   will-change: transform;
-  animation: shop-marquee 34s linear infinite;
+  animation: shop-marquee 52s linear infinite;
 }
-.shop-marquee:hover .shop-marquee-track { animation-play-state: paused; }
+.shop-marquee:hover .shop-marquee-track,
+.shop-marquee:focus-within .shop-marquee-track { animation-play-state: paused; }
 .shop-tags {
   display: flex;
   flex: none;
   gap: 10px;
   padding-right: 10px;
 }
-.shop-tags span {
-  padding: 8px 12px;
+.shop-link {
+  min-height: 39px;
+  padding: 5px 10px 5px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 999px;
   background: rgba(255,255,255,.025);
   color: #c4cedc;
   font-size: 11px;
   font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
 }
-.shop-tags .shop-more {
-  border-color: rgba(230,184,74,.34);
+.shop-mark {
+  width: 27px;
+  height: 27px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(230,184,74,.22);
+  border-radius: 50%;
   color: var(--gold-soft);
+  background: linear-gradient(145deg, rgba(230,184,74,.13), rgba(17,36,58,.82));
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: -.02em;
+}
+.shop-name { line-height: 1; }
+.shop-link-icon {
+  color: var(--gold-soft);
+  opacity: .35;
+  transform: translate(-2px, 2px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.shop-link:hover,
+.shop-link:focus-visible {
+  border-color: rgba(230,184,74,.42);
+  color: #f3f6fa;
   background: rgba(230,184,74,.07);
+  transform: translateY(-1px);
+}
+.shop-link:hover .shop-link-icon,
+.shop-link:focus-visible .shop-link-icon { opacity: 1; transform: none; }
+.shop-link:focus-visible { outline: 2px solid rgba(230,184,74,.7); outline-offset: 3px; }
+.shop-link:hover .shop-mark,
+.shop-link:focus-visible .shop-mark {
+  border-color: rgba(230,184,74,.48);
+  background: linear-gradient(145deg, rgba(230,184,74,.2), rgba(17,36,58,.95));
 }
 @keyframes shop-marquee {
   to { transform: translateX(-50%); }
@@ -1076,7 +1115,8 @@ h1 span { display: block; color: var(--gold); }
   .cta-section .text-link { width: fit-content; margin-inline: auto; }
   .market-proof { padding-block: 22px; }
   .shop-tags { gap: 7px; }
-  .shop-tags span { padding: 8px 11px; font-size: 10px; }
+  .shop-link { min-height: 36px; padding: 4px 9px 4px 4px; gap: 7px; font-size: 10px; }
+  .shop-mark { width: 26px; height: 26px; }
   .partner-actions { align-items: stretch; flex-direction: column; }
   .partner-actions .button { width: 100%; }
   .partner-actions > span { text-align: center; }

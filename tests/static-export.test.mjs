@@ -739,6 +739,17 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /Ceny hlídám za tebe\./);
   assert.match(html, /shop-marquee-track/);
   assert.match(html, /aria-hidden="true"/);
+  assert.match(html, /Otevřít e-shop Knihy Dobrovský v nové kartě/);
+  assert.match(html, /Otevřít e-shop Pokešov v nové kartě/);
+  assert.match(html, /Otevřít e-shop Vortexstore v nové kartě/);
+  assert.match(html, /href="https:\/\/www\.alza\.cz\/"/);
+  assert.match(html, /href="https:\/\/www\.bulbazard\.cz\/"/);
+  assert.match(html, /href="https:\/\/www\.pokesov\.cz\/"/);
+  assert.match(html, /href="https:\/\/www\.tlamagames\.com\/"/);
+  assert.match(html, /target="_blank"/);
+  assert.match(html, /rel="noopener noreferrer"/);
+  assert.match(html, /tabindex="-1"/i);
+  assert.doesNotMatch(html, />a další</);
   assert.doesNotMatch(html, /Tvůj TCG průvodce/);
   assert.match(html, /https:\/\/discord\.gg\/pRC8GKAKxG/);
   assert.match(html, /podpora@tcgceny\.cz/);
@@ -754,6 +765,8 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(globalCss, /\.card-companion:hover \.companion-card-front/);
   assert.match(globalCss, /@keyframes shop-marquee/);
   assert.match(globalCss, /\.shop-marquee:hover \.shop-marquee-track/);
+  assert.match(globalCss, /\.shop-marquee:focus-within \.shop-marquee-track/);
+  assert.match(globalCss, /\.shop-link:focus-visible/);
   assert.match(globalCss, /\.shop-tags\[aria-hidden="true"\]/);
   assert.match(globalCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
