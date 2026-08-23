@@ -161,6 +161,7 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(authMenuSource, /disabled=\{isLoading\}/);
   assert.match(catalog, /href="\/portfolio\/"/);
   assert.match(productDetailSource, /Přidat do portfolia/);
+  assert.match(productDetailSource, /sessionStorage\.setItem\("tcg_comparison_catalog_product"/);
   assert.match(privacy, /Discord ID/);
   assert.match(privacy, /Přihlášení přes Google/);
   assert.match(privacy, /technicky nezbytnou zabezpečenou cookie/);
@@ -203,6 +204,13 @@ test("product comparison uses current market value and exact quantities", async 
     comparisonSummary([{ price: 1_000, quantity: 1 }], [{ price: 980, quantity: 1 }]).balanced,
     true,
   );
+  assert.match(source, /const query = new URLSearchParams\(window\.location\.search\)/);
+  assert.match(source, /const requestedProduct = query\.get\("add"\)/);
+  assert.match(source, /query\.get\("addName"\)/);
+  assert.match(source, /api\/catalog\/products\/\$\{encodeURIComponent\(requestedProduct\)\}/);
+  assert.match(source, /loadedProducts\.some\(\(product\) => product\.id === requestedProduct\)/);
+  assert.match(source, /tcg_comparison_catalog_product/);
+  assert.match(source, /cleanUrl\.searchParams\.delete\(parameter\)/);
 });
 
 test("production sitemap is served without a trailing-slash redirect", async () => {

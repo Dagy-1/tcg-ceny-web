@@ -14,6 +14,20 @@ function formatPrice(price: number | null) {
   return `${new Intl.NumberFormat("cs-CZ").format(price)} Kč`;
 }
 
+function comparisonHref(product: Product) {
+  const params = new URLSearchParams({
+    add: product.id,
+    addName: product.name,
+    addImage: product.image,
+    addType: product.type,
+    addEra: product.era,
+    addSet: product.set,
+    addPrice: product.bestPrice === null ? "" : String(product.bestPrice),
+    addChecked: product.checkedAt ? new Date(product.checkedAt * 1000).toISOString() : "",
+  });
+  return `/porovnani/?${params.toString()}`;
+}
+
 function formatDate(timestamp: number | null) {
   if (!timestamp) return "čas kontroly není dostupný";
   return new Intl.DateTimeFormat("cs-CZ", {
@@ -200,7 +214,23 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
         <div className="catalog-portfolio-action product-actions">
           <div><span>Pracuj s aktuální hodnotou</span><strong>Přidej produkt do portfolia nebo porovnání.</strong></div>
           <div className="catalog-product-actions">
-            <Link href={`/porovnani/?add=${encodeURIComponent(product.id)}`}>Porovnat</Link>
+            <Link
+              href={comparisonHref(product)}
+              onClick={() => {
+                try {
+                  window.sessionStorage.setItem("tcg_comparison_catalog_product", JSON.stringify({
+                    id: product.id,
+                    name: product.name,
+                    image_url: product.image || null,
+                    product_type: product.type || null,
+                    era: product.era || null,
+                    set_name: product.set || null,
+                    best_price_czk: product.bestPrice,
+                    checked_at: product.checkedAt ? new Date(product.checkedAt * 1000).toISOString() : null,
+                  }));
+                } catch { /* Comparison still has its API fallback. */ }
+              }}
+            >Porovnat</Link>
             <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}><span aria-hidden="true">+</span> Přidat do portfolia</Link>
           </div>
         </div>

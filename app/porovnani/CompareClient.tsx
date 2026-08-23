@@ -16,7 +16,19 @@ import { comparisonSummary } from "./comparison";
 type Selection = { productId: string; quantity: number };
 type Side = "mine" | "compared";
 
+type CatalogComparisonProduct = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  product_type: string | null;
+  era: string | null;
+  set_name: string | null;
+  best_price_czk: number | null;
+  checked_at: string | null;
+};
+
 const STORAGE_KEY = "tcg_product_comparison";
+const CATALOG_TRANSFER_KEY = "tcg_comparison_catalog_product";
 
 const formatCzk = (value: number) =>
   `${new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 0 }).format(value)} Kč`;
@@ -41,6 +53,19 @@ function priceAgeLabel(value: string) {
   if (age === 1) return "Cena aktualizována včera";
   if (age < 5) return `Cena aktualizována před ${age} dny`;
   return `Cena aktualizována před ${age} dny`;
+}
+
+function fromCatalogProduct(product: CatalogComparisonProduct): Product {
+  return {
+    id: product.id,
+    name: product.name,
+    type: product.product_type || "Produkt",
+    era: product.era || "",
+    set: product.set_name || "",
+    image: product.image_url || "",
+    marketPrice: product.best_price_czk,
+    priceUpdatedAt: product.checked_at || "",
+  };
 }
 
 function ProductSearch({
@@ -195,29 +220,87 @@ export default function CompareClient({
 
   useEffect(() => {
     const controller = new AbortController();
-    loadPortfolioProducts(initialProducts, controller.signal, setProductLoadStatus)
-      .then((loadedProducts) => {
-        if (loadedProducts.length) setProducts(loadedProducts);
-      })
-      .catch(() => undefined);
-    const hydrationTimer = window.setTimeout(() => {
+    let active = true;
+    const hydrate = async () => {
+      const query = new URLSearchParams(window.location.search);
+      const requestedProduct = query.get("add");
+      let loadedProducts = await loadPortfolioProducts(
+        initialProducts,
+        controller.signal,
+        setProductLoadStatus,
+      );
+
+      if (requestedProduct && !loadedProducts.some((product) => product.id === requestedProduct)) {
+        const transferredPrice = Number(query.get("addPrice"));
+        const transferredFromUrl: CatalogComparisonProduct | null = query.get("addName") ? {
+          id: requestedProduct,
+          name: query.get("addName") || "",
+          image_url: query.get("addImage") || null,
+          product_type: query.get("addType") || null,
+          era: query.get("addEra") || null,
+          set_name: query.get("addSet") || null,
+          best_price_czk: Number.isFinite(transferredPrice) && query.get("addPrice") !== "" ? transferredPrice : null,
+          checked_at: query.get("addChecked") || null,
+        } : null;
+        if (transferredFromUrl?.name) {
+          loadedProducts = [...loadedProducts, fromCatalogProduct(transferredFromUrl)];
+        }
+      }
+
+      if (requestedProduct && !loadedProducts.some((product) => product.id === requestedProduct)) {
+        try {
+          const transferred = JSON.parse(
+            window.sessionStorage.getItem(CATALOG_TRANSFER_KEY) || "null",
+          ) as CatalogComparisonProduct | null;
+          window.sessionStorage.removeItem(CATALOG_TRANSFER_KEY);
+          if (transferred?.id === requestedProduct && transferred.name) {
+            loadedProducts = [...loadedProducts, fromCatalogProduct(transferred)];
+          }
+        } catch { /* Fall through to the catalog API. */ }
+      }
+
+      if (requestedProduct && !loadedProducts.some((product) => product.id === requestedProduct)) {
+        try {
+          const response = await fetch(`/api/catalog/products/${encodeURIComponent(requestedProduct)}`, {
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error("Requested catalog product is unavailable");
+          const catalogProduct = await response.json() as CatalogComparisonProduct;
+          if (catalogProduct.id !== requestedProduct || !catalogProduct.name) {
+            throw new Error("Requested catalog product is invalid");
+          }
+          loadedProducts = [...loadedProducts, fromCatalogProduct(catalogProduct)];
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+        }
+      }
+
+      if (!active) return;
+      if (loadedProducts.length) setProducts(loadedProducts);
       try {
         const saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "null") as { mine?: Selection[]; compared?: Selection[] } | null;
         if (Array.isArray(saved?.mine)) setMine(saved.mine);
         if (Array.isArray(saved?.compared)) setCompared(saved.compared);
       } catch { /* Ignore invalid or unavailable session storage. */ }
-      const requestedProduct = new URLSearchParams(window.location.search).get("add");
-      if (requestedProduct) {
+      if (requestedProduct && loadedProducts.some((product) => product.id === requestedProduct)) {
         setMine((current) => current.some((item) => item.productId === requestedProduct)
           ? current
           : [...current, { productId: requestedProduct, quantity: 1 }]);
-        window.history.replaceState({}, "", "/porovnani/");
       }
+      const cleanUrl = new URL(window.location.href);
+      ["add", "addName", "addImage", "addType", "addEra", "addSet", "addPrice", "addChecked"]
+        .forEach((parameter) => cleanUrl.searchParams.delete(parameter));
+      window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
       setReady(true);
-    }, 0);
+    };
+    void hydrate().catch((error: unknown) => {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (active) setReady(true);
+    });
     return () => {
+      active = false;
       controller.abort();
-      window.clearTimeout(hydrationTimer);
     };
   }, [initialProducts]);
 
