@@ -224,6 +224,40 @@ export default function CompareClient({
     const hydrate = async () => {
       const query = new URLSearchParams(window.location.search);
       const requestedProduct = query.get("add");
+      const transferredPrice = Number(query.get("addPrice"));
+      const transferredFromUrl: CatalogComparisonProduct | null = requestedProduct && query.get("addName") ? {
+        id: requestedProduct,
+        name: query.get("addName") || "",
+        image_url: query.get("addImage") || null,
+        product_type: query.get("addType") || null,
+        era: query.get("addEra") || null,
+        set_name: query.get("addSet") || null,
+        best_price_czk: Number.isFinite(transferredPrice) && query.get("addPrice") !== "" ? transferredPrice : null,
+        checked_at: query.get("addChecked") || null,
+      } : null;
+
+      if (transferredFromUrl?.name) {
+        const immediateProduct = fromCatalogProduct(transferredFromUrl);
+        setProducts((current) => current.some((product) => product.id === immediateProduct.id)
+          ? current
+          : [...current, immediateProduct]);
+        try {
+          const saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "null") as { mine?: Selection[]; compared?: Selection[] } | null;
+          const savedMine = Array.isArray(saved?.mine) ? saved.mine : [];
+          setMine(savedMine.some((item) => item.productId === transferredFromUrl.id)
+            ? savedMine
+            : [...savedMine, { productId: transferredFromUrl.id, quantity: 1 }]);
+          if (Array.isArray(saved?.compared)) setCompared(saved.compared);
+        } catch {
+          setMine([{ productId: transferredFromUrl.id, quantity: 1 }]);
+        }
+        const cleanUrl = new URL(window.location.href);
+        ["add", "addName", "addImage", "addType", "addEra", "addSet", "addPrice", "addChecked"]
+          .forEach((parameter) => cleanUrl.searchParams.delete(parameter));
+        window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+        setReady(true);
+      }
+
       let loadedProducts = await loadPortfolioProducts(
         initialProducts,
         controller.signal,
@@ -231,17 +265,6 @@ export default function CompareClient({
       );
 
       if (requestedProduct && !loadedProducts.some((product) => product.id === requestedProduct)) {
-        const transferredPrice = Number(query.get("addPrice"));
-        const transferredFromUrl: CatalogComparisonProduct | null = query.get("addName") ? {
-          id: requestedProduct,
-          name: query.get("addName") || "",
-          image_url: query.get("addImage") || null,
-          product_type: query.get("addType") || null,
-          era: query.get("addEra") || null,
-          set_name: query.get("addSet") || null,
-          best_price_czk: Number.isFinite(transferredPrice) && query.get("addPrice") !== "" ? transferredPrice : null,
-          checked_at: query.get("addChecked") || null,
-        } : null;
         if (transferredFromUrl?.name) {
           loadedProducts = [...loadedProducts, fromCatalogProduct(transferredFromUrl)];
         }
@@ -278,15 +301,17 @@ export default function CompareClient({
 
       if (!active) return;
       if (loadedProducts.length) setProducts(loadedProducts);
-      try {
-        const saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "null") as { mine?: Selection[]; compared?: Selection[] } | null;
-        if (Array.isArray(saved?.mine)) setMine(saved.mine);
-        if (Array.isArray(saved?.compared)) setCompared(saved.compared);
-      } catch { /* Ignore invalid or unavailable session storage. */ }
-      if (requestedProduct && loadedProducts.some((product) => product.id === requestedProduct)) {
-        setMine((current) => current.some((item) => item.productId === requestedProduct)
-          ? current
-          : [...current, { productId: requestedProduct, quantity: 1 }]);
+      if (!transferredFromUrl) {
+        try {
+          const saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "null") as { mine?: Selection[]; compared?: Selection[] } | null;
+          if (Array.isArray(saved?.mine)) setMine(saved.mine);
+          if (Array.isArray(saved?.compared)) setCompared(saved.compared);
+        } catch { /* Ignore invalid or unavailable session storage. */ }
+        if (requestedProduct && loadedProducts.some((product) => product.id === requestedProduct)) {
+          setMine((current) => current.some((item) => item.productId === requestedProduct)
+            ? current
+            : [...current, { productId: requestedProduct, quantity: 1 }]);
+        }
       }
       const cleanUrl = new URL(window.location.href);
       ["add", "addName", "addImage", "addType", "addEra", "addSet", "addPrice", "addChecked"]
