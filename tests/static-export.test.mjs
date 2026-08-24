@@ -821,6 +821,7 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(globalCss, /@keyframes shop-marquee/);
   assert.match(globalCss, /\.shop-marquee:hover \.shop-marquee-track/);
   assert.match(globalCss, /\.shop-marquee:focus-within \.shop-marquee-track/);
+  assert.match(globalCss, /\.shop-marquee\s*\{[^}]*padding-block:\s*8px;[^}]*margin-block:\s*-8px;/s);
   assert.match(globalCss, /\.shop-marquee-toggle/);
   assert.match(globalCss, /\.skip-link:focus/);
   assert.match(globalCss, /\.shop-link:focus-visible/);
