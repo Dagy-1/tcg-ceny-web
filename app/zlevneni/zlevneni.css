@@ -56,8 +56,6 @@
 .drops-state h2 { margin: 6px 0; font-size: 25px; }
 .drops-state p { margin: 0 0 20px; color: var(--muted); }
 .drops-state button, .drops-state a { padding: 10px 16px; border: 1px solid rgba(230,184,74,.35); border-radius: 9px; color: #101827; background: var(--gold); font-weight: 800; }
-.drops-loader { width: 28px; height: 28px; margin-bottom: 12px; border: 2px solid rgba(230,184,74,.2); border-top-color: var(--gold); border-radius: 50%; animation: drops-spin .8s linear infinite; }
-@keyframes drops-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 860px) {
   .drops-main { padding-top: 38px; }
@@ -85,4 +83,4 @@
   .drop-footer > div { width: 100%; justify-content: space-between; }
   .drops-section-head h2 { font-size: 25px; }
 }
-@media (prefers-reduced-motion: reduce) { .drop-card { transition: none; } .drop-card:hover { transform: none; } .drops-loader { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .drop-card { transition: none; } .drop-card:hover { transform: none; } }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Bell, Check, PackageCheck, RefreshCw, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import AuthMenu from "../AuthMenu";
+import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
 import { productPath } from "../katalog/catalog-model";
 
@@ -59,6 +60,18 @@ function availabilityLabel(value: AlertItem["product"]["availability"]) {
   if (value === "store") return "Pouze na prodejně";
   if (value === "unavailable") return "Momentálně vyprodáno";
   return "Dostupnost se ověřuje";
+}
+
+function formatCheckedAt(value: string | null) {
+  if (!value) return "Kontrola zatím není dostupná";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Kontrola zatím není dostupná";
+  return `Zkontrolováno ${new Intl.DateTimeFormat("cs-CZ", {
+    day: "numeric",
+    month: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed)}`;
 }
 
 function progress(item: AlertItem) {
@@ -178,11 +191,12 @@ export default function SledovaniClient() {
         </header>
 
         {state === "loading" && (
-          <section className="watching-state" aria-live="polite">
-            <span className="watching-loader" aria-hidden="true" />
-            <h2>Načítám tvoje sledování</h2>
-            <p>Kontroluji uložené limity a aktuální nabídky.</p>
-          </section>
+          <BrandedLoader
+            className="watching-state"
+            label="Načítám tvoje sledování"
+            detail="Kontroluji uložené limity a aktuální nabídky."
+            longDetail="Centrální služba se probouzí. Uložená sledování zůstávají v bezpečí."
+          />
         )}
 
         {state === "anonymous" && (
@@ -276,7 +290,13 @@ export default function SledovaniClient() {
                           )}
 
                           <div className="watching-card-footer">
-                            <span><PackageCheck size={15} aria-hidden="true" /> {item.shops.length ? item.shops.join(", ") : "Všechny ověřené obchody"}</span>
+                            <span>
+                              <PackageCheck size={15} aria-hidden="true" />
+                              <span>
+                                {item.shops.length ? item.shops.join(", ") : "Všechny ověřené obchody"}
+                                <small>{formatCheckedAt(item.product.checked_at)}{item.product.data_stale ? " · data čekají na obnovení" : ""}</small>
+                              </span>
+                            </span>
                             <div>
                               <Link href={`${path}?upozorneni=upravit`}>Upravit nastavení</Link>
                               {confirmId === item.product.id ? (
@@ -302,7 +322,8 @@ export default function SledovaniClient() {
             )}
 
             <p className="watching-delivery-note">
-              Nastavení je bezpečně uložené u tvého účtu. Automatické doručování upozornění zapneme až po závěrečném testu proti duplicitám.
+              Nastavení je bezpečně uložené u tvého účtu. U každého produktu vidíš zvolený kanál i poslední kontrolu dat.
+              Automatické doručování zapneme až po závěrečném testu proti duplicitám.
             </p>
           </>
         )}

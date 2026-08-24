@@ -4,9 +4,11 @@ import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AuthMenu from "../AuthMenu";
+import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
 import catalogData from "../katalog/catalog-data.json";
 import { productPath, type CatalogData } from "../katalog/catalog-model";
+import { safeShopUrl } from "../shop-url";
 
 type Period = 1 | 7 | 30;
 type Sort = "newest" | "largest";
@@ -51,15 +53,6 @@ function formatMoment(value: string) {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `Před ${hours} h`;
   return new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(date);
-}
-
-function safeOfferUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
-  } catch {
-    return null;
-  }
 }
 
 function ProductImage({ item }: { item: PriceDrop }) {
@@ -154,7 +147,7 @@ export default function PriceDropsClient() {
           </section>
         )}
 
-        {state === "loading" && <section className="drops-state" aria-live="polite"><span className="drops-loader" /><h2>Načítám potvrzená zlevnění</h2><p>Kontroluji poslední bezpečně doručené události.</p></section>}
+        {state === "loading" && <BrandedLoader className="drops-state" label="Načítám potvrzená zlevnění" detail="Kontroluji poslední bezpečně doručené události." longDetail="Ověřené události se načítají déle než obvykle. Nic nepotvrzeného nezobrazíme." />}
         {state === "error" && <section className="drops-state"><RefreshCw aria-hidden="true" /><h2>Přehled se teď nepodařilo načíst</h2><p>Katalog dál funguje. Zkus přehled za chvíli obnovit.</p><button type="button" onClick={() => void load(period)}>Zkusit znovu</button></section>}
         {state === "ready" && data.items.length === 0 && <section className="drops-state drops-empty"><Sparkles aria-hidden="true" /><h2>V tomto období zatím žádné potvrzené zlevnění</h2><p>To je v pořádku — zobrazujeme jen skutečné poklesy nejnižší dostupné ceny.</p><Link href="/katalog/">Prohlédnout katalog</Link></section>}
 
@@ -163,7 +156,7 @@ export default function PriceDropsClient() {
             <div className="drops-section-head"><div><p>Aktuální přehled</p><h2>Nejnovější pohyby cen</h2></div><span>{data.total} {data.total === 1 ? "zlevnění" : "zlevnění"}</span></div>
             <div className="drops-list">
               {items.map((item) => {
-                const offerUrl = safeOfferUrl(item.url);
+                const offerUrl = safeShopUrl(item.url);
                 const detailPath = productPath({ id: item.product_id, name: item.product_name });
                 return (
                   <article className="drop-card" key={item.id}>

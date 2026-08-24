@@ -28,19 +28,19 @@ export const metadata: Metadata = {
       "Porovnání cen a skladovosti, ověřené alerty, historie cen a portfolio sealed sbírky.",
     images: [
       {
-        url: "/favicon.png",
-        width: 512,
-        height: 512,
-        alt: "TCG Ceny",
+        url: "/tcg-ceny-social-1200x630.png",
+        width: 1200,
+        height: 630,
+        alt: "TCG Ceny – Pokémon TCG na jednom místě",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "TCG Ceny",
     description:
       "České porovnání cen a skladovosti sealed Pokémon TCG produktů.",
-    images: ["/favicon.png"],
+    images: ["/tcg-ceny-social-1200x630.png"],
   },
   robots: {
     index: true,
@@ -73,6 +73,7 @@ export default function RootLayout({
   return (
     <html lang="cs" data-scroll-behavior="smooth">
       <body>
+        <a className="skip-link" href="#main-content">Přeskočit na hlavní obsah</a>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -82,7 +83,7 @@ export default function RootLayout({
         <ScrollNavState />
         <MotionSystem />
         <SiteTour />
-        {children}
+        <div id="main-content" tabIndex={-1}>{children}</div>
       </body>
     </html>
   );

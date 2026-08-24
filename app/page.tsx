@@ -4,7 +4,6 @@ import {
   BellRing,
   BriefcaseBusiness,
   ChartNoAxesCombined,
-  ExternalLink,
   ShieldCheck,
   Store,
 } from "lucide-react";
@@ -12,8 +11,11 @@ import AuthMenu from "./AuthMenu";
 import CardCompanion from "./CardCompanion";
 import MobileNav from "./MobileNav";
 import PriceHistoryDemo from "./PriceHistoryDemo";
+import ShopMarquee from "./ShopMarquee";
+import { productPath } from "./katalog/catalog-model";
 
 const DISCORD_URL = "https://discord.gg/pRC8GKAKxG";
+const CHAOS_RISING_PATH = productPath({ id: "pm:chaos-rising-etb", name: "Chaos Rising ETB" });
 
 const offers = [
   { shop: "Kitstore", price: "1 799 Kč", best: true },
@@ -182,7 +184,7 @@ export default function Home() {
             <span>Ukázkové zobrazení</span>
           </div>
           <p className="demo-note">
-            Aktuální nabídky a ověřenou skladovost najdeš v katalogu i Discord botovi.
+            <a href={CHAOS_RISING_PATH}>Zobrazit živé nabídky →</a>
           </p>
         </div>
       </section>
@@ -192,42 +194,7 @@ export default function Home() {
           <p className="eyebrow">Český trh v jednom přehledu</p>
           <strong>Porovnáváme veřejné nabídky napříč e-shopy.</strong>
         </div>
-        <div className="shop-marquee" aria-label="Sledované české e-shopy">
-          <div className="shop-marquee-track">
-            {[false, true].map((isDuplicate) => (
-              <div
-                className="shop-tags"
-                aria-hidden={isDuplicate ? "true" : undefined}
-                key={isDuplicate ? "duplicate" : "primary"}
-              >
-                {monitoredShops.map((shop) => (
-                  <a
-                    className="shop-link"
-                    href={shop.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    tabIndex={isDuplicate ? -1 : undefined}
-                    aria-label={`Otevřít e-shop ${shop.name} v nové kartě`}
-                    key={shop.name}
-                  >
-                    <span className="shop-mark" aria-hidden="true">
-                      <Image
-                        className="shop-logo"
-                        src={shop.icon}
-                        alt=""
-                        width={64}
-                        height={64}
-                        unoptimized
-                      />
-                    </span>
-                    <span className="shop-name">{shop.name}</span>
-                    <ExternalLink className="shop-link-icon" size={13} strokeWidth={1.8} aria-hidden="true" />
-                  </a>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        <ShopMarquee shops={monitoredShops} />
         <p className="shop-disclaimer">Pořadí není placené · odkazy vedou přímo na e-shopy.</p>
       </section>
 

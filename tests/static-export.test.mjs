@@ -14,6 +14,7 @@ import {
 import { comparisonSummary, selectionTotal } from "../app/porovnani/comparison.ts";
 import catalogData from "../app/katalog/catalog-data.json" with { type: "json" };
 import { productPath, productSlug } from "../app/katalog/catalog-model.ts";
+import { safeShopUrl } from "../app/shop-url.ts";
 
 const output = new URL("../out/", import.meta.url);
 
@@ -81,6 +82,29 @@ test("custom cursor is lightweight and limited to precise pointing devices", asy
   assert.doesNotMatch(activeCursorSvg, /<circle/i);
   assert.ok(Buffer.byteLength(cursorSvg) < 2_000);
   assert.ok(Buffer.byteLength(activeCursorSvg) < 2_000);
+});
+
+test("slow data views share the lightweight branded card loader", async () => {
+  const [loader, globalCss, watching, drops, portfolio] = await Promise.all([
+    readFile(new URL("../app/BrandedLoader.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/sledovani/SledovaniClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/zlevneni/PriceDropsClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/portfolio/PortfolioClient.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(loader, /delayMs = 320/);
+  assert.match(loader, /longDelayMs = 6_500/);
+  assert.match(loader, /aria-live="polite"/);
+  assert.match(loader, /aria-hidden=\{!visible\}/);
+  assert.match(globalCss, /@keyframes tcg-card-shuffle-front/);
+  assert.match(globalCss, /@keyframes tcg-card-shuffle-back/);
+  assert.match(globalCss, /animation-play-state:\s*paused/);
+  assert.match(watching, /<BrandedLoader/);
+  assert.match(drops, /<BrandedLoader/);
+  assert.match(portfolio, /<BrandedLoader/);
+  assert.doesNotMatch(watching, /watching-loader/);
+  assert.doesNotMatch(drops, /drops-loader/);
 });
 
 test("portfolio uses the dedicated investment database", async () => {
@@ -161,7 +185,8 @@ test("portfolio uses the dedicated investment database", async () => {
   assert.match(authMenuSource, /disabled=\{isLoading\}/);
   assert.match(catalog, /href="\/portfolio\/"/);
   assert.match(productDetailSource, /Přidat do portfolia/);
-  assert.match(productDetailSource, /sessionStorage\.setItem\("tcg_comparison_catalog_product"/);
+  assert.match(productDetailSource, /\/porovnani\/\?add=\$\{encodeURIComponent\(product\.id\)\}/);
+  assert.doesNotMatch(productDetailSource, /addName|addImage|addPrice|tcg_comparison_catalog_product/);
   assert.match(privacy, /Discord ID/);
   assert.match(privacy, /Přihlášení přes Google/);
   assert.match(privacy, /technicky nezbytnou zabezpečenou cookie/);
@@ -206,11 +231,19 @@ test("product comparison uses current market value and exact quantities", async 
   );
   assert.match(source, /const query = new URLSearchParams\(window\.location\.search\)/);
   assert.match(source, /const requestedProduct = query\.get\("add"\)/);
-  assert.match(source, /query\.get\("addName"\)/);
+  assert.doesNotMatch(source, /query\.get\("addName"\)|query\.get\("addPrice"\)/);
   assert.match(source, /api\/catalog\/products\/\$\{encodeURIComponent\(requestedProduct\)\}/);
   assert.match(source, /loadedProducts\.some\(\(product\) => product\.id === requestedProduct\)/);
-  assert.match(source, /tcg_comparison_catalog_product/);
-  assert.match(source, /cleanUrl\.searchParams\.delete\(parameter\)/);
+  assert.doesNotMatch(source, /tcg_comparison_catalog_product/);
+  assert.match(source, /cleanUrl\.searchParams\.delete\("add"\)/);
+});
+
+test("shop links allow only HTTPS URLs on supported domains", () => {
+  assert.equal(safeShopUrl("https://www.alza.cz/hracky/produkt"), "https://www.alza.cz/hracky/produkt");
+  assert.equal(safeShopUrl("https://vortexstore.eu/products/test"), "https://vortexstore.eu/products/test");
+  assert.equal(safeShopUrl("http://www.alza.cz/hracky/produkt"), null);
+  assert.equal(safeShopUrl("https://alza.cz.attacker.example/produkt"), null);
+  assert.equal(safeShopUrl("javascript:alert(1)"), null);
 });
 
 test("production sitemap is served without a trailing-slash redirect", async () => {
@@ -269,8 +302,11 @@ test("catalog prefers the central API and keeps the build snapshot as fallback",
     readFile(new URL("../.dev.vars.example", import.meta.url), "utf8"),
   ]);
 
-  assert.match(client, /fetch\(`\/api\/catalog\/products\?limit=100/);
-  assert.match(client, /items\.length !== total/);
+  assert.match(client, /limit: String\(PAGE_SIZE\)/);
+  assert.match(client, /offset: String\(\(page - 1\) \* PAGE_SIZE\)/);
+  assert.match(client, /window\.setTimeout\(\(\) => setDebouncedQuery\(query\.trim\(\)\), 300\)/);
+  assert.match(client, /window\.history\.replaceState/);
+  assert.doesNotMatch(client, /for \(let offset = 0; offset < total/);
   assert.match(client, /embedded build snapshot is the deliberate availability fallback/);
   assert.match(proxy, /REQUEST_TIMEOUT_MS = 12_000/);
   assert.match(client, /productPath\(product\)/);
@@ -740,6 +776,7 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /https:\/\/tcgceny\.cz/);
   assert.match(html, /brand-mark\.svg/);
   assert.match(html, /favicon\.png/);
+  assert.match(html, /tcg-ceny-social-1200x630\.png/);
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Neplať víc/);
   assert.match(html, /Nezmeškej naskladnění/);
@@ -784,9 +821,20 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(globalCss, /@keyframes shop-marquee/);
   assert.match(globalCss, /\.shop-marquee:hover \.shop-marquee-track/);
   assert.match(globalCss, /\.shop-marquee:focus-within \.shop-marquee-track/);
+  assert.match(globalCss, /\.shop-marquee-toggle/);
+  assert.match(globalCss, /\.skip-link:focus/);
   assert.match(globalCss, /\.shop-link:focus-visible/);
   assert.match(globalCss, /\.shop-tags\[aria-hidden="true"\]/);
   assert.match(globalCss, /@media \(prefers-reduced-motion: reduce\)/);
+
+  const [layoutSource, tourSource] = await Promise.all([
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/SiteTour.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(layoutSource, /Přeskočit na hlavní obsah/);
+  assert.match(layoutSource, /id="main-content"/);
+  assert.match(tourSource, /event\.key === "Escape"/);
+  assert.match(tourSource, /previousFocusRef\.current\?\.focus/);
 });
 
 test("partner and legal pages contain required information", async () => {
@@ -1150,7 +1198,8 @@ test("product detail links the best current price directly to its verified shop"
     readOutput("produkt/me05-pitch-black-booster-bundle-03popd8/index.html"),
   ]);
 
-  assert.match(source, /url\.protocol === "https:"/);
+  assert.match(source, /import \{ safeShopUrl \} from "\.\.\/\.\.\/shop-url"/);
+  assert.match(source, /const offerUrl = safeShopUrl\(offer\.url\)/);
   assert.match(source, /rel="noopener noreferrer"/);
   assert.match(source, /Otevřít nejlevnější nabídku produktu/);
   assert.match(detail, /Nejlevněji u/);

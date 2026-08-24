@@ -96,8 +96,9 @@ function ProductImage({ product }: { product: Product }) {
 }
 
 export default function CatalogClient({ data }: { data: CatalogData }) {
-  const [catalogData, setCatalogData] = useState(data);
+  const catalogData = data;
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [era, setEra] = useState("all");
   const [setName, setSetName] = useState("all");
   const [type, setType] = useState("all");
@@ -105,39 +106,77 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
   const [condition, setCondition] = useState<ConditionMode>("sealed");
   const [sort, setSort] = useState<SortMode>("newest");
   const [page, setPage] = useState(1);
+  const [centralPage, setCentralPage] = useState<{ products: Product[]; total: number } | null>(null);
+  const [centralLoading, setCentralLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const params = new URLSearchParams(window.location.search);
+      setQuery(params.get("q") || "");
+      setEra(params.get("era") || "all");
+      setSetName(params.get("set") || "all");
+      setType(params.get("type") || "all");
+      setAvailability(params.get("availability") || "all");
+      const requestedCondition = params.get("condition");
+      if (requestedCondition === "sealed" || requestedCondition === "opening") {
+        setCondition(requestedCondition);
+      }
+      const requestedSort = params.get("sort");
+      if (["recommended", "price-asc", "price-desc", "name", "newest"].includes(requestedSort || "")) {
+        setSort(requestedSort as SortMode);
+      }
+      const requestedPage = Number(params.get("page"));
+      if (Number.isInteger(requestedPage) && requestedPage > 0) setPage(requestedPage);
+      setInitialized(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!initialized) return;
     const controller = new AbortController();
     let active = true;
     const loadCatalog = async () => {
+      setCentralLoading(true);
       try {
-        const items: ApiProduct[] = [];
-        let total = 1;
-        for (let offset = 0; offset < total; offset += 100) {
-          const response = await fetch(`/api/catalog/products?limit=100&offset=${offset}&sort=newest`, {
-            headers: { Accept: "application/json" },
-            signal: controller.signal,
-          });
-          if (!response.ok) throw new Error("Central catalog is unavailable");
-          const page = (await response.json()) as ApiCatalogPage;
-          if (!Array.isArray(page.items) || !Number.isInteger(page.total) || page.total < 0) {
-            throw new Error("Central catalog returned an invalid response");
-          }
-          total = page.total;
-          items.push(...page.items);
+        const params = new URLSearchParams({
+          limit: String(PAGE_SIZE),
+          offset: String((page - 1) * PAGE_SIZE),
+          sort: sort === "price-asc" || sort === "recommended" ? "price_asc" : sort === "price-desc" ? "price_desc" : sort,
+          condition,
+        });
+        if (debouncedQuery) params.set("q", debouncedQuery);
+        if (era !== "all") params.set("era", era);
+        if (setName !== "all") params.set("set", setName);
+        if (type !== "all") params.set("type", type);
+        if (availability !== "all") params.set("availability", availability);
+        const response = await fetch(`/api/catalog/products?${params}`, {
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("Central catalog is unavailable");
+        const result = (await response.json()) as ApiCatalogPage;
+        if (!Array.isArray(result.items) || !Number.isInteger(result.total) || result.total < 0) {
+          throw new Error("Central catalog returned an invalid response");
         }
-        if (items.length !== total) throw new Error("Central catalog response is incomplete");
         const fallbackById = new Map(data.products.map((product) => [product.id, product]));
         if (active) {
-          setCatalogData({
-            generatedAt: Date.now(),
-            productCount: total,
-            products: items.map((product) => productFromApi(product, fallbackById.get(product.id))),
+          setCentralPage({
+            total: result.total,
+            products: result.items.map((product) => productFromApi(product, fallbackById.get(product.id))),
           });
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         // The embedded build snapshot is the deliberate availability fallback.
+        if (active) setCentralPage(null);
+      } finally {
+        if (active) setCentralLoading(false);
       }
     };
     void loadCatalog();
@@ -145,7 +184,22 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
       active = false;
       controller.abort();
     };
-  }, [data]);
+  }, [availability, condition, data.products, debouncedQuery, era, initialized, page, setName, sort, type]);
+
+  useEffect(() => {
+    if (!initialized) return;
+    const params = new URLSearchParams();
+    if (debouncedQuery) params.set("q", debouncedQuery);
+    if (era !== "all") params.set("era", era);
+    if (setName !== "all") params.set("set", setName);
+    if (type !== "all") params.set("type", type);
+    if (availability !== "all") params.set("availability", availability);
+    if (condition !== "sealed") params.set("condition", condition);
+    if (sort !== "newest") params.set("sort", sort);
+    if (page > 1) params.set("page", String(page));
+    const suffix = params.toString();
+    window.history.replaceState({}, "", `${window.location.pathname}${suffix ? `?${suffix}` : ""}`);
+  }, [availability, condition, debouncedQuery, era, initialized, page, setName, sort, type]);
 
   const eras = useMemo(
     () => [...new Set(catalogData.products.map((product) => product.era))].sort((a, b) => a.localeCompare(b, "cs")),
@@ -197,8 +251,9 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
     });
   }, [availability, condition, catalogData.products, era, query, setName, sort, type]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const visibleProducts = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const resultTotal = centralPage?.total ?? filtered.length;
+  const pageCount = Math.max(1, Math.ceil(resultTotal / PAGE_SIZE));
+  const visibleProducts = centralPage?.products ?? filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const onlineCount = catalogData.products.filter((product) => product.availability === "online").length;
   const sealedCount = catalogData.products.filter((product) => product.condition === "sealed").length;
   const openingCount = catalogData.products.filter((product) => product.condition === "opening").length;
@@ -383,7 +438,9 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
         </div>
 
         <div className="catalog-result-bar">
-          <p className="catalog-result-count" key={`${filtered.length}-${condition}`}><strong>{filtered.length}</strong> {resultCountLabel(filtered.length)}</p>
+          <p className="catalog-result-count" key={`${resultTotal}-${condition}`} aria-live="polite">
+            <strong>{resultTotal}</strong> {resultCountLabel(resultTotal)}{centralLoading ? " · načítám…" : ""}
+          </p>
           <div>
             {activeFilters > 0 && (
               <button type="button" className="catalog-clear" onClick={clearFilters}>

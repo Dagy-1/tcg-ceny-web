@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const TOUR_QUERY = "pruvod";
 const TOUR_DONE_KEY = "tcg-ceny-tour-v1";
@@ -52,8 +52,11 @@ function routeForStep(index: number) {
 export default function SiteTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const startTour = useCallback(() => {
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setStep(0);
     setOpen(true);
   }, []);
@@ -63,6 +66,7 @@ export default function SiteTour() {
     const cleanUrl = `${window.location.pathname}${window.location.hash}`;
     window.history.replaceState({}, "", cleanUrl);
     setOpen(false);
+    window.setTimeout(() => previousFocusRef.current?.focus(), 0);
   }, []);
 
   useEffect(() => {
@@ -72,6 +76,7 @@ export default function SiteTour() {
 
     if (Number.isInteger(requestedStep) && requestedStep >= 1 && requestedStep <= tourSteps.length) {
       openTimer = window.setTimeout(() => {
+        previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         setStep(requestedStep - 1);
         setOpen(true);
       }, 0);
@@ -83,6 +88,16 @@ export default function SiteTour() {
       window.removeEventListener("tcg-tour-open", startTour);
     };
   }, [startTour]);
+
+  useEffect(() => {
+    if (!open) return;
+    closeButtonRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeTour();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [closeTour, open]);
 
   const moveTo = (nextStep: number) => {
     window.location.assign(routeForStep(nextStep));
@@ -113,7 +128,7 @@ export default function SiteTour() {
         <div className="site-tour-content">
           <div className="site-tour-topline">
             <p>{current.eyebrow}</p>
-            <button type="button" onClick={closeTour} aria-label="Zavřít průvodce">
+            <button ref={closeButtonRef} type="button" onClick={closeTour} aria-label="Zavřít průvodce">
               <X size={17} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>

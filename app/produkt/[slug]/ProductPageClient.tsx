@@ -8,6 +8,7 @@ import MobileNav from "../../MobileNav";
 import { productFromApi, type ApiProduct, type Product } from "../../katalog/catalog-model";
 import ProductAlertControl from "../../katalog/ProductAlertControl";
 import CatalogIssueReportControl from "../../katalog/CatalogIssueReportControl";
+import { safeShopUrl } from "../../shop-url";
 
 function formatPrice(price: number | null) {
   if (price === null) return "Cena není dostupná";
@@ -15,17 +16,7 @@ function formatPrice(price: number | null) {
 }
 
 function comparisonHref(product: Product) {
-  const params = new URLSearchParams({
-    add: product.id,
-    addName: product.name,
-    addImage: product.image,
-    addType: product.type,
-    addEra: product.era,
-    addSet: product.set,
-    addPrice: product.bestPrice === null ? "" : String(product.bestPrice),
-    addChecked: product.checkedAt ? new Date(product.checkedAt * 1000).toISOString() : "",
-  });
-  return `/porovnani/?${params.toString()}`;
+  return `/porovnani/?add=${encodeURIComponent(product.id)}`;
 }
 
 function formatDate(timestamp: number | null) {
@@ -47,15 +38,6 @@ function offerStatusLabel(status: Product["availability"]) {
   if (status === "online") return "Skladem";
   if (status === "store") return "Prodejna";
   return "Vyprodáno";
-}
-
-function safeOfferUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && Boolean(url.hostname) ? url.href : null;
-  } catch {
-    return null;
-  }
 }
 
 export default function ProductPageClient({ initialProduct }: { initialProduct: Product }) {
@@ -104,9 +86,9 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
     offer.status === bestStatus
     && offer.price === product.bestPrice
     && !offer.stale
-    && safeOfferUrl(offer.url)
+    && safeShopUrl(offer.url)
   ));
-  const bestOfferUrl = bestOffer ? safeOfferUrl(bestOffer.url) : null;
+  const bestOfferUrl = bestOffer ? safeShopUrl(bestOffer.url) : null;
   const priceCardContent = <>
     <span className="catalog-price-signal" aria-hidden="true" />
     <div className="catalog-price-copy">
@@ -192,13 +174,15 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
           </div>
           {availableOffers.length ? availableOffers.map((offer) => {
             const isBest = offer.status === bestStatus && offer.price === product.bestPrice && !offer.stale;
+            const offerUrl = safeShopUrl(offer.url);
+            const offerContent = <>
+              <div><strong>{offer.shop}</strong><span className={`catalog-offer-status catalog-offer-${offer.status}`}>{offerStatusLabel(offer.status)}{offer.stale ? " · starší údaj" : ""}</span></div>
+              <span className={`catalog-best-label${isBest ? "" : " catalog-best-placeholder"}`}>{isBest ? "Nejlepší" : ""}</span>
+              <b>{formatPrice(offer.price)}</b>{offerUrl && <ArrowUpRight className="catalog-offer-open" size={16} aria-hidden="true" />}
+            </>;
             return (
               <div className={`catalog-offer-row ${isBest ? "catalog-offer-best" : ""}`} key={`${offer.shop}-${offer.url}`}>
-                <a className="catalog-offer-link" href={offer.url} target="_blank" rel="noopener noreferrer">
-                  <div><strong>{offer.shop}</strong><span className={`catalog-offer-status catalog-offer-${offer.status}`}>{offerStatusLabel(offer.status)}{offer.stale ? " · starší údaj" : ""}</span></div>
-                  <span className={`catalog-best-label${isBest ? "" : " catalog-best-placeholder"}`}>{isBest ? "Nejlepší" : ""}</span>
-                  <b>{formatPrice(offer.price)}</b><ArrowUpRight className="catalog-offer-open" size={16} aria-hidden="true" />
-                </a>
+                {offerUrl ? <a className="catalog-offer-link" href={offerUrl} target="_blank" rel="noopener noreferrer">{offerContent}</a> : <div className="catalog-offer-link">{offerContent}</div>}
                 <CatalogIssueReportControl product={product} offer={offer} variant="offer" />
               </div>
             );
@@ -206,7 +190,13 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
 
           {unavailableOffers.length > 0 && (
             <details className="catalog-unavailable"><summary>Vyprodané nabídky ({unavailableOffers.length})</summary>
-              {unavailableOffers.map((offer) => <a href={offer.url} target="_blank" rel="noopener noreferrer" key={`${offer.shop}-${offer.url}`}><span>{offer.shop}</span><span>{formatPrice(offer.price)}</span></a>)}
+              {unavailableOffers.map((offer) => {
+                const offerUrl = safeShopUrl(offer.url);
+                const content = <><span>{offer.shop}</span><span>{formatPrice(offer.price)}</span></>;
+                return offerUrl
+                  ? <a href={offerUrl} target="_blank" rel="noopener noreferrer" key={`${offer.shop}-${offer.url}`}>{content}</a>
+                  : <div key={`${offer.shop}-${offer.url}`}>{content}</div>;
+              })}
             </details>
           )}
         </section>
@@ -216,20 +206,6 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
           <div className="catalog-product-actions">
             <Link
               href={comparisonHref(product)}
-              onClick={() => {
-                try {
-                  window.sessionStorage.setItem("tcg_comparison_catalog_product", JSON.stringify({
-                    id: product.id,
-                    name: product.name,
-                    image_url: product.image || null,
-                    product_type: product.type || null,
-                    era: product.era || null,
-                    set_name: product.set || null,
-                    best_price_czk: product.bestPrice,
-                    checked_at: product.checkedAt ? new Date(product.checkedAt * 1000).toISOString() : null,
-                  }));
-                } catch { /* Comparison still has its API fallback. */ }
-              }}
             >Porovnat</Link>
             <Link href={`/portfolio/?add=${encodeURIComponent(product.id)}`}><span aria-hidden="true">+</span> Přidat do portfolia</Link>
           </div>

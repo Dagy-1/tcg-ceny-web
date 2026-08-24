@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CalendarDays, Check, ChevronDown, Pencil, Plus, Trash2, X } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AuthMenu from "../AuthMenu";
+import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
 import {
   loadPortfolioProducts,
@@ -1440,6 +1441,15 @@ export default function PortfolioClient({
         </p>
       )}
 
+      {state === "loading" && (
+        <BrandedLoader
+          className="portfolio-brand-loader"
+          label="Připravuji tvoje portfolio"
+          detail="Ověřuji přihlášení a načítám bezpečný přehled sbírky."
+          longDetail="Centrální služba se probouzí. Tvoje uložená sbírka zůstává beze změny."
+        />
+      )}
+
       {state === "signed-out" && (
         <SignedOutPreview
           products={products}
@@ -1468,10 +1478,12 @@ export default function PortfolioClient({
           </div>
 
           {portfolioLoadState === "loading" && (
-            <div className="portfolio-unavailable" role="status">
-              <strong>Načítám tvoje portfolio…</strong>
-              <p>Ověřujeme spojení s centrální databází.</p>
-            </div>
+            <BrandedLoader
+              className="portfolio-brand-loader is-dashboard-loader"
+              label="Načítám tvoje portfolio"
+              detail="Ověřuji spojení s centrální databází."
+              longDetail="Databáze se probouzí. Nuly ani neúplná data mezitím nezobrazíme."
+            />
           )}
 
           {portfolioLoadState === "error" && (

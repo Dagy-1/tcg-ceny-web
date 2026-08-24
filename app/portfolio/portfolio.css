@@ -1086,6 +1086,21 @@
 .portfolio-unavailable strong { display: block; font-size: 18px; }
 .portfolio-unavailable p { max-width: 650px; margin: 8px 0 18px; color: var(--pf-muted); line-height: 1.6; }
 
+.portfolio-brand-loader {
+  width: min(760px, calc(100% - 40px));
+  min-height: 250px;
+  margin: 28px auto 70px;
+  padding: 32px;
+  border: 1px solid var(--pf-line);
+  border-radius: 14px;
+  background: rgba(10, 28, 47, .76);
+}
+.portfolio-brand-loader.is-dashboard-loader {
+  width: 100%;
+  min-height: 220px;
+  margin: 28px 0 0;
+}
+
 .portfolio-loading {
   min-height: 420px;
   display: grid;
