@@ -1253,6 +1253,11 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(navStatus, /api\/catalog\/price-drops\?days=30&limit=1/);
   assert.match(navStatus, /tcg-ceny:last-seen-price-drop/);
   assert.match(navStatus, /nav-new-drop/);
+  assert.match(navStatus, /PRICE_DROP_REFRESH_INTERVAL_MS = 5 \* 60 \* 1000/);
+  assert.match(navStatus, /visibilitychange/);
+  assert.match(navStatus, /window\.addEventListener\("focus"/);
+  assert.match(navStatus, /window\.addEventListener\("online"/);
+  assert.match(navStatus, /cache: "no-store"/);
 });
 
 test("catalog issue reports require a verified signed-in user", async () => {

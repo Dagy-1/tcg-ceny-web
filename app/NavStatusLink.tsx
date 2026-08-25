@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 export const ALERTS_READ_EVENT = "tcg-ceny:alerts-read";
 const PRICE_DROP_SEEN_KEY = "tcg-ceny:last-seen-price-drop";
+const PRICE_DROP_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 type AlertEventSummary = { unread?: number };
 type PriceDropSummary = { items?: Array<{ occurred_at?: string }> };
@@ -42,11 +43,12 @@ async function loadUnreadAlerts() {
   return unreadRequest;
 }
 
-async function loadNewDrops() {
-  if (newDropsSnapshot !== null) return newDropsSnapshot;
+async function loadNewDrops(force = false) {
+  if (!force && newDropsSnapshot !== null) return newDropsSnapshot;
   if (!dropsRequest) {
     dropsRequest = (async () => {
       const response = await fetch("/api/catalog/price-drops?days=30&limit=1", {
+        cache: "no-store",
         headers: { Accept: "application/json" },
       });
       if (!response.ok) return false;
@@ -62,7 +64,9 @@ async function loadNewDrops() {
     })().then((value) => {
       newDropsSnapshot = value;
       return value;
-    }).catch(() => false);
+    }).catch(() => newDropsSnapshot ?? false).finally(() => {
+      dropsRequest = null;
+    });
   }
   return dropsRequest;
 }
@@ -112,7 +116,29 @@ export default function NavStatusLink({ kind, current = false, mobile = false, o
       void loadUnreadAlerts().then(setUnread);
       return () => window.removeEventListener(ALERTS_READ_EVENT, update);
     }
-    void loadNewDrops().then(setHasNewDrops);
+    let active = true;
+    const refresh = (force = false) => {
+      void loadNewDrops(force).then((value) => {
+        if (active) setHasNewDrops(value);
+      });
+    };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refresh(true);
+    };
+
+    refresh();
+    const intervalId = window.setInterval(() => refresh(true), PRICE_DROP_REFRESH_INTERVAL_MS);
+    window.addEventListener("focus", refreshWhenVisible);
+    window.addEventListener("online", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshWhenVisible);
+      window.removeEventListener("online", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [kind]);
 
   return (
