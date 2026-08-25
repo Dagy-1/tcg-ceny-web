@@ -829,7 +829,8 @@ test("homepage contains production metadata and core content", async () => {
   );
   assert.match(mobileCss, /\.shop-marquee-track\s*\{[^}]*animation:\s*shop-marquee 52s linear infinite;/s);
   assert.doesNotMatch(mobileCss, /\.shop-tags\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s);
-  assert.match(mobileCss, /\.shop-marquee-toggle\s*\{[^}]*width:\s*32px;/s);
+  assert.match(mobileCss, /\.shop-marquee-toggle\s*\{[^}]*width:\s*32px;[^}]*gap:\s*0;/s);
+  assert.match(globalCss, /\.shop-marquee-toggle\[aria-pressed="true"\] svg\s*\{[^}]*translateX\(1px\)/s);
   assert.match(globalCss, /\.skip-link:focus/);
   assert.match(globalCss, /\.shop-link:focus-visible/);
   assert.match(globalCss, /\.shop-tags\[aria-hidden="true"\]/);
