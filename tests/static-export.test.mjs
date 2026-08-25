@@ -1086,6 +1086,66 @@ test("watching proxy prefers the cached catalog image over blocked shop hotlinks
   }
 });
 
+test("alert event proxy exposes owned history and requires a valid mutation origin", async () => {
+  const secret = "alert-event-session-secret-for-tests";
+  const cookie = await webSessionCookie(
+    {
+      sub: "discord:987654321",
+      username: "Watcher",
+      avatar: null,
+      provider: "discord",
+      exp: Math.floor(Date.now() / 1000) + 60,
+    },
+    secret,
+  );
+  const env = {
+    SESSION_SECRET: secret,
+    CENTRAL_API_BASE_URL: "https://backend.example",
+    CENTRAL_API_SERVICE_TOKEN: "s".repeat(48),
+  };
+  const originalFetch = globalThis.fetch;
+  const forwarded = [];
+  globalThis.fetch = async (input, init) => {
+    forwarded.push({ url: String(input), init });
+    return init.method === "POST"
+      ? new Response(null, { status: 204 })
+      : Response.json({ items: [], total: 0, unread: 0 });
+  };
+  try {
+    const listResponse = await handlePortfolioApi(
+      new Request("https://tcgceny.cz/api/alerts/events", {
+        headers: { Cookie: cookie, Accept: "application/json" },
+      }),
+      env,
+    );
+    assert.equal(listResponse.status, 200);
+    assert.equal(forwarded[0].url, "https://backend.example/api/v1/alerts/events");
+    assert.equal(forwarded[0].init.headers.get("X-TCG-Identity-Subject"), "987654321");
+
+    const rejected = await handlePortfolioApi(
+      new Request("https://tcgceny.cz/api/alerts/events/read", {
+        method: "POST",
+        headers: { Cookie: cookie, Origin: "https://attacker.example" },
+      }),
+      env,
+    );
+    assert.equal(rejected.status, 403);
+
+    const readResponse = await handlePortfolioApi(
+      new Request("https://tcgceny.cz/api/alerts/events/read", {
+        method: "POST",
+        headers: { Cookie: cookie, Origin: "https://tcgceny.cz" },
+      }),
+      env,
+    );
+    assert.equal(readResponse.status, 204);
+    assert.equal(forwarded[1].url, "https://backend.example/api/v1/alerts/events/read");
+    assert.equal(forwarded[1].init.method, "POST");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("every catalog product has a stable, indexable detail page", async () => {
   const slugs = catalogData.products.map((product) => productSlug(product));
   assert.equal(new Set(slugs).size, catalogData.products.length, "product slugs must be unique");

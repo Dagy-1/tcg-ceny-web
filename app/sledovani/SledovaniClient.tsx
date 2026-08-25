@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Check, PackageCheck, RefreshCw, Trash2 } from "lucide-react";
+import { Bell, Check, CheckCheck, PackageCheck, RefreshCw, ShoppingBag, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
 import { productPath } from "../katalog/catalog-model";
+import { safeShopUrl } from "../shop-url";
 
 type SessionUser = {
   id: string;
@@ -40,6 +41,28 @@ type AlertList = {
   target_reached_count: number;
 };
 
+type AlertEvent = {
+  id: string;
+  product: AlertItem["product"];
+  kind: "price_below" | "restock";
+  channel: "discord" | "web";
+  status: "ready" | "read" | "pending" | "sending" | "sent" | "failed" | "dead" | "suppressed";
+  old_price_czk: number | null;
+  new_price_czk: number | null;
+  threshold_czk: number | null;
+  shop: string | null;
+  offer_url: string | null;
+  observed_at: string;
+  created_at: string;
+  read_at: string | null;
+};
+
+type AlertEventList = {
+  items: AlertEvent[];
+  total: number;
+  unread: number;
+};
+
 type PageState = "loading" | "anonymous" | "ready" | "error";
 
 const emptyList: AlertList = {
@@ -49,6 +72,8 @@ const emptyList: AlertList = {
   restock_count: 0,
   target_reached_count: 0,
 };
+
+const emptyEvents: AlertEventList = { items: [], total: 0, unread: 0 };
 
 function formatPrice(value: number | null) {
   if (value === null) return "Není dostupná";
@@ -72,6 +97,17 @@ function formatCheckedAt(value: string | null) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(parsed)}`;
+}
+
+function formatEventAt(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Čas není dostupný";
+  return new Intl.DateTimeFormat("cs-CZ", {
+    day: "numeric",
+    month: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed);
 }
 
 function progress(item: AlertItem) {
@@ -102,6 +138,7 @@ function WatchingProductImage({ product }: { product: AlertItem["product"] }) {
 export default function SledovaniClient() {
   const [state, setState] = useState<PageState>("loading");
   const [data, setData] = useState<AlertList>(emptyList);
+  const [events, setEvents] = useState<AlertEventList>(emptyEvents);
   const [loginOpen, setLoginOpen] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -123,13 +160,21 @@ export default function SledovaniClient() {
         return;
       }
 
-      const response = await fetch("/api/alerts", {
-        cache: "no-store",
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) throw new Error("Alerts unavailable");
+      const [response, eventsResponse] = await Promise.all([
+        fetch("/api/alerts", {
+          cache: "no-store",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        }),
+        fetch("/api/alerts/events", {
+          cache: "no-store",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        }),
+      ]);
+      if (!response.ok || !eventsResponse.ok) throw new Error("Alerts unavailable");
       setData(await response.json() as AlertList);
+      setEvents(await eventsResponse.json() as AlertEventList);
       setState("ready");
     } catch {
       setState("error");
@@ -155,6 +200,27 @@ export default function SledovaniClient() {
       setState("error");
     } finally {
       setRemovingId(null);
+    }
+  };
+
+  const markEventsRead = async () => {
+    try {
+      const response = await fetch("/api/alerts/events/read", {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("Mark read failed");
+      const readAt = new Date().toISOString();
+      setEvents((current) => ({
+        ...current,
+        unread: 0,
+        items: current.items.map((event) => event.channel === "web" && !event.read_at
+          ? { ...event, read_at: readAt, status: "read" }
+          : event),
+      }));
+    } catch {
+      setState("error");
     }
   };
 
@@ -235,6 +301,55 @@ export default function SledovaniClient() {
               <div><span>Naskladnění</span><strong>{data.restock_count}</strong><small>aktivních hlídání</small></div>
               <div className={data.target_reached_count ? "is-reached" : undefined}><span>Cíl splněn</span><strong>{data.target_reached_count}</strong><small>produktů v limitu</small></div>
             </section>
+
+            {events.items.length > 0 && (
+              <section className="watching-events" aria-labelledby="watching-events-title">
+                <div className="watching-section-head watching-events-head">
+                  <div>
+                    <p className="watching-kicker">Poslední změny</p>
+                    <h2 id="watching-events-title">Tvoje upozornění</h2>
+                  </div>
+                  {events.unread > 0 && (
+                    <button type="button" onClick={() => void markEventsRead()}>
+                      <CheckCheck size={16} aria-hidden="true" /> Označit jako přečtené
+                    </button>
+                  )}
+                </div>
+                <div className="watching-event-list">
+                  {events.items.slice(0, 8).map((event) => {
+                    const path = productPath({ id: event.product.id, name: event.product.name });
+                    const isUnread = event.channel === "web" && !event.read_at;
+                    const offerUrl = safeShopUrl(event.offer_url);
+                    return (
+                      <article className={`watching-event${isUnread ? " is-unread" : ""}`} key={event.id}>
+                        <span className="watching-event-icon" aria-hidden="true">
+                          {event.kind === "restock" ? <PackageCheck /> : <Bell />}
+                        </span>
+                        <div>
+                          <span>{event.kind === "restock" ? "Znovu skladem" : "Cena dosáhla limitu"}</span>
+                          <h3><Link href={path}>{event.product.name}</Link></h3>
+                          <p>
+                            {event.shop || "Ověřený obchod"}
+                            {event.new_price_czk !== null ? ` · ${formatPrice(event.new_price_czk)}` : ""}
+                            {` · ${formatEventAt(event.observed_at)}`}
+                          </p>
+                        </div>
+                        <div className="watching-event-action">
+                          <span>{event.channel === "discord" ? "Discord" : isUnread ? "Nové" : "Přečtené"}</span>
+                          {offerUrl ? (
+                            <a href={offerUrl} target="_blank" rel="noopener noreferrer">
+                              <ShoppingBag size={15} aria-hidden="true" /> Nabídka
+                            </a>
+                          ) : (
+                            <Link href={path}>Detail</Link>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {data.items.length === 0 ? (
               <section className="watching-state watching-empty">
@@ -322,8 +437,8 @@ export default function SledovaniClient() {
             )}
 
             <p className="watching-delivery-note">
-              Nastavení je bezpečně uložené u tvého účtu. U každého produktu vidíš zvolený kanál i poslední kontrolu dat.
-              Automatické doručování zapneme až po závěrečném testu proti duplicitám.
+              Nastavení je bezpečně uložené u tvého účtu. Upozornění vznikne až po dvou shodných kontrolách změny;
+              opakovaná kontrola stejnou událost znovu nevytvoří.
             </p>
           </>
         )}

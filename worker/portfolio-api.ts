@@ -448,7 +448,7 @@ async function centralAlertRequest(
   request: Request,
   user: SessionUser,
   env: Env,
-  productId?: string,
+  resource = "",
 ) {
   const baseUrl = env.CENTRAL_API_BASE_URL?.trim();
   const serviceToken = env.CENTRAL_API_SERVICE_TOKEN?.trim();
@@ -462,7 +462,7 @@ async function centralAlertRequest(
   let upstreamUrl: URL;
   try {
     upstreamUrl = new URL(
-      `/api/v1/alerts${productId ? `/${encodeURIComponent(productId)}` : ""}`,
+      `/api/v1/alerts${resource}`,
       baseUrl,
     );
   } catch {
@@ -1199,6 +1199,12 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
   if (request.method === "GET" && url.pathname === "/api/alerts") {
     return centralAlertRequest(request, user, env);
   }
+  if (request.method === "GET" && url.pathname === "/api/alerts/events") {
+    return centralAlertRequest(request, user, env, "/events");
+  }
+  if (request.method === "POST" && url.pathname === "/api/alerts/events/read") {
+    return centralAlertRequest(request, user, env, "/events/read");
+  }
   const alertMatch = url.pathname.match(/^\/api\/alerts\/([^/]+)$/);
   if (alertMatch && ["PUT", "DELETE"].includes(request.method)) {
     let productId: string;
@@ -1207,7 +1213,7 @@ export async function handlePortfolioApi(request: Request, env: Env): Promise<Re
     } catch {
       return json({ error: "Neplatný produkt." }, 400);
     }
-    return centralAlertRequest(request, user, env, productId);
+    return centralAlertRequest(request, user, env, `/${encodeURIComponent(productId)}`);
   }
   const source = portfolioDataSource(env);
   if (!["legacy", "central-readonly", "central"].includes(source)) {
