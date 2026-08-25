@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import AuthMenu from "../AuthMenu";
 import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
+import NavStatusLink from "../NavStatusLink";
 import {
   loadPortfolioProducts,
   type PortfolioProduct as Product,
@@ -1404,10 +1405,10 @@ export default function PortfolioClient({
         </Link>
         <div className="nav-links">
           <Link href="/katalog/">Katalog</Link>
-          <Link href="/zlevneni/">Zlevnění</Link>
+          <NavStatusLink kind="drops" />
           <Link href="/porovnani/">Porovnání</Link>
           <Link className="portfolio-nav-active" href="/portfolio/" aria-current="page">Portfolio</Link>
-          <Link href="/sledovani/">Sledování</Link>
+          <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions">

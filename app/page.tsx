@@ -10,6 +10,7 @@ import {
 import AuthMenu from "./AuthMenu";
 import CardCompanion from "./CardCompanion";
 import MobileNav from "./MobileNav";
+import NavStatusLink from "./NavStatusLink";
 import PriceHistoryDemo from "./PriceHistoryDemo";
 import ShopMarquee from "./ShopMarquee";
 import { productPath } from "./katalog/catalog-model";
@@ -103,10 +104,10 @@ export default function Home() {
         </a>
         <div className="nav-links">
           <a href="/katalog">Katalog</a>
-          <a href="/zlevneni">Zlevnění</a>
+          <NavStatusLink kind="drops" />
           <a href="/porovnani">Porovnání</a>
           <a href="/portfolio">Portfolio</a>
-          <a href="/sledovani">Sledování</a>
+          <NavStatusLink kind="watching" />
           <a href="#funkce">Funkce</a>
           <a className="nav-partner" href="/pro-eshopy">Pro e-shopy</a>
         </div>

@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Check, CheckCheck, PackageCheck, RefreshCw, ShoppingBag, Trash2 } from "lucide-react";
+import { Bell, Check, ExternalLink, PackageCheck, RefreshCw, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
+import NavStatusLink, { notifyAlertsRead } from "../NavStatusLink";
 import { productPath } from "../katalog/catalog-model";
 import { safeShopUrl } from "../shop-url";
 
@@ -75,6 +76,53 @@ const emptyList: AlertList = {
 
 const emptyEvents: AlertEventList = { items: [], total: 0, unread: 0 };
 
+const previewProduct: AlertItem["product"] = {
+  id: "pm:me05-pitch-black-etb",
+  name: "ME05 Pitch Black ETB",
+  image_url: "/catalog-products/978abcdf7fd3af65.png?v=4",
+  availability: "online",
+  best_price_czk: 1599,
+  checked_at: "2026-08-25T20:20:00+02:00",
+  data_stale: false,
+};
+
+const previewAlerts: AlertList = {
+  items: [{
+    product: previewProduct,
+    kinds: ["price_below", "restock"],
+    threshold_czk: 1620,
+    channel: "discord",
+    shops: [],
+    price_gap_czk: 0,
+    target_reached: true,
+    updated_at: "2026-08-25T20:20:00+02:00",
+  }],
+  total: 1,
+  price_count: 1,
+  restock_count: 1,
+  target_reached_count: 1,
+};
+
+const previewEvents: AlertEventList = {
+  items: [{
+    id: "local-alert-preview",
+    product: previewProduct,
+    kind: "price_below",
+    channel: "discord",
+    status: "sent",
+    old_price_czk: 1799,
+    new_price_czk: 1599,
+    threshold_czk: 1620,
+    shop: "Tolarie",
+    offer_url: "https://www.tolarie.cz/",
+    observed_at: "2026-08-25T20:20:00+02:00",
+    created_at: "2026-08-25T20:20:00+02:00",
+    read_at: null,
+  }],
+  total: 1,
+  unread: 1,
+};
+
 function formatPrice(value: number | null) {
   if (value === null) return "Není dostupná";
   return `${new Intl.NumberFormat("cs-CZ").format(value)} Kč`;
@@ -139,6 +187,8 @@ export default function SledovaniClient() {
   const [state, setState] = useState<PageState>("loading");
   const [data, setData] = useState<AlertList>(emptyList);
   const [events, setEvents] = useState<AlertEventList>(emptyEvents);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [freshEventIds, setFreshEventIds] = useState<Set<string>>(new Set());
   const [loginOpen, setLoginOpen] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -173,8 +223,15 @@ export default function SledovaniClient() {
         }),
       ]);
       if (!response.ok || !eventsResponse.ok) throw new Error("Alerts unavailable");
-      setData(await response.json() as AlertList);
-      setEvents(await eventsResponse.json() as AlertEventList);
+      const nextData = await response.json() as AlertList;
+      const nextEvents = await eventsResponse.json() as AlertEventList;
+      setData(nextData);
+      setEvents(nextEvents);
+      setFreshEventIds(new Set(
+        nextEvents.items
+          .filter((event) => event.channel === "web" && event.read_at === null)
+          .map((event) => event.id),
+      ));
       setState("ready");
     } catch {
       setState("error");
@@ -182,8 +239,45 @@ export default function SledovaniClient() {
   }, []);
 
   useEffect(() => {
+    const isLocalPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+      && new URLSearchParams(window.location.search).get("nahled-alertu") === "1";
+    if (isLocalPreview) {
+      queueMicrotask(() => {
+        setPreviewMode(true);
+        setData(previewAlerts);
+        setEvents(previewEvents);
+        setFreshEventIds(new Set(previewEvents.items.map((event) => event.id)));
+        setState("ready");
+      });
+      return;
+    }
     queueMicrotask(() => void loadAlerts());
   }, [loadAlerts]);
+
+  useEffect(() => {
+    if (previewMode || state !== "ready" || events.unread < 1) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void fetch("/api/alerts/events/read", {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      }).then((response) => {
+        if (!response.ok) return;
+        setEvents((current) => ({
+          ...current,
+          unread: 0,
+          items: current.items.map((event) => event.read_at ? event : ({ ...event, read_at: new Date().toISOString() })),
+        }));
+        notifyAlertsRead();
+      }).catch(() => undefined);
+    }, 1400);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [events.unread, previewMode, state]);
 
   const removeAlert = async (productId: string) => {
     setRemovingId(productId);
@@ -203,27 +297,6 @@ export default function SledovaniClient() {
     }
   };
 
-  const markEventsRead = async () => {
-    try {
-      const response = await fetch("/api/alerts/events/read", {
-        method: "POST",
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) throw new Error("Mark read failed");
-      const readAt = new Date().toISOString();
-      setEvents((current) => ({
-        ...current,
-        unread: 0,
-        items: current.items.map((event) => event.channel === "web" && !event.read_at
-          ? { ...event, read_at: readAt, status: "read" }
-          : event),
-      }));
-    } catch {
-      setState("error");
-    }
-  };
-
   return (
     <>
       <nav className="nav watching-nav" aria-label="Hlavní navigace">
@@ -233,10 +306,10 @@ export default function SledovaniClient() {
         </Link>
         <div className="nav-links">
           <Link href="/katalog/">Katalog</Link>
-          <Link href="/zlevneni/">Zlevnění</Link>
+          <NavStatusLink kind="drops" />
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
-          <Link href="/sledovani/" aria-current="page">Sledování</Link>
+          <NavStatusLink kind="watching" current />
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions"><MobileNav /><AuthMenu /></div>
@@ -250,8 +323,9 @@ export default function SledovaniClient() {
             <p>Aktuální ceny, dostupnost a vzdálenost od tvého limitu na jednom místě.</p>
           </div>
           {state === "ready" && (
-            <button className="watching-refresh" type="button" onClick={() => void loadAlerts()}>
-              <RefreshCw size={17} aria-hidden="true" /> Obnovit
+            <button className="watching-refresh" type="button" onClick={() => previewMode ? undefined : void loadAlerts()}>
+              {previewMode ? <Check size={17} aria-hidden="true" /> : <RefreshCw size={17} aria-hidden="true" />}
+              {previewMode ? "Lokální náhled" : "Obnovit"}
             </button>
           )}
         </header>
@@ -302,55 +376,6 @@ export default function SledovaniClient() {
               <div className={data.target_reached_count ? "is-reached" : undefined}><span>Cíl splněn</span><strong>{data.target_reached_count}</strong><small>produktů v limitu</small></div>
             </section>
 
-            {events.items.length > 0 && (
-              <section className="watching-events" aria-labelledby="watching-events-title">
-                <div className="watching-section-head watching-events-head">
-                  <div>
-                    <p className="watching-kicker">Poslední změny</p>
-                    <h2 id="watching-events-title">Tvoje upozornění</h2>
-                  </div>
-                  {events.unread > 0 && (
-                    <button type="button" onClick={() => void markEventsRead()}>
-                      <CheckCheck size={16} aria-hidden="true" /> Označit jako přečtené
-                    </button>
-                  )}
-                </div>
-                <div className="watching-event-list">
-                  {events.items.slice(0, 8).map((event) => {
-                    const path = productPath({ id: event.product.id, name: event.product.name });
-                    const isUnread = event.channel === "web" && !event.read_at;
-                    const offerUrl = safeShopUrl(event.offer_url);
-                    return (
-                      <article className={`watching-event${isUnread ? " is-unread" : ""}`} key={event.id}>
-                        <span className="watching-event-icon" aria-hidden="true">
-                          {event.kind === "restock" ? <PackageCheck /> : <Bell />}
-                        </span>
-                        <div>
-                          <span>{event.kind === "restock" ? "Znovu skladem" : "Cena dosáhla limitu"}</span>
-                          <h3><Link href={path}>{event.product.name}</Link></h3>
-                          <p>
-                            {event.shop || "Ověřený obchod"}
-                            {event.new_price_czk !== null ? ` · ${formatPrice(event.new_price_czk)}` : ""}
-                            {` · ${formatEventAt(event.observed_at)}`}
-                          </p>
-                        </div>
-                        <div className="watching-event-action">
-                          <span>{event.channel === "discord" ? "Discord" : isUnread ? "Nové" : "Přečtené"}</span>
-                          {offerUrl ? (
-                            <a href={offerUrl} target="_blank" rel="noopener noreferrer">
-                              <ShoppingBag size={15} aria-hidden="true" /> Nabídka
-                            </a>
-                          ) : (
-                            <Link href={path}>Detail</Link>
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
             {data.items.length === 0 ? (
               <section className="watching-state watching-empty">
                 <span className="watching-state-icon"><Bell aria-hidden="true" /></span>
@@ -368,6 +393,14 @@ export default function SledovaniClient() {
                   {data.items.map((item) => {
                     const path = productPath({ id: item.product.id, name: item.product.name });
                     const hasPriceRule = item.kinds.includes("price_below");
+                    const latestEvent = events.items.find((event) => event.product.id === item.product.id);
+                    const isFreshEvent = latestEvent ? freshEventIds.has(latestEvent.id) : false;
+                    const offerUrl = latestEvent ? safeShopUrl(latestEvent.offer_url) : null;
+                    const savedAmount = latestEvent?.kind === "price_below"
+                      && latestEvent.threshold_czk !== null
+                      && latestEvent.new_price_czk !== null
+                      ? Math.max(0, latestEvent.threshold_czk - latestEvent.new_price_czk)
+                      : null;
                     return (
                       <article className="watching-card" key={`${item.product.id}-${item.channel}`}>
                         <Link className="watching-image" href={path} aria-label={`Otevřít ${item.product.name}`}>
@@ -428,6 +461,35 @@ export default function SledovaniClient() {
                               )}
                             </div>
                           </div>
+
+                          {latestEvent && (
+                            <div className={`watching-result${isFreshEvent ? " is-new" : ""}`} aria-label="Splněný cíl sledování">
+                              <span className="watching-result-icon" aria-hidden="true"><Check /></span>
+                              <div className="watching-result-copy">
+                                <span>
+                                  {isFreshEvent && <i className="watching-result-new-dot" aria-hidden="true" />}
+                                  {latestEvent.kind === "restock" ? "Produkt je znovu skladem" : "Cena dosáhla tvého limitu"}
+                                </span>
+                                <strong>Cíl splněn</strong>
+                                <small>
+                                  {latestEvent.shop || "Ověřený obchod"}
+                                  {latestEvent.new_price_czk !== null ? ` · ${formatPrice(latestEvent.new_price_czk)}` : ""}
+                                  {savedAmount ? ` · ${formatPrice(savedAmount)} pod limitem` : ""}
+                                  {` · ${formatEventAt(latestEvent.observed_at)}`}
+                                </small>
+                              </div>
+                              <div className="watching-result-action">
+                                <span>Splněno</span>
+                                {offerUrl ? (
+                                  <a href={offerUrl} target="_blank" rel="noopener noreferrer">
+                                    Otevřít nabídku <ExternalLink size={14} aria-hidden="true" />
+                                  </a>
+                                ) : (
+                                  <Link href={path}>Otevřít detail</Link>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </article>
                     );

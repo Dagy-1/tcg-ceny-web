@@ -111,6 +111,35 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .brand-mark.small span { transform: scale(.82) rotate(-7deg); transform-origin: top left; }
 .nav-links { display: flex; gap: 29px; color: var(--muted); font-size: 13px; font-weight: 700; }
 .nav-links a { position: relative; padding-block: 9px; transition: color var(--motion-fast) ease; }
+.nav-status-link { display: inline-flex; align-items: center; gap: 6px; }
+.nav-alert-count {
+  display: inline-grid;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 5px;
+  place-items: center;
+  border: 1px solid rgba(255, 118, 118, .5);
+  border-radius: 999px;
+  background: #d94f57;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 0 0 3px rgba(217, 79, 87, .09);
+}
+.nav-new-drop {
+  display: inline-flex;
+  padding: 3px 6px;
+  border: 1px solid rgba(69, 216, 123, .36);
+  border-radius: 999px;
+  background: rgba(54, 198, 107, .1);
+  color: #65df91;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
 .nav-links a::after {
   position: absolute;
   right: 0;
@@ -189,6 +218,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   font-weight: 750;
   transition: color .16s ease, background-color .16s ease;
 }
+.mobile-nav-panel .nav-status-link { justify-content: space-between; }
+.mobile-nav-panel .nav-status-link > span:first-child { flex: 1; }
 .mobile-nav-panel a:hover,
 .mobile-nav-panel a:focus-visible {
   color: var(--ink);

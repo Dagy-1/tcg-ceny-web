@@ -27,6 +27,7 @@
 .drops-section-head > span { color: var(--muted); font-size: 12px; }
 .drops-list { display: grid; gap: 12px; }
 .drop-card { display: grid; grid-template-columns: 148px minmax(0, 1fr); min-height: 176px; overflow: hidden; border: 1px solid rgba(255,255,255,.11); border-radius: 16px; background: linear-gradient(115deg, rgba(12, 29, 49, .96), rgba(8, 20, 35, .94)); transition: border-color var(--motion-base) ease, transform var(--motion-base) var(--motion-ease); }
+.drop-card.is-new { border-color: rgba(54,198,107,.3); box-shadow: inset 3px 0 0 rgba(54,198,107,.72); }
 .drop-card:hover { border-color: rgba(230, 184, 74, .28); transform: translateY(-2px); }
 .drop-image { display: grid; place-items: center; min-height: 176px; padding: 20px; border-right: 1px solid var(--line); background: radial-gradient(circle, rgba(50, 111, 170, .14), transparent 68%); }
 .drop-image img { width: 100%; height: 132px; object-fit: contain; }
@@ -38,6 +39,7 @@
 .drop-heading time { flex: none; color: var(--muted); font-size: 11px; }
 .drop-confirmed { color: #79e39d; font-size: 10px; font-weight: 820; letter-spacing: .08em; text-transform: uppercase; }
 .drop-confirmed i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--green); }
+.drop-confirmed em { display: inline-flex; margin-left: 8px; padding: 3px 6px; border: 1px solid rgba(54,198,107,.35); border-radius: 999px; background: rgba(54,198,107,.1); color: #88e6a8; font-size: 8px; font-style: normal; letter-spacing: .04em; line-height: 1; }
 .drop-price-line { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 18px 0 15px; }
 .drop-prices { display: flex; align-items: center; gap: 12px; }
 .drop-prices > span { color: #74839a; font-size: 14px; text-decoration: line-through; }

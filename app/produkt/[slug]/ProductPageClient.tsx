@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AuthMenu from "../../AuthMenu";
 import MobileNav from "../../MobileNav";
+import NavStatusLink from "../../NavStatusLink";
 import { productFromApi, type ApiProduct, type Product } from "../../katalog/catalog-model";
 import ProductAlertControl from "../../katalog/ProductAlertControl";
 import CatalogIssueReportControl from "../../katalog/CatalogIssueReportControl";
@@ -112,10 +113,10 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
         </Link>
         <div className="nav-links">
           <Link className="catalog-nav-active" href="/katalog/" aria-current="page">Katalog</Link>
-          <Link href="/zlevneni/">Zlevnění</Link>
+          <NavStatusLink kind="drops" />
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
-          <Link href="/sledovani/">Sledování</Link>
+          <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions"><AuthMenu /><MobileNav /></div>

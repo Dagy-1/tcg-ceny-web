@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
+import NavStatusLink, { lastSeenPriceDrop, rememberLatestPriceDrop } from "../NavStatusLink";
 import catalogData from "../katalog/catalog-data.json";
 import { productPath, type CatalogData } from "../katalog/catalog-model";
 import { safeShopUrl } from "../shop-url";
@@ -78,6 +79,7 @@ export default function PriceDropsClient() {
   const [sort, setSort] = useState<Sort>("newest");
   const [state, setState] = useState<PageState>("loading");
   const [data, setData] = useState<PriceDropResponse>({ items: [], total: 0, limit: 100, offset: 0 });
+  const [previousSeenAt, setPreviousSeenAt] = useState<string | null>(null);
 
   const load = useCallback(async (selectedPeriod: Period) => {
     setState("loading");
@@ -94,8 +96,16 @@ export default function PriceDropsClient() {
   }, []);
 
   useEffect(() => {
-    queueMicrotask(() => void load(period));
+    queueMicrotask(() => {
+      setPreviousSeenAt(lastSeenPriceDrop());
+      void load(period);
+    });
   }, [load, period]);
+
+  useEffect(() => {
+    if (state !== "ready") return;
+    rememberLatestPriceDrop(data.items[0]?.occurred_at);
+  }, [data.items, state]);
 
   const items = useMemo(() => {
     const next = [...data.items];
@@ -111,7 +121,7 @@ export default function PriceDropsClient() {
           <span className="brand-mark"><span /><span /></span><span>TCG <strong>Ceny</strong></span>
         </Link>
         <div className="nav-links">
-          <Link href="/katalog/">Katalog</Link><Link href="/zlevneni/" aria-current="page">Zlevnění</Link><Link href="/porovnani/">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><Link href="/sledovani/">Sledování</Link><Link className="nav-partner" href="/pro-eshopy/">Pro e-shopy</Link>
+          <Link href="/katalog/">Katalog</Link><NavStatusLink kind="drops" current /><Link href="/porovnani/">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><NavStatusLink kind="watching" /><Link className="nav-partner" href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
         <div className="nav-actions"><MobileNav /><AuthMenu /></div>
       </nav>
@@ -158,11 +168,13 @@ export default function PriceDropsClient() {
               {items.map((item) => {
                 const offerUrl = safeShopUrl(item.url);
                 const detailPath = productPath({ id: item.product_id, name: item.product_name });
+                const isNew = Boolean(previousSeenAt)
+                  && new Date(item.occurred_at).getTime() > new Date(previousSeenAt || "").getTime();
                 return (
-                  <article className="drop-card" key={item.id}>
+                  <article className={`drop-card${isNew ? " is-new" : ""}`} key={item.id}>
                     <Link className="drop-image" href={detailPath} aria-label={`Otevřít ${item.product_name}`}><ProductImage item={item} /></Link>
                     <div className="drop-content">
-                      <div className="drop-heading"><div><span className="drop-confirmed"><i /> Potvrzené zlevnění</span><h3><Link href={detailPath}>{item.product_name}</Link></h3></div><time dateTime={item.occurred_at}>{formatMoment(item.occurred_at)}</time></div>
+                      <div className="drop-heading"><div><span className="drop-confirmed"><i /> Potvrzené zlevnění{isNew && <em>Nové</em>}</span><h3><Link href={detailPath}>{item.product_name}</Link></h3></div><time dateTime={item.occurred_at}>{formatMoment(item.occurred_at)}</time></div>
                       <div className="drop-price-line">
                         <div className="drop-prices"><span>{formatPrice(item.old_price_czk)}</span><ArrowDownRight aria-hidden="true" /><strong>{formatPrice(item.new_price_czk)}</strong></div>
                         <div className="drop-saving"><strong>−{formatPrice(item.saved_czk)}</strong><span>−{item.drop_percent.toLocaleString("cs-CZ")} %</span></div>

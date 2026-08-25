@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AuthMenu from "../AuthMenu";
 import MobileNav from "../MobileNav";
+import NavStatusLink from "../NavStatusLink";
 
 const CONTACT_URL =
   "mailto:podpora@tcgceny.cz?subject=Spolupráce%20s%20TCG%20Ceny&body=Dobrý%20den%2C%0A%0Ajmenuji%20se%20...%20a%20zastupuji%20e-shop%20...%0A%0ARádi%20bychom%20s%20vámi%20probrali%20...%0A";
@@ -83,10 +84,10 @@ export default function ForShops() {
         </Link>
         <div className="nav-links">
           <Link href="/katalog/">Katalog</Link>
-          <Link href="/zlevneni/">Zlevnění</Link>
+          <NavStatusLink kind="drops" />
           <Link href="/porovnani/">Porovnání</Link>
           <Link href="/portfolio/">Portfolio</Link>
-          <Link href="/sledovani/">Sledování</Link>
+          <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy/" aria-current="page">Pro e-shopy</Link>
         </div>
         <div className="nav-actions">

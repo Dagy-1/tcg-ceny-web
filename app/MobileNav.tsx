@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import NavStatusLink from "./NavStatusLink";
 
 const links = [
   { href: "/", label: "Domů" },
@@ -59,6 +60,17 @@ export default function MobileNav() {
           {links.map((link) => {
             const route = normalizePath(link.href.split("#")[0] || "/");
             const isActive = !link.href.includes("#") && normalizePath(pathname) === route;
+            if (link.href === "/sledovani/" || link.href === "/zlevneni/") {
+              return (
+                <NavStatusLink
+                  kind={link.href === "/sledovani/" ? "watching" : "drops"}
+                  current={isActive}
+                  mobile
+                  onNavigate={() => setOpen(false)}
+                  key={link.href}
+                />
+              );
+            }
             return (
               <Link
                 className={isActive ? "is-active" : undefined}

@@ -1211,13 +1211,14 @@ test("product alert controls save an authenticated accessible configuration", as
 });
 
 test("watching dashboard is private, useful and linked from navigation", async () => {
-  const [html, source, mobileNav, authMenu, alertControl, detailClient] = await Promise.all([
+  const [html, source, mobileNav, authMenu, alertControl, detailClient, navStatus] = await Promise.all([
     readOutput("sledovani/index.html"),
     readFile(new URL("../app/sledovani/SledovaniClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/MobileNav.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/AuthMenu.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/katalog/ProductAlertControl.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/produkt/[slug]/ProductPageClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/NavStatusLink.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(html, /Co sleduješ/);
@@ -1236,9 +1237,22 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(alertControl, /setRedirectAfterSave\(null\)/);
   assert.match(source, /method: "DELETE"/);
   assert.match(source, /Každý uživatel vidí jen své produkty/);
+  assert.match(source, /Cíl splněn/);
+  assert.match(source, /watching-result/);
+  assert.match(source, /watching-result-new-dot/);
+  assert.match(source, /api\/alerts\/events\/read/);
+  assert.match(source, /notifyAlertsRead/);
+  assert.match(source, /nahled-alertu/);
+  assert.match(source, /\["localhost", "127\.0\.0\.1"\]/);
   assert.doesNotMatch(source, /localStorage|sessionStorage/);
   assert.match(mobileNav, /\/sledovani\//);
+  assert.match(mobileNav, /NavStatusLink/);
   assert.match(authMenu, /Moje sledování/);
+  assert.match(navStatus, /api\/alerts\/events/);
+  assert.match(navStatus, /nav-alert-count/);
+  assert.match(navStatus, /api\/catalog\/price-drops\?days=30&limit=1/);
+  assert.match(navStatus, /tcg-ceny:last-seen-price-drop/);
+  assert.match(navStatus, /nav-new-drop/);
 });
 
 test("catalog issue reports require a verified signed-in user", async () => {
