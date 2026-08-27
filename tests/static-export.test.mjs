@@ -788,7 +788,8 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /Historie cen/);
   assert.match(html, /Portfolio v jednom přehledu/i);
   assert.match(html, /card-companion/);
-  assert.match(html, /Provedeme tě webem\./);
+  assert.match(html, /Spustit průvodce/);
+  assert.match(html, /6 krátkých zastávek · 45 s/);
   assert.match(html, /Spustit krátkého průvodce webem TCG Ceny/);
   assert.match(html, /shop-marquee-track/);
   assert.match(html, /aria-hidden="true"/);
@@ -812,7 +813,15 @@ test("homepage contains production metadata and core content", async () => {
   );
 
   const globalCss = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-  assert.match(globalCss, /@keyframes companion-float/);
+  assert.match(globalCss, /@keyframes companion-shuffle-back/);
+  assert.match(globalCss, /@keyframes companion-shuffle-front/);
+  assert.match(globalCss, /@keyframes companion-shuffle-trail/);
+  assert.match(globalCss, /@keyframes companion-shuffle-sheen/);
+  assert.match(globalCss, /@keyframes companion-invite-sweep/);
+  assert.match(globalCss, /animation:\s*companion-shuffle-front 6s[^;]*2;/);
+  assert.match(globalCss, /translate3d\(68px, -47px, 0\) rotate\(14deg\)/);
+  assert.match(globalCss, /translate3d\(-66px, 46px, 0\) rotate\(-13deg\)/);
+  assert.match(globalCss, /animation:\s*companion-invite 6s[^;]*2;/);
   assert.match(globalCss, /@keyframes companion-blink/);
   assert.match(globalCss, /\.card-companion:hover \.companion-card-sheen/);
   assert.match(globalCss, /\.card-companion:hover \.companion-card-front/);
@@ -824,15 +833,14 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(globalCss, /\.shop-marquee:hover \.shop-marquee-track/);
   assert.match(globalCss, /\.shop-marquee:focus-within \.shop-marquee-track/);
   assert.match(globalCss, /\.shop-marquee\s*\{[^}]*padding-block:\s*8px;[^}]*margin-block:\s*-8px;/s);
-  assert.match(globalCss, /\.shop-marquee-toggle/);
+  assert.doesNotMatch(html, /shop-marquee-toggle/);
+  assert.doesNotMatch(globalCss, /\.shop-marquee-toggle/);
   const mobileCss = globalCss.slice(
     globalCss.indexOf("@media (max-width: 980px)"),
     globalCss.indexOf("@media (max-width: 640px)"),
   );
   assert.match(mobileCss, /\.shop-marquee-track\s*\{[^}]*animation:\s*shop-marquee 52s linear infinite;/s);
   assert.doesNotMatch(mobileCss, /\.shop-tags\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s);
-  assert.match(mobileCss, /\.shop-marquee-toggle\s*\{[^}]*width:\s*32px;[^}]*gap:\s*0;/s);
-  assert.match(globalCss, /\.shop-marquee-toggle\[aria-pressed="true"\] svg\s*\{[^}]*translateX\(1px\)/s);
   assert.match(globalCss, /\.skip-link:focus/);
   assert.match(globalCss, /\.shop-link:focus-visible/);
   assert.match(globalCss, /\.shop-tags\[aria-hidden="true"\]/);

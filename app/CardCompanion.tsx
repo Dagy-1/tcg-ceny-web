@@ -45,6 +45,11 @@ export default function CardCompanion() {
 
           <ellipse className="companion-halo" cx="108" cy="201" rx="78" ry="12" fill="#e6b84a" opacity=".13" />
 
+          <g className="companion-shuffle-trails" fill="none" strokeLinecap="round">
+            <path className="companion-shuffle-trail companion-shuffle-trail-gold" d="M55 132C69 84 109 53 158 57" />
+            <path className="companion-shuffle-trail companion-shuffle-trail-blue" d="M163 91C146 137 105 159 57 151" />
+          </g>
+
           <g className="companion-card-back">
             <g transform="translate(103 18) rotate(7 48 71)">
               <rect x="3" y="3" width="96" height="142" rx="17" fill="url(#companion-card-back-fill)" stroke="#6b84a1" strokeWidth="2.2" />
@@ -87,9 +92,12 @@ export default function CardCompanion() {
       </span>
 
       <span className="card-companion-copy">
-        <small>Jsi tu nový?</small>
-        <strong>Provedeme tě webem.</strong>
-        <span>zabere asi 45 sekund →</span>
+        <small><span aria-hidden="true" /> Nový tady?</small>
+        <strong>Spustit průvodce</strong>
+        <span className="card-companion-meta">
+          6 krátkých zastávek · 45 s
+          <span className="card-companion-arrow" aria-hidden="true">→</span>
+        </span>
       </span>
     </button>
   );
