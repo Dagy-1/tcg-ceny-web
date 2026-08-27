@@ -780,6 +780,8 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Neplať víc/);
   assert.match(html, /Nezmeškej naskladnění/);
+  assert.match(html, /Přidat se na Discord/);
+  assert.match(html, /class="discord-button"/);
   assert.match(html, /Všechno pro chytřejší nákup/);
   assert.match(html, /Najdi produkt\. Porovnej\. Nastav sledování/);
   assert.match(html, /Začni hlídat ceny zdarma/);

@@ -18,6 +18,17 @@ import { productPath } from "./katalog/catalog-model";
 const DISCORD_URL = "https://discord.gg/pRC8GKAKxG";
 const CHAOS_RISING_PATH = productPath({ id: "pm:chaos-rising-etb", name: "Chaos Rising ETB" });
 
+function DiscordMark() {
+  return (
+    <svg className="discord-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M7.3 6.8a15.7 15.7 0 0 1 9.4 0c2 2.8 2.6 5.6 2.3 8.2a12 12 0 0 1-4.1 2.2l-1-1.3c.8-.3 1.5-.7 2.1-1.2a9.4 9.4 0 0 1-8 0c.6.5 1.3.9 2.1 1.2l-1 1.3A12 12 0 0 1 5 15c-.3-2.6.3-5.4 2.3-8.2Zm2.2 4.4c-.8 0-1.4.7-1.4 1.5s.6 1.5 1.4 1.5 1.4-.7 1.4-1.5-.6-1.5-1.4-1.5Zm5 0c-.8 0-1.4.7-1.4 1.5s.6 1.5 1.4 1.5 1.4-.7 1.4-1.5-.6-1.5-1.4-1.5Z"
+      />
+    </svg>
+  );
+}
+
 const offers = [
   { shop: "Kitstore", price: "1 799 Kč", best: true },
   { shop: "Tolarie", price: "1 799 Kč", best: true },
@@ -132,7 +143,11 @@ export default function Home() {
             <a className="button" href="/katalog/">
               Prohlédnout katalog <span aria-hidden="true">→</span>
             </a>
-            <a className="text-link" href="#jak-to-funguje">Jak to funguje</a>
+            <a className="discord-button" href={DISCORD_URL} target="_blank" rel="noreferrer">
+              <DiscordMark />
+              Přidat se na Discord
+              <span aria-hidden="true">↗</span>
+            </a>
           </div>
           <div className="hero-proof" aria-label="Hlavní přednosti">
             {heroProof.map(({ icon: Icon, label }) => (
