@@ -48,8 +48,7 @@ export default function PrivacyPage() {
             <p>
               TCG Ceny je nezávislá česká technologická platforma zaměřená na
               porovnávání cen, sledování skladovosti a cenovou historii Pokémon
-              TCG produktů. Projekt založil a provozuje Petr Mládek. Pro dotazy
-              nebo uplatnění práv použijte e-mail{" "}
+              TCG produktů. Pro dotazy nebo uplatnění práv použijte e-mail{" "}
               <a href="mailto:podpora@tcgceny.cz">podpora@tcgceny.cz</a>.
             </p>
           </section>

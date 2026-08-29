@@ -888,7 +888,7 @@ test("partner and legal pages contain required information", async () => {
   assert.match(shops, /Přímý odkaz na zdroj/);
   assert.match(shops, /Bez provize z objednávky/);
   assert.match(terms, /TCG Ceny není prodejce/);
-  assert.match(privacy, /Petr Mládek/);
+  assert.doesNotMatch(privacy, /Petr Mládek/);
   assert.match(privacy, /podpora@tcgceny\.cz/);
 });
 
