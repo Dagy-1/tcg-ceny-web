@@ -768,6 +768,10 @@ test("catalog contains the complete public product snapshot", async () => {
 
 test("homepage contains production metadata and core content", async () => {
   const html = await readOutput("index.html");
+  const cardCompanionSource = await readFile(
+    new URL("../app/CardCompanion.tsx", import.meta.url),
+    "utf8",
+  );
 
   assert.match(html, /<html lang="cs"(?:\s[^>]*)?>/i);
   assert.match(html, /TCG Ceny \| Ceny, skladovost a alerty Pokémon TCG/i);
@@ -813,18 +817,35 @@ test("homepage contains production metadata and core content", async () => {
   );
 
   const globalCss = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-  assert.match(globalCss, /@keyframes companion-shuffle-back/);
-  assert.match(globalCss, /@keyframes companion-shuffle-front/);
-  assert.match(globalCss, /@keyframes companion-shuffle-trail/);
-  assert.match(globalCss, /@keyframes companion-shuffle-sheen/);
+  assert.match(globalCss, /@keyframes owl-companion-arrive/);
+  assert.match(globalCss, /@keyframes owl-companion-attention/);
+  assert.match(globalCss, /@keyframes owl-companion-guide-start/);
+  assert.match(globalCss, /@keyframes owl-companion-success/);
+  assert.match(globalCss, /@keyframes owl-companion-error/);
+  assert.match(globalCss, /@keyframes owl-companion-loading-scan/);
+  assert.match(globalCss, /@keyframes owl-companion-signal/);
+  assert.match(globalCss, /@keyframes owl-companion-card-spark/);
   assert.match(globalCss, /@keyframes companion-invite-sweep/);
-  assert.match(globalCss, /animation:\s*companion-shuffle-front 6s[^;]*2;/);
-  assert.match(globalCss, /translate3d\(68px, -47px, 0\) rotate\(14deg\)/);
-  assert.match(globalCss, /translate3d\(-66px, 46px, 0\) rotate\(-13deg\)/);
-  assert.match(globalCss, /animation:\s*companion-invite 6s[^;]*2;/);
-  assert.match(globalCss, /@keyframes companion-blink/);
-  assert.match(globalCss, /\.card-companion:hover \.companion-card-sheen/);
-  assert.match(globalCss, /\.card-companion:hover \.companion-card-front/);
+  assert.doesNotMatch(globalCss, /@keyframes owl-companion-flight/);
+  assert.match(globalCss, /\.owl-companion-flight\s*\{[^}]*animation:\s*owl-companion-attention 6\.2s/s);
+  assert.doesNotMatch(globalCss, /@keyframes owl-companion-attention\s*\{[^}]*scale\(/s);
+  assert.doesNotMatch(globalCss, /owl-companion-(?:eye|iris|eyelid|blink)/);
+  assert.match(globalCss, /animation:\s*companion-invite 1100ms[^;]*1 both;/);
+  assert.doesNotMatch(globalCss, /companion-shuffle/);
+  assert.match(globalCss, /\.card-companion-owl:hover \.owl-companion-image/);
+  assert.doesNotMatch(globalCss, /--owl-look-[xy]/);
+  assert.doesNotMatch(cardCompanionSource, /requestAnimationFrame|onPointerMove/);
+  assert.match(cardCompanionSource, /data-owl-state=\{owlState\}/);
+  assert.match(cardCompanionSource, /tcg-owl-state/);
+  assert.doesNotMatch(
+    globalCss,
+    /\.card-companion-owl:hover \.owl-companion-flight\s*\{[^}]*animation-play-state:\s*paused;/s,
+  );
+  assert.match(
+    globalCss,
+    /\.card-companion:hover \.card-companion-copy\s*\{[^}]*transform:\s*translateX\(-4px\);/s,
+  );
+  assert.match(html, /tcg-ceny-owl-mascot-v1\.webp/);
   assert.match(globalCss, /\.site-tour-panel/);
   assert.match(globalCss, /\.site-tour\s*\{[^}]*pointer-events:\s*none;/s);
   assert.match(globalCss, /\.site-tour-panel\s*\{[^}]*pointer-events:\s*auto;/s);
