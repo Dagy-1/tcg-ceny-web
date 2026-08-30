@@ -1,44 +1,52 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const TOUR_QUERY = "pruvod";
 const TOUR_DONE_KEY = "tcg-ceny-tour-v1";
+const SEALED_OWL_POSES = ["search", "collection", "compare"];
 
 const tourSteps = [
   {
     path: "/",
+    owl: "welcome",
     eyebrow: "Rychlá prohlídka · 45 sekund",
     title: "Ahoj! Začínáš s Pokémony?",
     text: "Ukážeme ti, jak najít správný produkt, porovnat cenu a pohlídat naskladnění.",
   },
   {
     path: "/katalog/",
+    owl: "search",
     eyebrow: "Katalog",
     title: "Najdi přesně svoje balení.",
     text: "ETB, booster box nebo kolekce — vyber produkt a hned uvidíš dostupné české nabídky.",
   },
   {
     path: "/zlevneni/",
+    owl: "price-drop",
     eyebrow: "Zlevnění",
     title: "Skutečný pokles, ne planý poplach.",
     text: "Tady najdeš potvrzené poklesy cen s přímým odkazem na konkrétní obchod.",
   },
   {
     path: "/sledovani/",
+    owl: "alert",
     eyebrow: "Sledování",
     title: "Řekni nám, co máme hlídat.",
     text: "Nastav si cílovou cenu nebo naskladnění. Přehled pak najdeš vždy na jednom místě.",
   },
   {
     path: "/portfolio/",
+    owl: "collection",
     eyebrow: "Portfolio",
     title: "Sbírka bez tabulek.",
     text: "Ulož nákupní cenu a sleduj aktuální hodnotu i denní vývoj podle dostupných tržních dat.",
   },
   {
     path: "/porovnani/",
+    owl: "compare",
     eyebrow: "Porovnání",
     title: "Co má dnes větší hodnotu?",
     text: "Postav proti sobě dva vlastní výběry produktů. Rozdíl uvidíš okamžitě — a tím je prohlídka hotová.",
@@ -113,16 +121,25 @@ export default function SiteTour() {
   if (!open) return null;
 
   const current = tourSteps[step];
+  const owlVersion = SEALED_OWL_POSES.includes(current.owl) ? "v3-sealed-alpha" : "v2-alpha";
   const isFirst = step === 0;
   const isLast = step === tourSteps.length - 1;
 
   return (
     <div className="site-tour" role="dialog" aria-labelledby="site-tour-title">
       <section className="site-tour-panel">
-        <div className="site-tour-mascot" aria-hidden="true">
-          <span className="site-tour-card site-tour-card-back"><i /><i /><b /></span>
-          <span className="site-tour-card site-tour-card-front"><i /><i /><b /></span>
-          <span className="site-tour-spark">+</span>
+        <div className="site-tour-mascot" aria-hidden="true" data-tour-owl={current.owl}>
+          <Image
+            key={current.owl}
+            className="site-tour-owl"
+            src={`/brand/tour/owl-${current.owl}-${owlVersion}.webp`}
+            alt=""
+            width={480}
+            height={480}
+            unoptimized
+            loading="eager"
+            draggable={false}
+          />
         </div>
 
         <div className="site-tour-content">

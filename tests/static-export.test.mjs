@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import test from "node:test";
 import { handleCatalogApi } from "../worker/catalog-api.ts";
 import { canonicalHostRedirect } from "../worker/canonical-host.ts";
@@ -875,6 +876,55 @@ test("homepage contains production metadata and core content", async () => {
   assert.match(layoutSource, /id="main-content"/);
   assert.match(tourSource, /event\.key === "Escape"/);
   assert.match(tourSource, /previousFocusRef\.current\?\.focus/);
+});
+
+test("tour uses six distinct local owl illustrations without the legacy card mascot", async () => {
+  const source = await readFile(new URL("../app/SiteTour.tsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const poses = ["welcome", "search", "price-drop", "alert", "collection", "compare"];
+  assert.deepEqual([...source.matchAll(/owl: "([a-z-]+)"/g)].map((match) => match[1]), poses);
+  assert.match(source, /data-tour-owl=\{current\.owl\}/);
+  assert.match(source, /src=\{`\/brand\/tour\/owl-\$\{current\.owl\}-\$\{owlVersion\}\.webp`\}/);
+  assert.match(source, /const SEALED_OWL_POSES = \["search", "collection", "compare"\]/);
+  assert.match(source, /SEALED_OWL_POSES\.includes\(current\.owl\) \? "v3-sealed-alpha" : "v2-alpha"/);
+  assert.match(source, /loading="eager"/);
+  assert.match(source, /aria-hidden="true"/);
+  assert.doesNotMatch(source, /site-tour-card|site-tour-spark/);
+  assert.doesNotMatch(css, /site-tour-card|@keyframes tour-card/);
+  assert.match(css, /@keyframes tour-owl-in/);
+  const panelStyle = css.match(/\.site-tour-panel\s*\{([^}]+)\}/)?.[1] ?? "";
+  const mascotStyle = css.match(/\.site-tour-mascot\s*\{([^}]+)\}/)?.[1] ?? "";
+  assert.match(panelStyle, /background:\s*#091524;/);
+  assert.doesNotMatch(panelStyle, /radial-gradient/);
+  assert.match(mascotStyle, /background:\s*transparent/);
+  assert.doesNotMatch(mascotStyle, /mix-blend-mode|mask-image|filter:|opacity:|border:|border-radius:/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  let totalBytes = 0;
+  const require = createRequire(import.meta.url);
+  const sharp = require(require.resolve("sharp", { paths: [require.resolve("next/package.json")] }));
+  for (const pose of poses) {
+    const sealed = ["search", "collection", "compare"].includes(pose);
+    const asset = await readFile(new URL(`brand/tour/owl-${pose}-${sealed ? "v3-sealed-alpha" : "v2-alpha"}.webp`, output));
+    assert.equal(asset.toString("ascii", 0, 4), "RIFF");
+    assert.equal(asset.toString("ascii", 8, 12), "WEBP");
+    assert.ok(asset.length < 200_000, `${pose} exceeds the lossless per-step asset budget`);
+    const { data, info } = await sharp(asset).raw().toBuffer({ resolveWithObject: true });
+    assert.equal(info.channels, 4, `${pose} must have real alpha, not a painted backdrop`);
+    assert.equal(info.width, 480);
+    assert.equal(info.height, 480);
+    const original = await sharp(await readFile(new URL(`../public/brand/tour/owl-${pose}-${sealed ? "v3-sealed-source" : "v1"}.webp`, import.meta.url))).raw().toBuffer();
+    let transparent = 0;
+    for (let p = 0; p < info.width * info.height; p++) {
+      const alpha = data[p * 4 + 3];
+      if (alpha === 0) transparent++;
+      else for (let c = 0; c < 3; c++) assert.equal(data[p * 4 + c], original[p * 3 + c], `${pose}: original character colour changed`);
+      const x = p % info.width, y = Math.floor(p / info.width);
+      if (x === 0 || y === 0 || x === info.width - 1 || y === info.height - 1) assert.equal(alpha, 0, `${pose}: opaque image border`);
+    }
+    assert.ok(transparent > info.width * info.height * .4 && transparent < info.width * info.height * .8, `${pose}: invalid transparent area`);
+    totalBytes += asset.length;
+  }
+  assert.ok(totalBytes < 1_000_000, "lossless tour illustrations exceed the total asset budget");
 });
 
 test("partner and legal pages contain required information", async () => {

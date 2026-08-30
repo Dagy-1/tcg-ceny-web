@@ -892,6 +892,7 @@ h1 span { display: block; color: var(--gold); }
 }
 .site-tour-panel {
   position: relative;
+  isolation: isolate;
   width: min(760px, 100%);
   min-height: 224px;
   padding: 24px 26px 24px 214px;
@@ -899,9 +900,7 @@ h1 span { display: block; color: var(--gold); }
   align-items: center;
   border: 1px solid rgba(230, 184, 74, .44);
   border-radius: 25px;
-  background:
-    radial-gradient(circle at 4% 100%, rgba(230, 184, 74, .12), transparent 34%),
-    linear-gradient(145deg, rgba(13, 29, 49, .98), rgba(5, 15, 28, .99));
+  background: #091524;
   box-shadow: 0 30px 100px rgba(0, 0, 0, .52), inset 0 1px rgba(255, 255, 255, .045);
   overflow: hidden;
   pointer-events: auto;
@@ -909,49 +908,23 @@ h1 span { display: block; color: var(--gold); }
 }
 .site-tour-mascot {
   position: absolute;
-  left: 27px;
-  bottom: 18px;
-  width: 158px;
-  height: 182px;
-  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, .3));
+  left: 8px;
+  top: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  /* The image has real alpha; the shared panel remains visible behind the owl. */
+  background: transparent;
 }
-.site-tour-card {
-  position: absolute;
-  width: 92px;
-  height: 132px;
-  border-radius: 17px;
-  background: linear-gradient(145deg, #173150, #071426 70%);
-  transform-origin: 50% 85%;
+.site-tour-owl {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  animation: tour-owl-in 380ms ease-out both;
 }
-.site-tour-card::before,
-.site-tour-card::after {
-  content: "";
-  position: absolute;
-  top: 64px;
-  width: 8px;
-  height: 4px;
-  border-radius: 99px;
-  background: #f5d77c;
-  animation: companion-blink 6.4s ease-in-out infinite;
-}
-.site-tour-card::before { left: 24px; }
-.site-tour-card::after { right: 24px; }
-.site-tour-card i { position: absolute; left: 17px; right: 17px; height: 4px; border-radius: 99px; background: rgba(107, 132, 161, .5); }
-.site-tour-card i:first-child { top: 25px; right: 28px; }
-.site-tour-card i:nth-child(2) { top: 35px; right: 42px; }
-.site-tour-card b {
-  position: absolute;
-  left: 31px;
-  top: 81px;
-  width: 31px;
-  height: 15px;
-  border-bottom: 3px solid #d6e1ef;
-  border-radius: 0 0 50% 50%;
-}
-.site-tour-card-back { left: 60px; top: 5px; border: 2px solid #6b84a1; transform: rotate(8deg); animation: tour-card-back 5.6s var(--motion-ease) infinite; }
-.site-tour-card-front { left: 9px; bottom: 2px; border: 3px solid #e6b84a; transform: rotate(-7deg); animation: tour-card-front 5.6s var(--motion-ease) infinite; }
-.site-tour-card-front i { background: rgba(230, 184, 74, .48); }
-.site-tour-spark { position: absolute; right: 1px; top: 0; color: var(--gold-soft); font-size: 28px; font-weight: 300; animation: companion-spark 4.8s ease-in-out infinite; }
 .site-tour-content { width: 100%; min-width: 0; }
 .site-tour-topline { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .site-tour-topline p { margin: 0; color: var(--gold-soft); font-size: 9px; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
@@ -981,9 +954,8 @@ h1 span { display: block; color: var(--gold); }
 .site-tour-next { border: 1px solid #e6b84a; color: #11151c; background: linear-gradient(135deg, #f3cc65, #dda82f); box-shadow: 0 10px 30px rgba(230, 184, 74, .14); }
 .site-tour-actions button:focus-visible,
 .site-tour-topline button:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 3px; }
-@keyframes tour-panel-in { from { opacity: 0; transform: translateY(25px) scale(.98); } to { opacity: 1; transform: none; } }
-@keyframes tour-card-front { 0%, 100% { transform: translateY(0) rotate(-7deg); } 50% { transform: translateY(-4px) rotate(-8deg); } }
-@keyframes tour-card-back { 0%, 100% { transform: translateY(0) rotate(8deg); } 50% { transform: translateY(-3px) rotate(9deg); } }
+@keyframes tour-panel-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes tour-owl-in { from { opacity: 0; } to { opacity: 1; } }
 
 @media (min-width: 1240px) {
   .home-page > .shell,
@@ -1533,18 +1505,17 @@ h1 span { display: block; color: var(--gold); }
     overscroll-behavior: contain;
   }
   .site-tour-mascot {
-    left: 16px;
-    top: 12px;
+    left: 10px;
+    top: 4px;
     bottom: auto;
-    width: 112px;
-    height: 145px;
-    transform: scale(.5);
-    transform-origin: left top;
+    width: 76px;
+    height: 76px;
+    transform: none;
   }
   .site-tour-content { position: relative; z-index: 2; }
   .site-tour-topline {
     min-height: 58px;
-    padding-left: 68px;
+    padding-left: 78px;
     align-items: flex-start;
     gap: 10px;
   }
