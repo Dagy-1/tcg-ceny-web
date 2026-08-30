@@ -1,7 +1,33 @@
 # Chybějící ceny a pravdivá dostupnost — 31. 8. 2026
 
-Oprava je lokální, zatím není nasazená. Nezaměňovat s produkčním feedem
-Slevy a naskladnění nasazeným z af32f27.
+Oprava nasazena 31. 8. 2026, ověřeno 01:30 CEST. Webový zdroj `7cb2e14`,
+produkční Worker `b3ab5a1c-3543-4509-ab45-6d73d1c74ef6`, staging
+`ded36551-15ec-4a01-849a-f0417599b43c`. API datované ceny z `4cabf60` živě
+ověřeny; finální lokální parser `606bd4d` (Pompo + dodatečná pojistka Alzy).
+Nejde o záruku čerstvosti všech produktů; údaje níže jsou časové snapshoty.
+
+## Výsledek nasazení
+
+- Po uživatelově souhlasu přesně ověřeno 199 lokálních identit a neprázdných
+  shop URL proti aktivním ověřeným centrálním odkazům. Explicitní scope
+  125 → 201 (76 přidáno, původní zachovány); wildcard ani změna TTL nejsou použity.
+- Šest skutečných refreshů: Houndstone a Mabosstiff online za 999 Kč,
+  Ogerpon unavailable/null, Kangaskhan a Lucario unavailable s poslední
+  známou cenou 699/999 Kč. Běžná synchronizace dalších produktů pokračuje.
+- Gardevoir navíc odhalil chybu Alzy: doporučený Booster Bundle za 999 Kč
+  byl čten jako cena ukončeného produktu. Finální parser rozpozná i vnořené
+  hlavní „Prodej skončil“, vrací out/null a živě přepsal aktuální projekci
+  01:28:43 CEST. Poslední známá cena produktu je nyní 3199 Kč z TLAMAGames.
+- Snapshot 01:29: 171 sealed produktů, 83 online, **0 online bez ceny**,
+  65 unknown a 46 stale. Obnovení všech cen zatím není dokončeno; neznámé
+  a historické nabídky jsou na webu výslovně odlišené od aktuálních.
+- Čistý web: 34/34 testů, Next 240 stránek, oba Vinext buildy. Konečný
+  pracovní backend: 576/576 testů, cíleně 23/23. Staging/prod smoke a browser
+  ověřily karty/detail, hledání, datum staré ceny a bez horizontálního přetečení.
+  Veřejný feed přesně odpovídá doručeným Discord událostem; 7d 3+6, 30d 14+16.
+- Hlavní bot opět připojen k Discordu, existující supervisor obnoven.
+  Další krok: po běžném cyklu zkontrolovat stale položky a ručně ověřit
+  zbývající neshody URL/identit. Neprohlašovat neověřený produkt za skladem.
 
 ## Zjištěné příčiny
 
@@ -30,7 +56,7 @@ Slevy a naskladnění nasazeným z af32f27.
 - Generátor snapshotu vyřazuje staré nabídky z aktuálního minima, uchovává
   unknown a v JSON-LD neoznačuje unknown jako dostupnou nabídku.
 
-## Bezpečné dokončení provozní opravy
+## Použitý postup a pravidla pro další rozšíření
 
 1. Po schválení nasazení oddělit související soubory od uživatelských změn.
    Backend/API a parser mají kořenový Git, web vlastní Git.
