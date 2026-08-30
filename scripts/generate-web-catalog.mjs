@@ -88,7 +88,7 @@ const releases = new Map(
   catalogSets.map((item) => [`${item.era}\u0000${item.set}`, item.release_date || null]),
 );
 const cacheProducts = cache.products || {};
-const snapshotTimestamp = Number(cache.updated_at) || Date.now() / 1000;
+const snapshotTimestamp = Date.now() / 1000;
 const localProductImages = new Set(
   await readdir(productImageDirectory).catch(() => []),
 );
@@ -111,12 +111,15 @@ const publicProducts = products.map((product) => {
   const unavailable = onlyConfiguredOffers(product, market.unavailable).map((offer) =>
     normalizeOffer(offer, "unavailable"),
   );
-  const offers = sortOffers([...online, ...storeOnly, ...unavailable]);
-  const bestOnline = sortOffers([...online])[0] || null;
-  const bestStore = sortOffers([...storeOnly])[0] || null;
-  const bestOffer = bestOnline || bestStore;
-  const availability = online.length ? "online" : storeOnly.length ? "store" : "unavailable";
   const checkedAt = Number(market.checked_at) || null;
+  const expired = !checkedAt || snapshotTimestamp - checkedAt > 6 * 60 * 60;
+  const unknown = onlyConfiguredOffers(product, market.unknown).map((offer) => normalizeOffer(offer, "unknown"));
+  const offers = sortOffers([...online, ...storeOnly, ...unavailable, ...unknown].map((offer) => ({...offer, stale: offer.stale || expired})));
+  const freshOnline = offers.filter((offer) => !offer.stale && offer.status === "online");
+  const freshStore = offers.filter((offer) => !offer.stale && offer.status === "store");
+  const bestOffer = freshOnline.find((offer) => offer.price !== null);
+  const lastPriced = offers.find((offer) => offer.price !== null && !offer.stale);
+  const availability = freshOnline.length ? "online" : freshStore.length ? "store" : offers.some((offer) => !offer.stale && offer.status === "unavailable") ? "unavailable" : "unknown";
   const verified =
     Boolean(checkedAt) &&
     snapshotTimestamp - checkedAt <= 6 * 60 * 60 &&
@@ -136,8 +139,10 @@ const publicProducts = products.map((product) => {
         : "sealed",
     availability,
     bestPrice: bestOffer?.price ?? null,
-    availableOffers: online.length,
-    storeOffers: storeOnly.length,
+    lastKnownPrice: lastPriced?.price ?? null,
+    lastKnownPriceAt: lastPriced ? checkedAt : null,
+    availableOffers: freshOnline.length,
+    storeOffers: freshStore.length,
     offers,
     checkedAt,
     verified,
@@ -151,7 +156,7 @@ publicProducts.sort((left, right) => {
   );
   if (releaseOrder) return releaseOrder;
   if (left.availability !== right.availability) {
-    const priority = { online: 0, store: 1, unavailable: 2 };
+    const priority = { online: 0, store: 1, unavailable: 2, unknown: 3 };
     return priority[left.availability] - priority[right.availability];
   }
   if (left.bestPrice === null) return 1;

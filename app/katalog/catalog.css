@@ -489,6 +489,15 @@
 .catalog-status-online { color: #4ed77d; }
 .catalog-status-store { color: #f1bd4c; }
 .catalog-status-unavailable { color: #7d899b; }
+.catalog-status-unknown { color: #aab6c8; }
+.catalog-card-bottom .catalog-historical-price {
+  display: block;
+  margin-top: 5px;
+  color: #9caabd;
+  font-size: 9px;
+  font-weight: 400;
+  white-space: normal;
+}
 
 .catalog-pagination {
   margin-top: 34px;
@@ -602,6 +611,13 @@
   color: #efc66f;
   background: rgba(232, 182, 78, .11);
 }
+.catalog-detail-price.catalog-price-unconfirmed {
+  border-color: rgba(156, 170, 189, .28);
+  background: #0b1928;
+}
+.catalog-price-unconfirmed strong { color: #c5cfdd; }
+.catalog-price-unconfirmed .catalog-price-copy small,
+.catalog-price-unconfirmed .catalog-price-proof small { color: #9caabd; }
 .catalog-offers { margin-top: 20px; }
 .catalog-offers-heading {
   min-height: 54px;

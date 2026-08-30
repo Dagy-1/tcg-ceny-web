@@ -32,6 +32,7 @@ function formatDate(timestamp: number | null) {
 function statusLabel(status: Product["availability"]) {
   if (status === "online") return "Skladem online";
   if (status === "store") return "Pouze na prodejně";
+  if (status === "unknown") return "Dostupnost neověřena";
   return "Momentálně vyprodáno";
 }
 
@@ -67,9 +68,9 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
     return () => controller.abort();
   }, [initialProduct]);
 
-  const { availableOffers, unavailableOffers } = useMemo(() => {
+  const { availableOffers, unavailableOffers, unverifiedOffers } = useMemo(() => {
     const available = product.offers
-      .filter((offer) => offer.status !== "unavailable")
+      .filter((offer) => !offer.stale && (offer.status === "online" || offer.status === "store"))
       .sort((left, right) => {
         if (left.status !== right.status) return left.status === "online" ? -1 : 1;
         if (left.stale !== right.stale) return Number(left.stale) - Number(right.stale);
@@ -77,14 +78,15 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
       });
     return {
       availableOffers: available,
-      unavailableOffers: product.offers.filter((offer) => offer.status === "unavailable"),
+      unavailableOffers: product.offers.filter((offer) => !offer.stale && offer.status === "unavailable"),
+      unverifiedOffers: product.offers.filter((offer) => offer.stale || offer.status === "unknown"),
     };
   }, [product]);
 
   const bestStatus = product.availableOffers > 0 ? "online" : "store";
-  const verified = product.verified && availableOffers.some((offer) => !offer.stale);
+  const verified = product.bestPrice !== null && product.verified && availableOffers.some((offer) => !offer.stale);
   const bestOffer = availableOffers.find((offer) => (
-    offer.status === bestStatus
+    product.bestPrice !== null && offer.status === bestStatus
     && offer.price === product.bestPrice
     && !offer.stale
     && safeShopUrl(offer.url)
@@ -93,12 +95,13 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
   const priceCardContent = <>
     <span className="catalog-price-signal" aria-hidden="true" />
     <div className="catalog-price-copy">
-      <span>Nejlepší dostupná cena</span>
-      <strong>{formatPrice(product.bestPrice)}</strong>
+      <span>{product.bestPrice !== null ? "Nejlepší dostupná cena" : product.lastKnownPrice != null && product.lastKnownPriceAt ? "Poslední známá cena · není aktuální nabídka" : "Aktuální cena"}</span>
+      <strong>{formatPrice(product.bestPrice ?? (product.lastKnownPriceAt ? product.lastKnownPrice ?? null : null))}</strong>
+      {product.bestPrice === null && product.lastKnownPriceAt && <small>Zachyceno {formatDate(product.lastKnownPriceAt)}</small>}
       {bestOffer && <small>Nejlevněji u {bestOffer.shop}</small>}
     </div>
     <div className="catalog-price-proof">
-      <b>{verified ? "Ověřeno" : "Starší údaj"}</b>
+      <b>{verified ? "Ověřeno" : "Cena neověřena"}</b>
       <small>Kontrola {formatDate(product.checkedAt)}</small>
       {bestOfferUrl && <span className="catalog-price-open">Otevřít nabídku <ArrowUpRight size={15} aria-hidden="true" /></span>}
     </div>
@@ -155,7 +158,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
                 {priceCardContent}
               </a>
             ) : (
-              <div className={`catalog-detail-price ${verified ? "catalog-price-verified" : ""}`}>
+              <div className={`catalog-detail-price ${product.bestPrice === null ? "catalog-price-unconfirmed" : ""} ${verified ? "catalog-price-verified" : ""}`}>
                 {priceCardContent}
               </div>
             )}
@@ -174,7 +177,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
             <b>{availableOffers.length}</b>
           </div>
           {availableOffers.length ? availableOffers.map((offer) => {
-            const isBest = offer.status === bestStatus && offer.price === product.bestPrice && !offer.stale;
+            const isBest = product.bestPrice !== null && offer.status === bestStatus && offer.price === product.bestPrice && !offer.stale;
             const offerUrl = safeShopUrl(offer.url);
             const offerContent = <>
               <div><strong>{offer.shop}</strong><span className={`catalog-offer-status catalog-offer-${offer.status}`}>{offerStatusLabel(offer.status)}{offer.stale ? " · starší údaj" : ""}</span></div>
@@ -187,7 +190,18 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
                 <CatalogIssueReportControl product={product} offer={offer} variant="offer" />
               </div>
             );
-          }) : <p className="catalog-empty-offers">Produkt teď nemá dostupnou nabídku.</p>}
+          }) : <p className="catalog-empty-offers">Nemáme čerstvě ověřenou dostupnou nabídku.</p>}
+
+          {unverifiedOffers.length > 0 && (
+            <details className="catalog-unavailable"><summary>Neověřené nebo starší nabídky ({unverifiedOffers.length})</summary>
+              <p>Cena i skladovost vyžadují nové ověření. Nejde o aktuální nabídky.</p>
+              {unverifiedOffers.map((offer) => {
+                const url = safeShopUrl(offer.url);
+                const content = <><span>{offer.shop} · dostupnost neověřena</span><span>{offer.price !== null ? `Dříve ${formatPrice(offer.price)}` : "Cena neověřena"}</span></>;
+                return url ? <a href={url} target="_blank" rel="noopener noreferrer" key={`${offer.shop}-${offer.url}`}>{content}</a> : <div key={`${offer.shop}-${offer.url}`}>{content}</div>;
+              })}
+            </details>
+          )}
 
           {unavailableOffers.length > 0 && (
             <details className="catalog-unavailable"><summary>Vyprodané nabídky ({unavailableOffers.length})</summary>

@@ -1,4 +1,4 @@
-export type Availability = "online" | "store" | "unavailable";
+export type Availability = "online" | "store" | "unavailable" | "unknown";
 
 export type Offer = {
   shop: string;
@@ -18,6 +18,8 @@ export type Product = {
   condition: "sealed" | "opening";
   availability: Availability;
   bestPrice: number | null;
+  lastKnownPrice?: number | null;
+  lastKnownPriceAt?: number | null;
   availableOffers: number;
   storeOffers: number;
   offers: Offer[];
@@ -47,6 +49,8 @@ export type ApiProduct = {
   release_date: string | null;
   availability: string;
   best_price_czk: number | null;
+  last_known_price_czk?: number | null;
+  last_known_price_at?: string | null;
   available_offers: number;
   store_offers: number;
   checked_at: string | null;
@@ -61,8 +65,8 @@ export type CatalogData = {
 };
 
 export function apiAvailability(value: string): Availability {
-  if (value === "online" || value === "store") return value;
-  return "unavailable";
+  if (value === "online" || value === "store" || value === "unavailable") return value;
+  return "unknown";
 }
 
 function apiTimestamp(value: string | null): number | null {
@@ -91,6 +95,8 @@ export function productFromApi(product: ApiProduct, fallback?: Product): Product
     condition: product.condition_group === "sealed" ? "sealed" : "opening",
     availability: apiAvailability(product.availability),
     bestPrice: product.best_price_czk,
+    lastKnownPrice: product.last_known_price_czk ?? null,
+    lastKnownPriceAt: apiTimestamp(product.last_known_price_at ?? null),
     availableOffers: product.available_offers,
     storeOffers: product.store_offers,
     offers,

@@ -46,7 +46,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const product = findProduct(slug);
   if (!product) notFound();
-  const availableOffers = product.offers.filter((offer) => offer.status !== "unavailable" && !offer.stale && offer.price !== null);
+  const availableOffers = product.offers.filter((offer) => (offer.status === "online" || offer.status === "store") && !offer.stale && offer.price !== null);
   const canonical = `https://tcgceny.cz${productPath(product)}`;
   const image = product.image
     ? product.image.startsWith("https://") ? product.image : `https://tcgceny.cz${product.image}`

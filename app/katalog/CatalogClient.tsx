@@ -56,6 +56,7 @@ function normalize(value: string) {
 function statusLabel(status: Availability) {
   if (status === "online") return "Skladem online";
   if (status === "store") return "Pouze na prodejně";
+  if (status === "unknown") return "Dostupnost neověřena";
   return "Momentálně vyprodáno";
 }
 
@@ -244,7 +245,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
           ? left.bestPrice - right.bestPrice
           : right.bestPrice - left.bestPrice;
       }
-      const availabilityPriority = { online: 0, store: 1, unavailable: 2 };
+      const availabilityPriority = { online: 0, store: 1, unavailable: 2, unknown: 3 };
       return (
         availabilityPriority[left.availability] - availabilityPriority[right.availability] ||
         (left.bestPrice ?? Number.MAX_SAFE_INTEGER) - (right.bestPrice ?? Number.MAX_SAFE_INTEGER)
@@ -434,6 +435,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
               <option value="online">Skladem online</option>
               <option value="store">Pouze na prodejně</option>
               <option value="unavailable">Vyprodáno</option>
+              <option value="unknown">Dostupnost neověřena</option>
             </select>
           </label>
         </div>
@@ -500,10 +502,14 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
                             ? offerCountLabel(product.availableOffers)
                             : product.storeOffers
                               ? offerCountLabel(product.storeOffers, true)
-                              : "Čeká na naskladnění"}
+                              : product.availability === "unknown" ? "Nemáme čerstvé ověření" : "Čeká na naskladnění"}
                         </small>
                       </div>
-                      <strong>{formatPrice(product.bestPrice)}</strong>
+                      <strong>{product.bestPrice !== null ? formatPrice(product.bestPrice) :
+                        product.lastKnownPrice != null && product.lastKnownPriceAt ? <>
+                          {formatPrice(product.lastKnownPrice)}
+                          <small className="catalog-historical-price">Poslední známá · {new Intl.DateTimeFormat("cs-CZ", {day:"numeric",month:"numeric",year:"numeric",timeZone:"Europe/Prague"}).format(new Date(product.lastKnownPriceAt * 1000))}</small>
+                        </> : "Cena neověřena"}</strong>
                     </div>
                   </div>
                 </Link>

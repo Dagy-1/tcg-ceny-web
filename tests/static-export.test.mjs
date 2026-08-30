@@ -14,10 +14,30 @@ import {
 } from "../worker/portfolio-api.ts";
 import { comparisonSummary, selectionTotal } from "../app/porovnani/comparison.ts";
 import catalogData from "../app/katalog/catalog-data.json" with { type: "json" };
-import { productPath, productSlug } from "../app/katalog/catalog-model.ts";
+import { productPath, productSlug, productFromApi, apiAvailability } from "../app/katalog/catalog-model.ts";
 import { safeShopUrl } from "../app/shop-url.ts";
 
 const output = new URL("../out/", import.meta.url);
+
+test("unknown availability and historical prices never become current offers", () => {
+  assert.equal(apiAvailability("unknown"), "unknown");
+  assert.equal(apiAvailability("unexpected"), "unknown");
+  assert.equal(apiAvailability("unavailable"), "unavailable");
+  const product = productFromApi({
+    id: "test", name: "Test", availability: "unknown", best_price_czk: null,
+    last_known_price_czk: 899, last_known_price_at: "2026-07-31T14:29:36Z",
+    checked_at: "2026-07-31T14:29:36Z", data_stale: true,
+    available_offers: 0, store_offers: 0, offers: [],
+  });
+  assert.equal(product.availability, "unknown");
+  assert.equal(product.bestPrice, null);
+  assert.equal(product.availableOffers, 0);
+  assert.equal(product.lastKnownPrice, 899);
+  assert.equal(product.lastKnownPriceAt, Date.parse("2026-07-31T14:29:36Z") / 1000);
+  const missingHistory = productFromApi({id:"test", name:"Test", availability:"online", best_price_czk:null, offers:[]}, {...product, bestPrice:999});
+  assert.equal(missingHistory.bestPrice, null);
+  assert.equal(missingHistory.lastKnownPrice, null);
+});
 
 async function readOutput(path) {
   return readFile(new URL(path, output), "utf8");
