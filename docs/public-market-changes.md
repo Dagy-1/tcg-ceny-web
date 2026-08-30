@@ -1,6 +1,19 @@
 # Slevy a naskladnění: web a Discord
 
-Implementace 31. 8. 2026, zatím lokální; není potvrzené nasazení tohoto rozšíření.
+Nasazeno a ověřeno 31. 8. 2026 v 00:48 CEST na https://tcgceny.cz/zlevneni/.
+Backend commit `eb565c3bea3b267c62026883cbc46b1e6eb6aa9f`, webový zdroj
+`af32f27c2dfa4520eb22677d94409280bdb27653`, produkční Worker
+`1708ad1f-8524-4bcf-9a13-bd915f2390cd`.
+
+- Při ověření: 3 naskladnění / 6 slev za 7 dní, 14 naskladnění / 16 slev
+  za 30 dní. Skutečná historie byla dostupná bez backfillu a bez opakovaného
+  odesílání na Discord. Počty se s časem mění.
+- Read-only porovnání centrálního API, stagingu a produkce s doručeným outboxem
+  potvrdilo přesné event ID, product ID a ceny pro oba typy a období.
+- Ověřeno 547 backendových testů z čistého commitu, 33 webových testů,
+  ESLint, TypeScript, Next build 240 stránek a oba Vinext buildy. Produkční
+  smoke ověřil šest hlavních stránek, API, stránkování, ochranu osobních alertů
+  a start OAuth. Browser potvrdil skutečné produkty a načtené obrázky.
 
 - Navigace **Slevy a naskladnění** používá dosavadní URL `/zlevneni/`, aby zůstaly funkční
   existující odkazy. Filtry: Vše, Zlevnění, Nově skladem; období 1/7/30 dní.
