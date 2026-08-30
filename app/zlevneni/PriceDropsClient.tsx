@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDownRight, ArrowUpRight, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowDownRight, ArrowUpRight, PackageCheck, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import BrandedLoader from "../BrandedLoader";
 import MobileNav from "../MobileNav";
@@ -13,19 +13,21 @@ import { safeShopUrl } from "../shop-url";
 
 type Period = 1 | 7 | 30;
 type Sort = "newest" | "largest";
+type ChangeKind = "all" | "price_drop" | "restock";
 type PageState = "loading" | "ready" | "error";
 
 type PriceDrop = {
   id: string;
+  event_type: "price_drop" | "restock";
   product_id: string;
   product_name: string;
   image_url: string | null;
   shop: string;
   url: string;
-  old_price_czk: number;
-  new_price_czk: number;
-  saved_czk: number;
-  drop_percent: number;
+  old_price_czk: number | null;
+  new_price_czk: number | null;
+  saved_czk: number | null;
+  drop_percent: number | null;
   occurred_at: string;
 };
 
@@ -36,12 +38,22 @@ const periodOptions: Array<{ value: Period; label: string }> = [
   { value: 7, label: "7 dní" },
   { value: 30, label: "30 dní" },
 ];
+const kindOptions: Array<{ value: ChangeKind; label: string }> = [
+  { value: "all", label: "Vše" },
+  { value: "price_drop", label: "Zlevnění" },
+  { value: "restock", label: "Nově skladem" },
+];
+const PAGE_SIZE = 24;
 
 const embeddedImages = new Map(
   (catalogData as CatalogData).products.map((product) => [product.id, product.image]),
 );
+const embeddedPaths = new Map(
+  (catalogData as CatalogData).products.map((product) => [product.id, productPath(product)]),
+);
 
-function formatPrice(value: number) {
+function formatPrice(value: number | null) {
+  if (value === null) return "Cena neuvedena";
   return `${new Intl.NumberFormat("cs-CZ").format(value)} Kč`;
 }
 
@@ -77,42 +89,51 @@ function ProductImage({ item }: { item: PriceDrop }) {
 export default function PriceDropsClient() {
   const [period, setPeriod] = useState<Period>(7);
   const [sort, setSort] = useState<Sort>("newest");
+  const [kind, setKind] = useState<ChangeKind>("all");
+  const [offset, setOffset] = useState(0);
+  const [revision, setRevision] = useState(0);
   const [state, setState] = useState<PageState>("loading");
-  const [data, setData] = useState<PriceDropResponse>({ items: [], total: 0, limit: 100, offset: 0 });
+  const [data, setData] = useState<PriceDropResponse>({ items: [], total: 0, limit: PAGE_SIZE, offset: 0 });
   const [previousSeenAt, setPreviousSeenAt] = useState<string | null>(null);
-
-  const load = useCallback(async (selectedPeriod: Period) => {
-    setState("loading");
-    try {
-      const response = await fetch(`/api/catalog/price-drops?days=${selectedPeriod}&limit=100`, {
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) throw new Error("Price drops unavailable");
-      setData(await response.json() as PriceDropResponse);
-      setState("ready");
-    } catch {
-      setState("error");
-    }
-  }, []);
+  const seenInitialized = useRef(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     queueMicrotask(() => {
-      setPreviousSeenAt(lastSeenPriceDrop());
-      void load(period);
+      if (controller.signal.aborted) return;
+      if (!seenInitialized.current) {
+        setPreviousSeenAt(lastSeenPriceDrop());
+        seenInitialized.current = true;
+      }
+      setState("loading");
+      void (async () => {
+        try {
+          const response = await fetch(`/api/catalog/changes?days=${period}&event_type=${kind}&sort=${sort}&limit=${PAGE_SIZE}&offset=${offset}`, {
+            headers: { Accept: "application/json" }, signal: controller.signal,
+          });
+          if (!response.ok) throw new Error("Changes unavailable");
+          const next = await response.json() as PriceDropResponse;
+          if (controller.signal.aborted) return;
+          setData(next);
+          setState("ready");
+          // A filtered or older page must not mark unseen events of the other kind as read.
+          if (kind === "all" && sort === "newest" && offset === 0) rememberLatestPriceDrop(next.items[0]?.occurred_at);
+        } catch {
+          if (!controller.signal.aborted) setState("error");
+        }
+      })();
     });
-  }, [load, period]);
+    return () => controller.abort();
+  }, [period, kind, sort, offset, revision]);
 
   useEffect(() => {
-    if (state !== "ready") return;
-    rememberLatestPriceDrop(data.items[0]?.occurred_at);
-  }, [data.items, state]);
-
-  const items = useMemo(() => {
-    const next = [...data.items];
-    if (sort === "largest") next.sort((a, b) => b.drop_percent - a.drop_percent || b.saved_czk - a.saved_czk);
-    return next;
-  }, [data.items, sort]);
-  const largest = useMemo(() => data.items.reduce<PriceDrop | null>((best, item) => !best || item.drop_percent > best.drop_percent ? item : best, null), [data.items]);
+    const refresh = () => {
+      if (document.visibilityState === "visible" && offset === 0) setRevision((value) => value + 1);
+    };
+    const timer = window.setInterval(refresh, 5 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [offset]);
+  const items = data.items;
 
   return (
     <>
@@ -130,61 +151,70 @@ export default function PriceDropsClient() {
         <header className="drops-hero">
           <div>
             <p className="drops-eyebrow"><span /> Potvrzené pohyby trhu</p>
-            <h1>Zlevnění, která<br /><strong>stojí za pozornost.</strong></h1>
-            <p>Jakmile ověřená nejnižší cena produktu klesne, objeví se tady. Přehled používá stejné potvrzené události jako náš Discord.</p>
+            <h1>Slevy a<br /><strong>naskladnění.</strong></h1>
+            <p>Poklesy cen i návraty do prodeje na jednom místě. Tady najdeš stejné potvrzené události, které odesíláme do veřejných kanálů našeho Discordu.</p>
           </div>
           <div className="drops-trust">
             <ShieldCheck aria-hidden="true" />
-            <div><span>Bez falešných poplachů</span><small>Výrazné změny potvrzujeme dvěma kontrolami.</small></div>
+            <div><span>Stejné události jako na Discordu</span><small>Nově skladem znamená návrat do online prodeje, ne první přidání do katalogu.</small></div>
           </div>
         </header>
 
         <section className="drops-toolbar" aria-label="Nastavení přehledu">
+          <div className="drops-period drops-kinds" role="group" aria-label="Typ změny">
+            {kindOptions.map((option) => <button type="button" key={option.value} aria-pressed={kind === option.value} className={kind === option.value ? "is-active" : undefined} onClick={() => { setKind(option.value); setSort("newest"); setOffset(0); }}>{option.label}</button>)}
+          </div>
           <div className="drops-period" aria-label="Období">
-            {periodOptions.map((option) => <button type="button" className={period === option.value ? "is-active" : undefined} aria-pressed={period === option.value} onClick={() => setPeriod(option.value)} key={option.value}>{option.label}</button>)}
+            {periodOptions.map((option) => <button type="button" className={period === option.value ? "is-active" : undefined} aria-pressed={period === option.value} onClick={() => { setPeriod(option.value); setOffset(0); }} key={option.value}>{option.label}</button>)}
           </div>
-          <div className="drops-sort">
-            <button type="button" className={sort === "newest" ? "is-active" : undefined} onClick={() => setSort("newest")}>Nejnovější</button>
-            <button type="button" className={sort === "largest" ? "is-active" : undefined} onClick={() => setSort("largest")}>Největší pokles</button>
-          </div>
+          {kind === "price_drop" && <div className="drops-sort">
+            <button type="button" aria-pressed={sort === "newest"} className={sort === "newest" ? "is-active" : undefined} onClick={() => { setSort("newest"); setOffset(0); }}>Nejnovější</button>
+            <button type="button" aria-pressed={sort === "largest"} className={sort === "largest" ? "is-active" : undefined} onClick={() => { setSort("largest"); setOffset(0); }}>Největší pokles</button>
+          </div>}
         </section>
 
         {state === "ready" && data.items.length > 0 && (
-          <section className="drops-summary" aria-label="Souhrn zlevnění">
-            <div><span>Potvrzených zlevnění</span><strong>{data.total}</strong><small>za zvolené období</small></div>
-            <div><span>Největší pokles</span><strong>−{largest?.drop_percent.toLocaleString("cs-CZ")} %</strong><small>{largest ? formatPrice(largest.saved_czk) : "—"} dolů</small></div>
-            <div><span>Poslední potvrzení</span><strong>{formatMoment(data.items[0].occurred_at)}</strong><small>automaticky aktualizováno</small></div>
+          <section className="drops-summary" aria-label="Souhrn změn">
+            <div><span>Potvrzených událostí</span><strong>{data.total}</strong><small>za zvolené období a typ změny</small></div>
+            <div><span>Zobrazený přehled</span><strong>{kindOptions.find((option) => option.value === kind)?.label}</strong><small>{periodOptions.find((option) => option.value === period)?.label}</small></div>
+            <div><span>Společný zdroj</span><strong>Web + Discord</strong><small>obnova první stránky každých 5 minut</small></div>
           </section>
         )}
 
-        {state === "loading" && <BrandedLoader className="drops-state" label="Načítám potvrzená zlevnění" detail="Kontroluji poslední bezpečně doručené události." longDetail="Ověřené události se načítají déle než obvykle. Nic nepotvrzeného nezobrazíme." />}
-        {state === "error" && <section className="drops-state"><RefreshCw aria-hidden="true" /><h2>Přehled se teď nepodařilo načíst</h2><p>Katalog dál funguje. Zkus přehled za chvíli obnovit.</p><button type="button" onClick={() => void load(period)}>Zkusit znovu</button></section>}
-        {state === "ready" && data.items.length === 0 && <section className="drops-state drops-empty"><Sparkles aria-hidden="true" /><h2>V tomto období zatím žádné potvrzené zlevnění</h2><p>To je v pořádku — zobrazujeme jen skutečné poklesy nejnižší dostupné ceny.</p><Link href="/katalog/">Prohlédnout katalog</Link></section>}
+        {state === "loading" && <BrandedLoader className="drops-state" label="Načítám potvrzené změny" detail="Kontroluji poslední bezpečně doručené události." longDetail="Ověřené události se načítají déle než obvykle. Nic nepotvrzeného nezobrazíme." />}
+        {state === "error" && <section className="drops-state"><RefreshCw aria-hidden="true" /><h2>Přehled se teď nepodařilo načíst</h2><p>Katalog dál funguje. Zkus přehled za chvíli obnovit.</p><button type="button" onClick={() => setRevision((value) => value + 1)}>Zkusit znovu</button></section>}
+        {state === "ready" && data.items.length === 0 && <section className="drops-state drops-empty"><Sparkles aria-hidden="true" /><h2>Pro tento výběr zatím žádné potvrzené změny</h2><p>Zkus delší období nebo jiný typ změny. Zobrazujeme jen události doručené do veřejných Discord kanálů.</p><Link href="/katalog/">Prohlédnout katalog</Link></section>}
 
         {state === "ready" && items.length > 0 && (
-          <section className="drops-feed" aria-label="Seznam potvrzených zlevnění">
-            <div className="drops-section-head"><div><p>Aktuální přehled</p><h2>Nejnovější pohyby cen</h2></div><span>{data.total} {data.total === 1 ? "zlevnění" : "zlevnění"}</span></div>
+          <section className="drops-feed" aria-label="Seznam potvrzených změn">
+            <div className="drops-section-head"><div><p>Potvrzené události</p><h2>{sort === "largest" ? "Největší poklesy cen" : "Zlevnění a návraty do prodeje"}</h2></div><span>{offset + 1}–{offset + items.length} z {data.total}</span></div>
+            <p className="drops-disclaimer">Cena a dostupnost odpovídají okamžiku oznámení na Discordu. Aktuální nabídku ověř v obchodě.</p>
             <div className="drops-list">
               {items.map((item) => {
                 const offerUrl = safeShopUrl(item.url);
-                const detailPath = productPath({ id: item.product_id, name: item.product_name });
+                const detailPath = embeddedPaths.get(item.product_id) || productPath({ id: item.product_id, name: item.product_name });
                 const isNew = Boolean(previousSeenAt)
                   && new Date(item.occurred_at).getTime() > new Date(previousSeenAt || "").getTime();
                 return (
-                  <article className={`drop-card${isNew ? " is-new" : ""}`} key={item.id}>
+                  <article className={`drop-card${item.event_type === "restock" ? " is-restock" : ""}${isNew ? " is-new" : ""}`} key={item.id}>
                     <Link className="drop-image" href={detailPath} aria-label={`Otevřít ${item.product_name}`}><ProductImage item={item} /></Link>
                     <div className="drop-content">
-                      <div className="drop-heading"><div><span className="drop-confirmed"><i /> Potvrzené zlevnění{isNew && <em>Nové</em>}</span><h3><Link href={detailPath}>{item.product_name}</Link></h3></div><time dateTime={item.occurred_at}>{formatMoment(item.occurred_at)}</time></div>
+                      <div className="drop-heading"><div><span className="drop-confirmed"><i /> {item.event_type === "restock" ? "Nově skladem" : "Potvrzené zlevnění"}{isNew && <em>Nové</em>}</span><h3><Link href={detailPath}>{item.product_name}</Link></h3></div><time dateTime={item.occurred_at}>{formatMoment(item.occurred_at)}</time></div>
                       <div className="drop-price-line">
-                        <div className="drop-prices"><span>{formatPrice(item.old_price_czk)}</span><ArrowDownRight aria-hidden="true" /><strong>{formatPrice(item.new_price_czk)}</strong></div>
-                        <div className="drop-saving"><strong>−{formatPrice(item.saved_czk)}</strong><span>−{item.drop_percent.toLocaleString("cs-CZ")} %</span></div>
+                        <div className="drop-prices">{item.event_type === "price_drop" ? <><span>{formatPrice(item.old_price_czk)}</span><ArrowDownRight aria-hidden="true" /></> : <PackageCheck aria-hidden="true" />}<strong>{formatPrice(item.new_price_czk)}</strong></div>
+                        {item.event_type === "price_drop" ? <div className="drop-saving"><strong>−{formatPrice(item.saved_czk)}</strong><span>−{item.drop_percent?.toLocaleString("cs-CZ")} %</span></div> : <div className="drop-restock-label">Znovu v online prodeji</div>}
                       </div>
-                      <div className="drop-footer"><span>Nejlevněji nyní u <strong>{item.shop}</strong></span><div><Link href={detailPath}>Detail produktu</Link>{offerUrl && <a href={offerUrl} target="_blank" rel="noopener noreferrer">Otevřít nabídku <ArrowUpRight size={15} aria-hidden="true" /></a>}</div></div>
+                      <div className="drop-footer"><span>Oznámeno u <strong>{item.shop}</strong></span><div><Link href={detailPath}>Detail produktu</Link>{offerUrl && <a href={offerUrl} target="_blank" rel="noopener noreferrer">Otevřít nabídku <ArrowUpRight size={15} aria-hidden="true" /></a>}</div></div>
                     </div>
                   </article>
                 );
               })}
             </div>
+            {data.total > PAGE_SIZE && <nav className="drops-pagination" aria-label="Stránkování změn">
+              <button type="button" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>Předchozí</button>
+              <span>Strana {Math.floor(offset / PAGE_SIZE) + 1} z {Math.ceil(data.total / PAGE_SIZE)}</span>
+              <button type="button" disabled={offset + items.length >= data.total} onClick={() => setOffset(offset + PAGE_SIZE)}>Další</button>
+            </nav>}
           </section>
         )}
       </main>

@@ -9,7 +9,7 @@ import NavStatusLink from "./NavStatusLink";
 const links = [
   { href: "/", label: "Domů" },
   { href: "/katalog/", label: "Katalog" },
-  { href: "/zlevneni/", label: "Zlevnění" },
+  { href: "/zlevneni/", label: "Slevy a naskladnění" },
   { href: "/porovnani/", label: "Porovnání" },
   { href: "/portfolio/", label: "Portfolio" },
   { href: "/sledovani/", label: "Sledování" },

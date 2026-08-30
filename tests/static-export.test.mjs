@@ -445,7 +445,33 @@ test("central portfolio proxy uses only its service identity", async () => {
   }
 });
 
-test("price drop feed mirrors only confirmed central alert events", async () => {
+test("market changes proxy preserves Discord event IDs, filters and pagination", async () => {
+  const originalFetch = globalThis.fetch;
+  let target;
+  let forwarded;
+  const payload = { items: [{ id: "market-alert:v1:test", event_type: "restock", new_price_czk: 1799 }], total: 25, limit: 24, offset: 24 };
+  globalThis.fetch = async (url, init) => {
+    target = String(url);
+    forwarded = init;
+    return Response.json(payload);
+  };
+  try {
+    const response = await handleCatalogApi(new Request(
+      "https://tcgceny.cz/api/catalog/changes?days=7&event_type=restock&limit=24&offset=24",
+      { headers: { Cookie: "must-not-forward", Authorization: "must-not-forward" } },
+    ), { CENTRAL_API_BASE_URL: "https://backend.example" });
+    assert.equal(response.status, 200);
+    assert.equal(target, "https://backend.example/api/v1/catalog/changes?days=7&event_type=restock&limit=24&offset=24");
+    assert.equal(forwarded.method, "GET");
+    assert.equal(forwarded.headers.get("Cookie"), null);
+    assert.equal(forwarded.headers.get("Authorization"), null);
+    assert.deepEqual(await response.json(), payload);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("market feed includes restocks, server filters, paging and safe read tracking", async () => {
   const [html, source, css, mobileNav] = await Promise.all([
     readOutput("zlevneni/index.html"),
     readFile(new URL("../app/zlevneni/PriceDropsClient.tsx", import.meta.url), "utf8"),
@@ -453,8 +479,17 @@ test("price drop feed mirrors only confirmed central alert events", async () => 
     readFile(new URL("../app/MobileNav.tsx", import.meta.url), "utf8"),
   ]);
 
-  assert.match(html, /Zlevnění, která/);
-  assert.match(source, /api\/catalog\/price-drops\?days=/);
+  assert.match(html, /<h1>Slevy a<br\s*\/?><strong>naskladnění\.<\/strong><\/h1>/);
+  assert.match(html, /<title>Slevy a naskladnění Pokémon TCG/);
+  assert.match(mobileNav, /label: "Slevy a naskladnění"/);
+  assert.match(source, /api\/catalog\/changes\?days=/);
+  assert.match(source, /event_type=\$\{kind\}/);
+  assert.match(source, /offset=\$\{offset\}/);
+  assert.match(source, /value: "restock", label: "Nově skladem"/);
+  assert.match(source, /controller\.abort\(\)/);
+  assert.match(source, /kind === "all" && sort === "newest" && offset === 0/);
+  assert.match(source, /Cena a dostupnost odpovídají okamžiku oznámení/);
+  assert.match(source, /aria-label="Stránkování změn"/);
   assert.match(source, /Potvrzené zlevnění/);
   assert.match(source, /old_price_czk/);
   assert.match(source, /new_price_czk/);
@@ -1331,8 +1366,8 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(authMenu, /Moje sledování/);
   assert.match(navStatus, /api\/alerts\/events/);
   assert.match(navStatus, /nav-alert-count/);
-  assert.match(navStatus, /api\/catalog\/price-drops\?days=30&limit=1/);
-  assert.match(navStatus, /tcg-ceny:last-seen-price-drop/);
+  assert.match(navStatus, /api\/catalog\/changes\?days=30&limit=1/);
+  assert.match(navStatus, /tcg-ceny:last-seen-market-change:v1/);
   assert.match(navStatus, /nav-new-drop/);
   assert.match(navStatus, /PRICE_DROP_REFRESH_INTERVAL_MS = 5 \* 60 \* 1000/);
   assert.match(navStatus, /visibilitychange/);

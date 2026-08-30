@@ -26,9 +26,9 @@ const tourSteps = [
   {
     path: "/zlevneni/",
     owl: "price-drop",
-    eyebrow: "Zlevnění",
-    title: "Skutečný pokles, ne planý poplach.",
-    text: "Tady najdeš potvrzené poklesy cen s přímým odkazem na konkrétní obchod.",
+    eyebrow: "Slevy a naskladnění",
+    title: "Zlevnilo? Je znovu skladem?",
+    text: "Potvrzené poklesy cen i návraty do prodeje — stejné události jako na Discordu, s odkazem přímo do obchodu.",
   },
   {
     path: "/sledovani/",

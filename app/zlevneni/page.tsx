@@ -3,9 +3,9 @@ import PriceDropsClient from "./PriceDropsClient";
 import "./zlevneni.css";
 
 export const metadata: Metadata = {
-  title: "Zlevnění Pokémon TCG",
+  title: "Slevy a naskladnění Pokémon TCG",
   description:
-    "Přehled potvrzených poklesů nejnižších cen Pokémon TCG produktů v českých e-shopech.",
+    "Potvrzená zlevnění a návraty Pokémon TCG produktů do prodeje. Stejné veřejné události jako na Discordu TCG Ceny.",
   alternates: { canonical: "/zlevneni/" },
 };
 
