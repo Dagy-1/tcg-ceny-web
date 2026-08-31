@@ -38,6 +38,37 @@ test('comparison preview is only an empty state and CTA focuses real product sea
   assert.match(compare, /if \(!ready\) return;/);
 });
 
+test('comparison centers its difference and marks higher value without claiming a better deal', async () => {
+  const preview = demo.slice(demo.indexOf('export function ComparisonPreview'), demo.indexOf('export function WatchingPreview'));
+  assert.match(demo, /className=\{bundle \? undefined : "feature-side-higher"\}/);
+  assert.match(demo, /!bundle && <span className="feature-value-badge">Vyšší hodnota/);
+  assert.match(preview, /Rozdíl hodnoty<\/span><strong>200 Kč/);
+  assert.doesNotMatch(preview, /lepší nákup|výhodnější nabídka/i);
+  const css = await read('../app/feature-preview.css');
+  assert.match(css, /\.feature-demo-verdict \{[^}]*justify-items: center[^}]*text-align: center/);
+});
+
+test('demo swap is local, reversible and updates both products and settlement direction', () => {
+  assert.match(demo, /const \[swapped, setSwapped\] = useState\(false\)/);
+  assert.match(demo, /onClick=\{\(\) => setSwapped\(value => !value\)\}/);
+  assert.match(demo, /<ComparisonDemoSide bundle=\{swapped\} label="Můj výběr"/);
+  assert.match(demo, /<ComparisonDemoSide bundle=\{!swapped\} label="Srovnávaný výběr"/);
+  assert.match(demo, /swapped \? "K dorovnání přidej tuto částku ke svému výběru\." : "K dorovnání přidej tuto částku ke srovnávanému výběru\."/);
+  assert.match(demo, /id="compare-demo-result" aria-live="polite" aria-atomic="true"/);
+  assert.doesNotMatch(demo, /setMine|setCompared|fetch\(|sessionStorage|localStorage/);
+});
+
+test('comparison FAQ describes mixed price sources and indicative values', () => {
+  const preview = demo.slice(demo.indexOf('export function ComparisonPreview'), demo.indexOf('export function WatchingPreview'));
+  assert.match(preview, /aria-labelledby="compare-help-title"/);
+  assert.equal((preview.match(/<details>/g) || []).length, 3);
+  assert.match(preview, /Cardmarketu používáme průměrnou cenu/);
+  assert.match(preview, /PokeData nebo nabídky českých obchodů/);
+  assert.match(preview, /orientační hodnotu pro porovnání/);
+  assert.match(preview, /Rozdíl spočítáme z celkové hodnoty/);
+  assert.doesNotMatch(preview, /<details open/);
+});
+
 test('watching preview is anonymous-only and keeps existing sign-in return paths', () => {
   const anonymous = watching.slice(watching.indexOf('{state === "anonymous" && ('), watching.indexOf('{state === "error" && ('));
   assert.match(anonymous, /<WatchingPreview \/>/);
