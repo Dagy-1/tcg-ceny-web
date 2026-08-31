@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import AuthMenu from "../AuthMenu";
-import MobileNav from "../MobileNav";
+import HeaderActions from "../HeaderActions";
 import NavStatusLink from "../NavStatusLink";
 
 const CONTACT_URL =
@@ -90,10 +89,7 @@ export default function ForShops() {
           <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy/" aria-current="page">Pro e-shopy</Link>
         </div>
-        <div className="nav-actions">
-          <AuthMenu />
-          <MobileNav />
-        </div>
+        <HeaderActions />
       </nav>
 
       <section className="shop-page-hero shell">

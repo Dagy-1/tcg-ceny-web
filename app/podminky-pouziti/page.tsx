@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import HeaderActions from "../HeaderActions";
 
 export const metadata: Metadata = {
   title: "Podmínky používání",
@@ -20,7 +21,8 @@ export default function TermsPage() {
           </span>
           <span>TCG <strong>Ceny</strong></span>
         </Link>
-        <Link className="button button-small" href="/">Zpět na hlavní stránku</Link>
+        <div className="nav-links"><Link href="/">Zpět na hlavní stránku</Link></div>
+        <HeaderActions />
       </nav>
 
       <header className="legal-hero shell">

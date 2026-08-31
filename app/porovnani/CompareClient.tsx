@@ -4,8 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeftRight, Check, Minus, Plus, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import AuthMenu from "../AuthMenu";
-import MobileNav from "../MobileNav";
+import HeaderActions from "../HeaderActions";
 import NavStatusLink from "../NavStatusLink";
 import {
   loadPortfolioProducts,
@@ -326,7 +325,7 @@ export default function CompareClient({
       <nav className="nav compare-nav" aria-label="Hlavní navigace">
         <Link className="brand" href="/" aria-label="TCG Ceny – úvod"><span className="brand-mark" aria-hidden="true"><span /><span /></span><span>TCG <strong>Ceny</strong></span></Link>
         <div className="nav-links"><Link href="/katalog/">Katalog</Link><NavStatusLink kind="drops" /><Link className="compare-nav-active" href="/porovnani/" aria-current="page">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><NavStatusLink kind="watching" /><Link href="/pro-eshopy/">Pro e-shopy</Link></div>
-        <div className="nav-actions"><AuthMenu /><MobileNav /></div>
+        <HeaderActions />
       </nav>
 
       <header className="compare-hero shell" data-motion>

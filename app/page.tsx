@@ -7,9 +7,8 @@ import {
   ShieldCheck,
   Store,
 } from "lucide-react";
-import AuthMenu from "./AuthMenu";
+import HeaderActions from "./HeaderActions";
 import CardCompanion from "./CardCompanion";
-import MobileNav from "./MobileNav";
 import NavStatusLink from "./NavStatusLink";
 import PriceHistoryDemo from "./PriceHistoryDemo";
 import ShopMarquee from "./ShopMarquee";
@@ -122,10 +121,7 @@ export default function Home() {
           <a href="#funkce">Funkce</a>
           <a className="nav-partner" href="/pro-eshopy">Pro e-shopy</a>
         </div>
-        <div className="nav-actions">
-          <AuthMenu />
-          <MobileNav />
-        </div>
+        <HeaderActions />
       </nav>
 
       <section id="uvod" className="hero shell">

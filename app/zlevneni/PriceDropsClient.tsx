@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, PackageCheck, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import AuthMenu from "../AuthMenu";
+import HeaderActions from "../HeaderActions";
 import BrandedLoader from "../BrandedLoader";
-import MobileNav from "../MobileNav";
 import NavStatusLink, { lastSeenPriceDrop, rememberLatestPriceDrop } from "../NavStatusLink";
 import catalogData from "../katalog/catalog-data.json";
 import { productPath, type CatalogData } from "../katalog/catalog-model";
@@ -144,7 +143,7 @@ export default function PriceDropsClient() {
         <div className="nav-links">
           <Link href="/katalog/">Katalog</Link><NavStatusLink kind="drops" current /><Link href="/porovnani/">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><NavStatusLink kind="watching" /><Link className="nav-partner" href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
-        <div className="nav-actions"><MobileNav /><AuthMenu /></div>
+        <HeaderActions />
       </nav>
 
       <main className="drops-main shell">

@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { ArrowDown, Bell, Check, ExternalLink, Package, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import AuthMenu from "../AuthMenu";
+import HeaderActions from "../HeaderActions";
 import BrandedLoader from "../BrandedLoader";
-import MobileNav from "../MobileNav";
 import NavStatusLink, { notifyAlertsRead } from "../NavStatusLink";
 import { productPath } from "../katalog/catalog-model";
 import { safeShopUrl } from "../shop-url";
@@ -341,7 +340,7 @@ export default function SledovaniClient() {
           <NavStatusLink kind="watching" current />
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
-        <div className="nav-actions"><MobileNav /><AuthMenu /></div>
+        <HeaderActions />
       </nav>
 
       <main className={`watching-main shell${state === "anonymous" ? " is-onboarding" : ""}`}>

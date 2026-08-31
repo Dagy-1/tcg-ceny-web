@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { CalendarDays, Check, ChevronDown, Pencil, Plus, Trash2, X } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import AuthMenu from "../AuthMenu";
+import HeaderActions from "../HeaderActions";
 import BrandedLoader from "../BrandedLoader";
-import MobileNav from "../MobileNav";
 import NavStatusLink from "../NavStatusLink";
 import {
   loadPortfolioProducts,
@@ -1411,10 +1410,7 @@ export default function PortfolioClient({
           <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
-        <div className="nav-actions">
-          <AuthMenu />
-          <MobileNav />
-        </div>
+        <HeaderActions />
       </nav>
 
       <header className={`portfolio-header${state === "signed-in" ? " is-dashboard" : ""}`} data-motion>

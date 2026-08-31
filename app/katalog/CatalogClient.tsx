@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PackageCheck, PackageX } from "lucide-react";
-import AuthMenu from "../AuthMenu";
-import MobileNav from "../MobileNav";
+import HeaderActions from "../HeaderActions";
 import NavStatusLink from "../NavStatusLink";
 import ProductAlertControl from "./ProductAlertControl";
 import {
@@ -286,10 +285,7 @@ export default function CatalogClient({ data }: { data: CatalogData }) {
           <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy">Pro e-shopy</Link>
         </div>
-        <div className="nav-actions">
-          <AuthMenu />
-          <MobileNav />
-        </div>
+        <HeaderActions />
       </nav>
 
       <header className="catalog-header shell" data-motion>

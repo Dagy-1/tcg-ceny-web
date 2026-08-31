@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import AuthMenu from "../../AuthMenu";
-import MobileNav from "../../MobileNav";
+import HeaderActions from "../../HeaderActions";
 import NavStatusLink from "../../NavStatusLink";
 import { productFromApi, type ApiProduct, type Product } from "../../katalog/catalog-model";
 import ProductAlertControl from "../../katalog/ProductAlertControl";
@@ -122,7 +121,7 @@ export default function ProductPageClient({ initialProduct }: { initialProduct: 
           <NavStatusLink kind="watching" />
           <Link href="/pro-eshopy/">Pro e-shopy</Link>
         </div>
-        <div className="nav-actions"><AuthMenu /><MobileNav /></div>
+        <HeaderActions />
       </nav>
 
       <article className="product-shell shell" data-motion>
