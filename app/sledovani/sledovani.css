@@ -38,15 +38,6 @@
 .watching-tags svg { flex: none; }
 .watching-tags .watching-rule { color: #f1bf52; border-color: rgba(230,184,74,.34); background: rgba(230,184,74,.12); }
 .watching-tags .watching-channel { color: #a0adbe; border-color: rgba(255,255,255,.09); background: rgba(255,255,255,.035); font-weight: 500; }
-.watching-values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; width: min(100%, 470px); margin: 17px 0 12px; }
-.watching-values > div { min-width: 0; }
-.watching-values span { display: block; color: #97a5b9; font-size: 11px; line-height: 1.4; }
-.watching-values strong { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: 18px; line-height: 1.35; font-variant-numeric: tabular-nums; }
-.watching-values strong svg { flex: none; }
-.watching-values .watching-gap strong { color: #f2b449; }
-.watching-values .is-reached strong { color: var(--green); }
-.watching-progress > span { display: block; height: 6px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.055); }
-.watching-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--green)); }
 .watching-card-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 18px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); color: #97a5b9; font-size: 11px; }
 .watching-verification { display: inline-flex; align-items: center; gap: 6px; min-width: 0; flex: 1 1 270px; line-height: 1.6; }
 .watching-verification svg { flex: none; color: #5dc9a2; }
@@ -104,9 +95,7 @@
   .watching-card-main { display: contents; }
   .watching-card-title { grid-column: 2; }
   .watching-card-title h3 { font-size: 16px; }
-  .watching-values, .watching-progress, .watching-card-footer, .watching-result { grid-column: 1 / -1; }
-  .watching-values { width: 100%; gap: 10px; margin: 0; }
-  .watching-values strong { font-size: 16px; }
+  .watching-card-footer, .watching-result { grid-column: 1 / -1; }
   .watching-card-footer { margin-top: 0; }
   .watching-card-footer a, .watching-card-footer button { min-height: 44px; }
   .watching-verification { flex-basis: 100%; }

@@ -13,6 +13,7 @@ import {
   type PortfolioProductLoadStatus,
 } from "../portfolio/central-products";
 import { comparisonSummary } from "./comparison";
+import { ComparisonPreview } from "../FeaturePreview";
 
 type Selection = { productId: string; quantity: number };
 type Side = "mine" | "compared";
@@ -87,6 +88,7 @@ function ProductSearch({
     <div className="compare-search">
       <Search size={17} aria-hidden="true" />
       <input
+        id={`compare-${side}-search`}
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
@@ -216,6 +218,7 @@ export default function CompareClient({
   const [mine, setMine] = useState<Selection[]>([]);
   const [compared, setCompared] = useState<Selection[]>([]);
   const [ready, setReady] = useState(false);
+  const [started, setStarted] = useState(false);
   const [productLoadStatus, setProductLoadStatus] = useState<PortfolioProductLoadStatus | null>(null);
 
   useEffect(() => {
@@ -311,10 +314,15 @@ export default function CompareClient({
   const quantity = (side: Side, productId: string, delta: number) => setFor(side, (current) =>
     current.map((item) => item.productId === productId ? { ...item, quantity: Math.max(1, Math.min(99, item.quantity + delta)) } : item));
   const remove = (side: Side, productId: string) => setFor(side, (current) => current.filter((item) => item.productId !== productId));
-  const clear = () => { setMine([]); setCompared([]); };
+  const clear = () => { setMine([]); setCompared([]); setStarted(false); };
+  const showPreview = !started && mine.length === 0 && compared.length === 0;
+
+  useEffect(() => {
+    if (started) document.getElementById("compare-mine-search")?.focus();
+  }, [started]);
 
   return (
-    <main className="compare-page">
+    <main className={`compare-page${showPreview ? " is-onboarding" : ""}`}>
       <nav className="nav compare-nav" aria-label="Hlavní navigace">
         <Link className="brand" href="/" aria-label="TCG Ceny – úvod"><span className="brand-mark" aria-hidden="true"><span /><span /></span><span>TCG <strong>Ceny</strong></span></Link>
         <div className="nav-links"><Link href="/katalog/">Katalog</Link><NavStatusLink kind="drops" /><Link className="compare-nav-active" href="/porovnani/" aria-current="page">Porovnání</Link><Link href="/portfolio/">Portfolio</Link><NavStatusLink kind="watching" /><Link href="/pro-eshopy/">Pro e-shopy</Link></div>
@@ -343,7 +351,9 @@ export default function CompareClient({
         </p>
       )}
 
-      <section className="compare-workspace shell" aria-label="Porovnání aktuální hodnoty produktů">
+      {showPreview && <ComparisonPreview onStart={() => setStarted(true)} disabled={!ready} />}
+
+      <section hidden={showPreview} className="compare-workspace shell" aria-label="Porovnání aktuální hodnoty produktů">
         <div className="compare-toolbar">
           <p><Check size={15} aria-hidden="true" /> Výběr se průběžně ukládá v tomto prohlížeči</p>
           <div>

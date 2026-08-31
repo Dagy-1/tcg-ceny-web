@@ -5,14 +5,16 @@ import test from 'node:test';
 const source = await readFile(new URL('../app/sledovani/SledovaniClient.tsx', import.meta.url), 'utf8');
 const css = await readFile(new URL('../app/sledovani/sledovani.css', import.meta.url), 'utf8');
 
-test('watching price gap appears once and progress retains an accessible value', () => {
+test('watching price and target are separate with no misleading progress', async () => {
   const card = source.slice(source.indexOf('<article className="watching-card"'));
-  assert.equal((card.match(/formatPrice\(item.price_gap_czk\)/g) || []).length, 1);
-  assert.doesNotMatch(card, /K cíli zbývá/);
-  assert.match(card, /role="progressbar"[^>]*aria-valuenow=\{progress\(item\)\}/);
-  assert.match(card, /hasPriceRule && item.threshold_czk !== null && item.product.best_price_czk !== null && !item.product.data_stale/);
-  assert.match(css, /\.watching-values \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.doesNotMatch(css, /\.watching-values[^}]*grid-template-columns: 1fr 1fr;/);
+  assert.match(card, /<WatchingPriceSummary/);
+  assert.doesNotMatch(card, /progressbar|watching-progress|history=\{/);
+  assert.match(card, /stale=\{item.product.data_stale \|\| !item.product.checked_at\}/);
+  assert.doesNotMatch(css, /watching-progress/);
+  const summary = await readFile(new URL('../app/sledovani/WatchingPriceSummary.tsx', import.meta.url), 'utf8');
+  assert.equal((summary.match(/money\(values.gap\)/g) || []).length, 1);
+  assert.match(summary, /Srovnání s cenou před 7 dny zatím není dostupné/);
+  assert.match(summary, /Tvůj cenový limit/);
 });
 
 test('informational pills are spans and actions preserve edit and removal confirmation', () => {

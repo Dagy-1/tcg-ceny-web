@@ -9,6 +9,8 @@ import MobileNav from "../MobileNav";
 import NavStatusLink, { notifyAlertsRead } from "../NavStatusLink";
 import { productPath } from "../katalog/catalog-model";
 import { safeShopUrl } from "../shop-url";
+import { WatchingPreview } from "../FeaturePreview";
+import WatchingPriceSummary from "./WatchingPriceSummary";
 
 type SessionUser = {
   id: string;
@@ -156,11 +158,6 @@ function formatEventAt(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(parsed);
-}
-
-function progress(item: AlertItem) {
-  if (!item.threshold_czk || !item.product.best_price_czk) return 0;
-  return Math.max(4, Math.min(100, Math.round((item.threshold_czk / item.product.best_price_czk) * 100)));
 }
 
 function shopScopeLabel(shops: string[]) {
@@ -347,7 +344,7 @@ export default function SledovaniClient() {
         <div className="nav-actions"><MobileNav /><AuthMenu /></div>
       </nav>
 
-      <main className="watching-main shell">
+      <main className={`watching-main shell${state === "anonymous" ? " is-onboarding" : ""}`}>
         <header className="watching-hero">
           <div>
             <p className="watching-eyebrow"><span /> Osobní přehled</p>
@@ -372,22 +369,31 @@ export default function SledovaniClient() {
         )}
 
         {state === "anonymous" && (
-          <section className="watching-state watching-signin">
-            <span className="watching-state-icon"><Bell aria-hidden="true" /></span>
-            <p className="watching-kicker">Soukromé a synchronizované</p>
-            <h2>Přehled je dostupný po přihlášení</h2>
-            <p>Každý uživatel vidí jen své produkty a vlastní cenové limity.</p>
+          <section className="feature-preview watching-intro" aria-labelledby="watching-intro-title">
+            <div className="feature-preview-copy">
+            <span className="feature-preview-label">TVŮJ OSOBNÍ HLÍDAČ</span>
+            <h2 id="watching-intro-title">Vyber si box.<br />Kontroly nech na nás.</h2>
+            <p>Nemusíš každý den otevírat stejné obchody. Sleduj cenu i návrat do skladu na jednom místě.</p>
+            <ol className="feature-steps">
+              <li><span>1</span><div><strong>Najdi svůj produkt</strong><small>V katalogu otevři detail a klikni na zvoneček.</small></div></li>
+              <li><span>2</span><div><strong>Řekni nám, co hlídat</strong><small>Cenový limit, naskladnění, nebo obojí.</small></div></li>
+              <li><span>3</span><div><strong>Měj změny pod kontrolou</strong><small>V osobním přehledu, případně přes propojený Discord.</small></div></li>
+            </ol>
             <div className="watching-login">
-              <button type="button" onClick={() => setLoginOpen((value) => !value)}>
-                Přihlásit se <span aria-hidden="true">⌄</span>
+              <button type="button" aria-expanded={loginOpen} aria-controls="watching-signin-options" onClick={() => setLoginOpen((value) => !value)}>
+                Přihlásit se a začít hlídat <span aria-hidden="true">⌄</span>
               </button>
               {loginOpen && (
-                <div className="watching-login-options">
+                <div className="watching-login-options" id="watching-signin-options">
                   <a href="/api/auth/discord?return_to=%2Fsledovani%2F">Discord</a>
                   <a href="/api/auth/google?return_to=%2Fsledovani%2F">Google</a>
                 </div>
               )}
             </div>
+            <small className="feature-preview-note">Soukromý přehled · vidíš jen svoje produkty a limity</small>
+            <Link className="feature-catalog-link" href="/katalog/">Nejdřív si prohlédnout katalog →</Link>
+            </div>
+            <WatchingPreview />
           </section>
         )}
 
@@ -453,20 +459,7 @@ export default function SledovaniClient() {
                             </div>
                           </div>
 
-                          <div className="watching-values">
-                            <div><span>Aktuální cena</span><strong>{formatPrice(item.product.best_price_czk)}</strong></div>
-                            <div><span>Tvůj limit</span><strong>{hasPriceRule ? formatPrice(item.threshold_czk) : "Nenastaven"}</strong></div>
-                            <div className={item.target_reached ? "is-reached" : "watching-gap"}>
-                              <span>Zbývá do limitu</span>
-                              <strong>{!hasPriceRule ? "—" : item.target_reached ? <><Check size={18} /> Cíl splněn</> : formatPrice(item.price_gap_czk)}</strong>
-                            </div>
-                          </div>
-
-                          {hasPriceRule && item.threshold_czk !== null && item.product.best_price_czk !== null && !item.product.data_stale && (
-                            <div className="watching-progress" role="progressbar" aria-label="Postup k cenovému limitu" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress(item)}>
-                              <span><i style={{ width: `${progress(item)}%` }} /></span>
-                            </div>
-                          )}
+                          <WatchingPriceSummary price={item.product.best_price_czk} threshold={hasPriceRule ? item.threshold_czk : null} stale={item.product.data_stale || !item.product.checked_at} />
 
                           <div className="watching-card-footer">
                             <span className={`watching-verification${item.product.data_stale || !item.product.checked_at ? " is-stale" : ""}`} title={item.shops.length ? item.shops.join(", ") : undefined}>

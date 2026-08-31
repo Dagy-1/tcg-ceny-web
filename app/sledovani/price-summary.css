@@ -1,0 +1,32 @@
+.watching-price-summary { min-width: 0; margin-top: 18px; }
+.watching-price-movement { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; }
+.watching-price-movement span { display: block; color: #9eacc0; font-size: 11px; line-height: 1.5; }
+.watching-price-movement strong { display: block; margin-top: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.watching-price-before strong { color: #c2ccda; font-size: 18px; font-weight: 600; }
+.watching-price-arrow { flex: none; color: #6f819a; }
+.watching-price-now span { color: var(--gold-soft); }
+.watching-price-now strong { color: #f1f5fb; font-size: 29px; line-height: 1.2; letter-spacing: -.025em; }
+.watching-price-change { margin-left: auto; padding: 8px 12px; border: 1px solid #6c81954d; border-radius: 9px; }
+.watching-price-change strong { display: flex; gap: 5px; align-items: center; margin-top: 0; font-size: 14px; }
+.watching-price-change span { margin-top: 3px; font-size: 10px; }
+.watching-price-change.is-down { color: #70d5a0; border-color: #70d5a04d; background: #70d5a008; }
+.watching-price-change.is-up { color: #ffaaaa; border-color: #ffaaaa4d; }
+.watching-price-history-note { flex: 1 1 170px; max-width: 270px; margin: 0 0 0 auto; color: #8f9fb5; font-size: 11px; line-height: 1.6; }
+.watching-price-target { display: flex; align-items: center; gap: 12px; padding: 13px 16px; margin-top: 17px; border: 1px solid #344357; border-radius: 10px; background: #07132280; }
+.watching-price-target > svg { flex: none; color: var(--gold); }
+.watching-price-target > div { flex: none; }
+.watching-price-target span { display: block; color: #b4c0d1; font-size: 11px; }
+.watching-price-target strong { display: block; color: #e9eff8; font-size: 20px; font-variant-numeric: tabular-nums; line-height: 1.45; }
+.watching-price-target p { margin: 0 0 0 auto; padding-left: 18px; max-width: 295px; border-left: 1px solid #344357; color: #b5c1d2; font-size: 12px; line-height: 1.6; }
+.watching-price-target p strong { display: inline; color: var(--gold-soft); font-size: inherit; font-weight: 650; }
+.watching-price-target.is-reached > svg, .watching-price-target.is-reached p strong { color: #70d5a0; }
+@media (max-width: 580px) {
+  .watching-price-summary { grid-column: 1 / -1; margin-top: 0; }
+  .watching-price-movement { gap: 12px; }
+  .watching-price-now strong { font-size: 26px; }
+  .watching-price-change { margin-left: 0; }
+  .watching-price-history-note { flex-basis: 130px; font-size: 10px; }
+  .watching-price-target { flex-wrap: wrap; padding: 12px; gap: 10px; }
+  .watching-price-target p { flex-basis: 100%; max-width: none; margin: 0; padding: 9px 0 0; border-left: 0; border-top: 1px solid #344357; }
+  .watching-preview .watching-price-summary { margin-top: 16px; }
+}

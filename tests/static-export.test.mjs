@@ -1359,9 +1359,10 @@ test("watching dashboard is private, useful and linked from navigation", async (
 
   assert.match(html, /Co sleduješ/);
   assert.match(source, /fetch\("\/api\/alerts"/);
-  assert.match(source, /Aktuální cena/);
-  assert.match(source, /Tvůj limit/);
-  assert.match(source, /Zbývá do limitu/);
+  const priceSummarySource = await readFile(new URL("../app/sledovani/WatchingPriceSummary.tsx", import.meta.url), "utf8");
+  assert.match(priceSummarySource, /Aktuální cena/);
+  assert.match(priceSummarySource, /Tvůj cenový limit/);
+  assert.match(source, /<WatchingPriceSummary price=\{item.product.best_price_czk\}/);
   assert.match(source, /Všechny ověřené obchody/);
   assert.match(source, /WatchingProductImage/);
   assert.match(source, /onError=\{\(\) => setFailedSource\(source\)\}/);
@@ -1372,7 +1373,7 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(alertControl, /window\.location\.replace\(redirectAfterSave\)/);
   assert.match(alertControl, /setRedirectAfterSave\(null\)/);
   assert.match(source, /method: "DELETE"/);
-  assert.match(source, /Každý uživatel vidí jen své produkty/);
+  assert.match(source, /Soukromý přehled · vidíš jen svoje produkty a limity/);
   assert.match(source, /Cíl splněn/);
   assert.match(source, /watching-result/);
   assert.match(source, /watching-result-new-dot/);
