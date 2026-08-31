@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Check, ExternalLink, PackageCheck, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowDown, Bell, Check, ExternalLink, Package, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import AuthMenu from "../AuthMenu";
 import BrandedLoader from "../BrandedLoader";
@@ -163,6 +163,20 @@ function progress(item: AlertItem) {
   return Math.max(4, Math.min(100, Math.round((item.threshold_czk / item.product.best_price_czk) * 100)));
 }
 
+function shopScopeLabel(shops: string[]) {
+  const count = new Set(shops).size;
+  if (!count) return "Všechny ověřené obchody";
+  return `Hlídáš ${count} ${count === 1 ? "obchod" : count < 5 ? "obchody" : "obchodů"}`;
+}
+
+function DeliveryMark({ channel }: { channel: AlertItem["channel"] }) {
+  return channel === "web" ? <Bell size={12} aria-hidden="true" /> : (
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M7.3 6.8a15.7 15.7 0 0 1 9.4 0c2 2.8 2.6 5.6 2.3 8.2a12 12 0 0 1-4.1 2.2l-1-1.3c.8-.3 1.5-.7 2.1-1.2a9.4 9.4 0 0 1-8 0c.6.5 1.3.9 2.1 1.2l-1 1.3A12 12 0 0 1 5 15c-.3-2.6.3-5.4 2.3-8.2Zm2.2 4.4c-.8 0-1.4.7-1.4 1.5s.6 1.5 1.4 1.5 1.4-.7 1.4-1.5-.6-1.5-1.4-1.5Zm5 0c-.8 0-1.4.7-1.4 1.5s.6 1.5 1.4 1.5 1.4-.7 1.4-1.5-.6-1.5-1.4-1.5Z" />
+    </svg>
+  );
+}
+
 function WatchingProductImage({ product }: { product: AlertItem["product"] }) {
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const source = product.image_url?.trim() || "";
@@ -239,14 +253,27 @@ export default function SledovaniClient() {
   }, []);
 
   useEffect(() => {
+    const previewVariant = new URLSearchParams(window.location.search).get("nahled-alertu");
     const isLocalPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-      && new URLSearchParams(window.location.search).get("nahled-alertu") === "1";
+      && ["1", "karta", "stavy"].includes(previewVariant || "");
     if (isLocalPreview) {
       queueMicrotask(() => {
         setPreviewMode(true);
-        setData(previewAlerts);
-        setEvents(previewEvents);
-        setFreshEventIds(new Set(previewEvents.items.map((event) => event.id)));
+        const card = {
+          ...previewAlerts.items[0],
+          product: { ...previewProduct, best_price_czk: 1799 },
+          price_gap_czk: 179,
+          target_reached: false,
+        };
+        const previewItems: AlertItem[] = previewVariant === "stavy" ? [
+          card,
+          { ...card, product: { ...card.product, id: "local-no-price", name: "Ukázka: cena není dostupná", best_price_czk: null, availability: "unknown", checked_at: null, data_stale: true }, price_gap_czk: null },
+          { ...card, product: { ...card.product, id: "local-restock", name: "Ukázka: pouze naskladnění" }, kinds: ["restock"], threshold_czk: null, price_gap_czk: null, channel: "web" },
+          { ...previewAlerts.items[0], product: { ...previewProduct, id: "local-reached", name: "Ukázka: cíl splněn" } },
+        ] : [card];
+        setData(previewVariant === "1" ? previewAlerts : { items: previewItems, total: previewItems.length, price_count: previewItems.filter(item => item.kinds.includes("price_below")).length, restock_count: previewItems.length, target_reached_count: previewItems.filter(item => item.target_reached).length });
+        setEvents(previewVariant === "1" ? previewEvents : emptyEvents);
+        setFreshEventIds(new Set(previewVariant === "1" ? previewEvents.items.map((event) => event.id) : []));
         setState("ready");
       });
       return;
@@ -280,6 +307,11 @@ export default function SledovaniClient() {
   }, [events.unread, previewMode, state]);
 
   const removeAlert = async (productId: string) => {
+    // Local visual fixtures never mutate a real rule or call production APIs.
+    if (previewMode) {
+      setConfirmId(null);
+      return;
+    }
     setRemovingId(productId);
     try {
       const response = await fetch(`/api/alerts/${encodeURIComponent(productId)}`, {
@@ -414,39 +446,37 @@ export default function SledovaniClient() {
                               </span>
                               <h3><Link href={path}>{item.product.name}</Link></h3>
                             </div>
-                            <div className="watching-tags">
-                              {item.kinds.includes("restock") && <span>Naskladnění</span>}
-                              {hasPriceRule && <span>Pokles ceny</span>}
-                              <span>{item.channel === "discord" ? "Discord" : "Web"}</span>
+                            <div className="watching-tags" aria-label="Nastavené hlídání a doručování">
+                              {item.kinds.includes("restock") && <span className="watching-rule"><Package size={12} aria-hidden="true" />Naskladnění</span>}
+                              {hasPriceRule && <span className="watching-rule"><ArrowDown size={12} aria-hidden="true" />Pokles ceny</span>}
+                              <span className="watching-channel" title={`Doručování: ${item.channel === "discord" ? "Discord" : "Web"}`}><DeliveryMark channel={item.channel} />{item.channel === "discord" ? "Discord" : "Web"}</span>
                             </div>
                           </div>
 
                           <div className="watching-values">
                             <div><span>Aktuální cena</span><strong>{formatPrice(item.product.best_price_czk)}</strong></div>
                             <div><span>Tvůj limit</span><strong>{hasPriceRule ? formatPrice(item.threshold_czk) : "Nenastaven"}</strong></div>
-                            <div className={item.target_reached ? "is-reached" : undefined}>
-                              <span>Do limitu</span>
+                            <div className={item.target_reached ? "is-reached" : "watching-gap"}>
+                              <span>Zbývá do limitu</span>
                               <strong>{!hasPriceRule ? "—" : item.target_reached ? <><Check size={18} /> Cíl splněn</> : formatPrice(item.price_gap_czk)}</strong>
                             </div>
                           </div>
 
-                          {hasPriceRule && (
-                            <div className="watching-progress" aria-label={`Postup k cenovému limitu ${progress(item)} procent`}>
+                          {hasPriceRule && item.threshold_czk !== null && item.product.best_price_czk !== null && !item.product.data_stale && (
+                            <div className="watching-progress" role="progressbar" aria-label="Postup k cenovému limitu" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress(item)}>
                               <span><i style={{ width: `${progress(item)}%` }} /></span>
-                              <small>{item.target_reached ? "Cena je v nastaveném limitu" : `K cíli zbývá ${formatPrice(item.price_gap_czk)}`}</small>
                             </div>
                           )}
 
                           <div className="watching-card-footer">
-                            <span>
-                              <PackageCheck size={15} aria-hidden="true" />
+                            <span className={`watching-verification${item.product.data_stale || !item.product.checked_at ? " is-stale" : ""}`} title={item.shops.length ? item.shops.join(", ") : undefined}>
+                              <ShieldCheck size={15} aria-hidden="true" />
                               <span>
-                                {item.shops.length ? item.shops.join(", ") : "Všechny ověřené obchody"}
-                                <small>{formatCheckedAt(item.product.checked_at)}{item.product.data_stale ? " · data čekají na obnovení" : ""}</small>
+                                {shopScopeLabel(item.shops)} · {formatCheckedAt(item.product.checked_at)}{item.product.data_stale ? " · data čekají na obnovení" : ""}
                               </span>
                             </span>
                             <div>
-                              <Link href={`${path}?upozorneni=upravit`}>Upravit nastavení</Link>
+                              <Link href={`${path}?upozorneni=upravit`} aria-label={`Upravit sledování produktu ${item.product.name}`}>Upravit</Link>
                               {confirmId === item.product.id ? (
                                 <span className="watching-confirm">
                                   <button type="button" onClick={() => void removeAlert(item.product.id)} disabled={removingId === item.product.id}>
@@ -456,7 +486,7 @@ export default function SledovaniClient() {
                                 </span>
                               ) : (
                                 <button className="watching-remove" type="button" onClick={() => setConfirmId(item.product.id)}>
-                                  <Trash2 size={15} aria-hidden="true" /> Odebrat
+                                  Odebrat
                                 </button>
                               )}
                             </div>
@@ -499,8 +529,10 @@ export default function SledovaniClient() {
             )}
 
             <p className="watching-delivery-note">
-              Nastavení je bezpečně uložené u tvého účtu. Upozornění vznikne až po dvou shodných kontrolách změny;
-              opakovaná kontrola stejnou událost znovu nevytvoří.
+              {previewMode ? "Ukázková data pro kontrolu vzhledu. Tento náhled nic neukládá ani neposílá na Discord." : <>
+                Nastavení je bezpečně uložené u tvého účtu. Upozornění vznikne až po dvou shodných kontrolách změny;
+                opakovaná kontrola stejnou událost znovu nevytvoří.
+              </>}
             </p>
           </>
         )}

@@ -1361,7 +1361,7 @@ test("watching dashboard is private, useful and linked from navigation", async (
   assert.match(source, /fetch\("\/api\/alerts"/);
   assert.match(source, /Aktuální cena/);
   assert.match(source, /Tvůj limit/);
-  assert.match(source, /Do limitu/);
+  assert.match(source, /Zbývá do limitu/);
   assert.match(source, /Všechny ověřené obchody/);
   assert.match(source, /WatchingProductImage/);
   assert.match(source, /onError=\{\(\) => setFailedSource\(source\)\}/);
